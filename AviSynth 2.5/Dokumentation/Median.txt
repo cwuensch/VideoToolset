@@ -1,0 +1,84 @@
+DESCRIPTION
+-----------
+
+Median.dll is a filter plugin for AviSynth which generates a pixel-by-pixel median of several clips. This is particularly useful for filtering out noise and glitches from multiple VHS/SVHS/8mm/Hi8 tape captures, but can be used for other purposes also.
+
+Discussion and further information at:
+
+http://forum.doom9.org/showthread.php?t=170216
+http://forum.videohelp.com/threads/362361
+http://avisynth.nl/index.php/Median
+
+I can be contacted at the forums or by email: antti.korhola@gmail.com
+
+
+INSTALLATION
+------------
+
+Copy to the AviSynth plugins folder or load from any location with LoadPlugin().
+
+
+USAGE
+-----
+
+The filter will accept between 3 and 25 clips. Chroma is processed by default, but this can be turned off in which case the chroma from the first clip is used. As this plugin is compiled with the 2.5 AviSynth header, chroma processing will not work properly with the new planar colour spaces added in AviSynth 2.6 (anything except YV12). I can add these later based on demand.
+
+In the case of RGB input, all colour planes are always processed. With RGB32 the chroma parameter can be used to turn off alpha channel processing.
+
+  Example:
+
+  clip1 = AVISource("capture1.avi")
+  clip2 = AVISource("capture2.avi")
+  clip3 = AVISource("capture3.avi")
+
+  Median(clip1,clip2,clip3, chroma=false) # Median of three clips, chroma is not processed
+
+
+In order to attenuate noise from multiple captures, the clips need to be perfectly in sync. This is not always easy to accomplish due to random dropped frames. The plugin includes an automatic frame comparison function to help with the process. First align the clips roughly, and then call the plugin with a suitable search radius. The larger the search radius, the slower the processing gets. 
+
+Adding "debug=true" will print out the results of the search. Perfectly matching images give a match of 100.0, but this will never happen in practise due to noise. Suspiciously low numbers can indicate a gross mismatch of the clips or too short of a search radius.
+
+One more parameters, "samples", will determine how many pixels on the image are compared when determining similarity. By default 4096 pixels are used but this can be increased or decreased as needed.
+
+  Example:
+
+  clip1 = AVISource("capture1.avi")
+  clip2 = AVISource("capture2.avi")
+  clip3 = AVISource("capture3.avi")
+
+  Median(clip1,clip2,clip3, sync=10, debug=true) # Median of three clips, match frames up to 10 frames forward and back, print debug data on the image
+
+
+You can also use the filter temporally on a single source clip. In this case you select a radius between 1 and 12 (default: 1), and the filter will take that many preceding and following frames into account when calculating the median. The chroma parameter works the same way as for Median().
+
+  Example:
+
+  TemporalMedian(clip, radius=2) # Median of five frames: current, two preceding, and two following
+
+
+There is also another, more flexible filter included, MedianBlend(). This function can be adjusted to for example return a clip derived from the minimum or maximum pixel values, or to discard some low (default: 1) and high (default: 1) values and blend the others together. With the paramteters set to not discard anything, the result is in fact the average of the clips. The chroma parameter works the same way as for Median().
+
+  Examples:
+
+  MedianBlend(clip1,clip2,clip3, low=0, high=0) # Average all clips
+  MedianBlend(clip1,clip2,clip3, low=0, high=2) # Discard two highest values (-> minimum)
+  MedianBlend(clip1,clip2,clip3, low=2, high=0) # Discard two lowest values (-> maximum)
+  MedianBlend(clip1,clip2,clip3,clip4, low=1, high=1) # Discard highest and lowest value and average the two remaining ones
+
+
+
+HISTORY
+-------
+
+16-Jan-2016,  0.6: Added automatic clip synchronisation.
+
+15-Mar-2014,  0.5: Fixed bug with chroma=false. Added TemporalMedian() functionality.
+
+14-Feb-2014,  0.4: Added MedianBlend() functionality.
+
+13-Feb-2014,  0.3: Fixed output frame buffer issue.
+
+13-Feb-2014,  0.2: Added support for other colour spaces (planar and RBG24/32).
+
+12-Feb-2014,  0.1: Initial release. YUY2 support only.
+

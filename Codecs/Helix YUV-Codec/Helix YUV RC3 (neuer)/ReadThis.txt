@@ -1,0 +1,462 @@
+--------------------------------------------------------
+Helix YUV Codecs RC3 - Version 1.2/1.3 by Karl Lillevold
+
+Release: December 2016
+--------------------------------------------------------
+LEGAL DISCLAIMER:
+Great Care and very Intensive Tests where made by developing this
+Software before it was Released. This Software is "AS IS" and the
+Author can not be made liable under any Circumstances for any
+Damages or Data-Loss of any Kind by installing and using this
+Software ! The End-User agrees to these Terms silently and uses
+this Software on his own Risk by installing and using this
+Software ! It is strictly forbidden to include and distribute the
+Helix Codecs in so called "Codec-Packs" ! The Helix Codecs are NOT
+FOR SALE or Re-Distribution of ANY Kind ! All Rights Reserved !
+
+IMPORTANT WARNING !
+DO NOT USE THE "VCSWAP" TOOL BECAUSE IT MESSES UP THE FOURCC TABLE
+IN WINDOWS ! The "VCSwap" Tool changes all uppercase FourCC's to
+lowercase but many Routines inside DirectX rely on uppercase
+FourCC's and their Entries in the Registry to work properly.
+
+Special thanks to:
+Igor Pavlov - for the "7Zip" Freeware Program
+Nicolas OTT - for NLE and Hardware tests (Win SE to 8 ,32/64 Bit)
+Michael Henke - for Ingest Hardware and NLE tests
+Mickey Lee Jones - for IYUV Development, Fixes and INF-Script
+
+Helix YUV Codecs Features: (Fully Tested)
+I420: YCbCr 12 Bit Planar YUV
+IYUV: YCbCr 12 Bit Planar YUV (New)
+YV12: YCbCr 12 Bit Planar Swapped YUV
+Alpha Channel Support: Yes
+RAW VBI Support: Yes
+MMX CPU Support: Yes
+SD / HD Support: Yes
+DirectShow Support: Yes
+ActiveMovie Support: Yes
+Video for Windows Support: Yes
+QuickTime for Windows Support: Yes (AVI with I420/IYUV)
+AVI1 (VfW) Support: Yes
+AVI2 (OpenDML) Support: Yes
+Overlay Support: Yes
+Multiple Overlay Support: Yes
+Image Color Management (ICM) Support: Yes
+Interlaced Support: Yes (All SD/HD TFF/BFF Field Orders)
+Progressive Scan Support: Yes
+Progressive Segmented Support: Yes
+Alternating Scan Line Support: Yes
+Supported Frame Rates: All
+Supported Pixel Types: Square / Non-Square
+Supported Television Norms: All ITU/EBU/ATSC/SMPTE Norms
+Format Support for H.26x/MPEG-1/-2/-4: Yes
+Format Support for FFMpeg: Yes
+Format Support for FFDShow: Yes
+Format Support for AviSynth: Yes
+Format Support for AVC/AVCHD: Yes
+Format Support for UHD and Cinema: 2K (V1.2), 2K/4K/8K (V1.3 only)
+Support for Dual-Image 3D: Yes (V1.3 only)
+Extended Buffering: V1.2 = No, V1.3 = Yes
+
+System Requirements:
+Microsoft Windows 9x to 10 (32/64 Bit)
+Microsoft DirectX (Version 7,8,9 and higher recommended)
+Microsoft Media Player 6,7,9 and higher
+Apple QuickTime for Windows Version 4 to 7 and higher (Optional)
+Intel/AMD Processor with MMX Support for best Performance
+Intel/ATI/Matrox/NVidia Graphics Card with I420/IYUV/YV12 Support
+The Freeware "7Zip" by Igor Pavlov to unpack the Files
+
+Installation:
+Save the downloaded File to a Location on your Harddisk and extract
+the File with "7Zip". NOTE: DO NOT try to install the Codecs WITHOUT
+extracting the Files to a Folder on your Harddisk !
+
+IMPORTANT:
+It is highly recommended to install Version 1.3 first. Version 1.2
+should ONLY be used if you have a older System with a older Capture
+Card or Video Device. Please DO NOT mix the Version 1.2 with Version
+1.3 ! If you do want to try another Version, uninstall first before
+you try a different Version of the Helix Codecs !
+
+ATTENTION !
+The Helix RC2 that only contained the original Helix Codecs without
+the new IYUV Codec is no longer available !
+
+Installation: (Windows 9x to 10, 32/64 Bit)
+The Helix RC3 Codecs are available in two different Versions:
+"HelixRC3.7z" -> contains the new Helix 1.2/1.3 Codecs 
+
+Helix Codec Version 1.2: Folder "Ver12\Helix12.inf"
+Helix Codec Version 1.3: Folder "Ver13\Helix13.inf"
+
+Simply right-click on the "Helix12.inf" OR "Helix13.inf" File
+and follow the Instructions.
+
+Windows NT to 10 Users need Admin Rights to Install the Codecs and
+should read the Section "Troubleshooting" in this Document in case
+the Installation fails on 64 Bit Systems.
+
+Windows 9x to ME Users should restart the System after the
+Installation completed and we highly recommend to use the "Infast"
+for a silent or the "Infstall" Program for a guided installation.
+
+If the Message Window "Uncertified Program" and/or "Unsigned Driver"
+pops up, simply click on the "OK" Button to ignore the Message and
+continue with the Installation.
+
+After the Installation completed, open the "Run" Command, type
+"dxdiag" and press the "OK" Button. DirectX Diagnostics will
+register now the new Helix Codecs with the DirectX Engines.
+
+Please note that the new INF-Script does NOT delete any other Codecs
+on your System and only replaces them in the Registry. The replaced
+Codecs are restored if the Helix Codecs are removed from the System
+via the "Uninstall" Option (Software). Other third Party Codecs are
+NOT restored, ONLY the native Windows Codecs !
+
+Description:
+The Helix YUV Codecs encode/decode I420, IYUV and YV12 RAW Format
+Videos. Fast color conversions to all common RGB formats, YUY2,
+and of course I420, IYUV and YV12 when requested.
+
+"i420vfw.dll" encodes to I420 -> Replaces Microsoft msh263.drv (*)
+"iyuvvfw.dll" encodes to IYUV -> Replaces Intel iyuv_32.dll
+"yv12vfw.dll" encodes to YV12 -> Replaces XviD as a YV12 Decoder
+
+(*) = Up to XP. Vista to 10 uses the modified Intel Iyuv_32.dll.
+
+Otherwise identical, the encoders accept common input formats,
+and losslessly converts to and from both color spaces, i.e. with
+"Fast recompress" in VirtualDub, there is no conversion via RGB.
+
+Example for "Fast Recompress" in VirtualDub: (See Note !)
+I420 can be converted losslessly to IYUV but NOT to YV12
+IYUV can be converted losslessly to I420 and YV12
+YV12 can be converted losslessly to I420 and IYUV
+
+Note:
+Using "Fast Recompress" with the Helix I420 Codec to the Helix YV12
+Codec WILL SWAP THE PLANAR YUV and is meant to work this way !
+
+The Reason are MPEG-1/2/4 encoders because many NLE's install
+a Filter for the Color Conversion from I420 to YV12 so MPEG Videos
+don't encode the inverted Chroma and is reversed by the additional
+Filter if a Video with I420 is used. The same Filter is used during
+capture, encoding or decoding MPEG-1, MPEG-2 and MPEG-4 Videos.
+
+Solution 1: (Recommended)
+Open your I420 Video with Nic's "FourCC Changer" by either draging
+it to the field where the two dots are or press the Button with the
+two dots and navigate to the location of your Video. Then change the
+FourCC from "i420/I420" to "iyuv/IYUV" in both fields and press the
+"Apply" Button. If both Entries are upper-case, then replace them both
+as upper-case.
+
+In the "FourCC Description Code" Field you should insert iyuv (lower
+case) and in the "FourCC Used Codec" Field IYUV (upper case) because
+ActiveMovie uses lower case FourCC while DirectShow uses the upper
+case FourCC to identify the Codec. This only changes the FourCC code
+without re-rendering the Video and can be changed back to I420 anytime
+when requested.
+
+CAUTION !
+Changing the FourCC from I420/IYUV to YV12 WILL SWAP THE YUV PLANES !
+
+Solution 2: (Best alternative)
+Open your I420 Video in VirtualDub, select the Box "Ask for extended
+options after this dialog" before you press the "OK" Button and enable
+the Options "Force video format FOURCC code to", insert iyuv (lower
+case) in the "Force video codec handler FOURCC code to" insert IYUV
+(upper case) and click on the "OK" Button. Your I420 Video is now
+loaded with the IYUV Codec in VirtualDub.
+
+This has the same effect as using Nic's FourCC Changer, only that the
+FourCC code I420 is mapped to IYUV and not permanently changed.
+
+Solution 3: (not recommended)
+Open your I420 Video in VirtualDub and select the Mode
+"Normal Recompress" and change the Colorspace to YUY2 or YV12 in
+the "Video - Color Depth" Option.
+
+All Solutions will prevent a Swap in the Planar YUV Colorspace.
+
+The Helix Codecs negotiate with other Codecs in this Order:
+I420 (12 Bit) -> I420 12 Bit/YUY2 16 Bit/RGB24 24 Bit/RGB32 32 Bit
+IYUV (12 Bit) -> IYUV 12 Bit/YUY2 16 Bit/RGB24 24 Bit/RGB32 32 Bit
+YV12 (12 Bit) -> YV12 12 Bit/YUY2 16 Bit/RGB24 24 Bit/RGB32 32 Bit
+
+If a target Codec is able to compress I420/IYUV/YV12 then the
+Source Colorspace (FourCC) is not changed and remains lossless if
+"Fast recompress" is used in VirtualDub otherwise YUY2 or RGB24.
+
+Input for the Helix Codecs can be:
+YVU9 / YUY2 / RGB24 / RGB32 and UYVY -> See Note !
+
+Note:
+UYVY is always mapped to RGB24 and is the default behavior of
+DirectX and their Components. That's why many Capture Cards and
+Devices only offer I420 and YUY2 as the default Color Space to
+prevent the mapping over RGB24 while the I420 Color Space is
+directly used by the Hardware.
+
+AviSynth 2.5.x:
+A "DirectShow" Script uses these Color Spaces:
+Helix I420 is decoded as YUY2  -> see Note
+Helix IYUV is decoded as RGB32 -> see Note
+Helix YV12 is decoded as YV12
+
+Note:
+This is meant to work this Way and conforms to the DirectX Specs.
+
+A "AviSource" Script uses these Color Spaces:
+Helix I420 is decoded as YV12 -> see Note
+Helix IYUV is decoded as YV12 -> see Note
+Helix YV12 is decoded as YV12
+
+Note:
+The YUV Planes are properly swapped without any Chroma Shifts.
+
+Hint: (VirtualDub Versions 1.6 to 1.10)
+Disable the Option "Directly decode uncompressed YCbCr Sources"
+under "Options - Preferences - AVI" in VirtualDub. This disables
+the internal YUV Codecs in VirtualDub and the external ones are
+used instead. Disable the "Allow Video Overlays" Option if you
+see a "Green Screen" during Playback or encoding in VirtualDub.
+
+Videos encoded with the Helix I420/IYUV Codecs can be played back
+in Apple QuickTime for Windows (YUV420). Videos encoded with
+VirtualDub in YV12 can be decoded with the Helix Codecs. AviSynth
+uses the Helix YV12 Codec instead of the XviD Decoder.
+
+Limitations: (Windows 9x to XP)
+The Intel IYUV Codec (I420/IYUV) is limited to 640x480, max.30 Fps.
+Videos encoded with the Helix Codec in this Resolution can now be
+decoded by the Intel Codec and vice versa. Means, a Video encoded
+with the Intel I420/IYUV Codec (iyuv_32.dll) can now be decoded with
+the Helix Codecs and Videos using the Intel 4:2:0 Codec (msh263.drv)
+or Intel RAW 4:2:0 (i263_32.drv) can also be decoded with the Helix
+Codec.
+
+Drastic YCbCr I420/IYUV/YV12 Videos can now be encoded/decoded both
+Ways at higher Resolutions and Frame Rates. (Fully Tested)
+
+Overview:
+Intel 4:2:0 (I420) -> can be decoded using the Helix 32 Bit Codec
+Intel RAW 4:2:0 -> can be decoded using the Helix 32 Bit Codecs
+Intel I420/IYUV -> can be decoded using the Helix 32 Bit Codecs
+Drastic I420/IYUV/YV12 -> can be used both Ways
+Helix I420/IYUV -> can be decoded with the Intel 32/64 Bit Codecs at
+a maximum Resolution of 640x480 at max. 30 Fps. Larger Resolutions
+and Frame Rates are NOT supported by the Intel Codecs !
+
+The Helix Codecs are only avaliable in 32 Bit Applications on 64 Bit
+Systems and is meant this Way. The 64 Bit Intel Codecs will show up
+in the List of available Codecs instead of the Helix 32 Bit Codecs
+with 64 Bit Applications.
+
+Important:
+The Helix Codecs are RAW Codecs and don't vary in the Bitrate. A
+large Resolution with a high Frame Rate results in a higher Bitrate
+and vice versa. Most Consumer Devices are limited to VGA if the User
+selects I420/IYUV/YV12 to capture a Video (640x480) because Windows
+does not support natively higher Resolutions using these FourCC's.
+
+The Helix Codecs can be used to compress higher Resolutions that are
+available through YUY2 by the Capture Card or Device via VirtualDub
+or other Capture Software where the target Codec is selectable.
+
+USB Video Devices should always use the SAME USB Port to prevent
+the re-installation of the native Windows Codecs which disables
+the installed Helix Codecs ! This also happens with PCMIA Addon
+Video Cards if they are inserted in a different Slot.
+
+Best Solution to this Problem:
+Uninstall the Helix Codecs and re-install them again.
+
+Other Solution to this Problem:
+Double-Click on ONE of the REG-Files to re-enable the Helix Codecs.
+
+"Helix32.reg" -> Windows NT to XP (32 Bit)
+"Helix64.reg" -> Windows XP to 8  (64 Bit)
+"Helix9X.reg" -> Windows 9x to ME (32 Bit)
+
+WARNING !
+DO NOT RUN THE 64 BIT REG-FILE ON A 32 BIT SYSTEM AND VICE VERSA !
+
+Windows 9x Users need to edit the "System.ini" File. Open this File
+with "NotePad" (Editor) and change the following Section:
+
+[Drivers32]
+VIDC.I420=i420vfw.dll
+VIDC.IYUV=iyuvvfw.dll
+VIDC.YV12=yv12vfw.dll
+
+Save the edited System.ini File and navigate to the Folder where you
+uncompressed the Helix Codecs. Look for the "Helix9x.reg" File and
+double-click on it. A Window pops up and click on the "OK" Button to
+add the ICM Descriptions to the Registry.
+
+Note:
+The "VIDC.IYUV=iyuvvfw.dll" Entry is ONLY available with the Helix
+Codec Version 1.2/1.3 RC3, NOT with Version 1.2/1.3 RC2 which is no
+longer available !
+
+Close all Applications and restart your System to re-enable the
+Helix Codecs.
+
+Uninstall:
+Open the "Software" Applet in Windows, select the "Helix Codecs"
+and click on the "Remove" Button. This removes the Helix Codecs
+and restores the Registry and native 32 Bit Windows Codecs.
+
+Users with Windows 9x/SE/ME need to restart the System.
+
+After you uninstalled the Helix Codecs, open the "Run" Command,
+type "dxdiag" and press the "OK" Button. The DirectX Diagtool now
+re-registers the native Windows Codecs for the DirectX Engine.
+
+Known Issues:
+Width has to be a multiple of 4 and the Height a multiple of 2.
+Recommened for best Performance: 4x4
+
+The new Installation Routine always installs all Helix Codecs
+and they can not be selected individually anymore to enable a
+lossless Transcoding from one Colorspace to another.
+
+The Helix Codecs can not be selected in some Ulead/Corel Software
+Versions for Compression, only for De-Compression when you captured
+with I420 or YV12. This is a Issue in some Ulead/Corel Versions and
+not a Bug in the Helix Codecs.
+
+Videos encoded with the Intel IYUV Codec can now be played back
+with the Helix Codecs even if the Intel IYUV Codec converts 12 Bit
+up to 24 Bit and vice versa while the Helix Codecs stay in 12 Bit.
+
+VirtualDub does not support I420/IYUV as a Output Format. If the
+"Normal Recompress" or "Full Processing" Modes are used then the
+Conversion is made over RGB. "Direct Stream Copy" is without any
+Conversion, just like the "Fast Recompress" Mode.
+
+Troubleshooting: (Windows 8)
+"Hey! I tried to install the Codec on Windows 8 64bit, but it says
+something like "installation error: the INF-data of a third person
+doesn't contain digital signature" (I use a german windows, so I
+tried to translate). On Windows 7, there was no problem.
+What can I do? (please nothing like: install Windows 7). Thanks!"
+
+Edit: Found a way:
+From the Metro Start Screen, open Settings (move your mouse to the
+bottom-right-corner of the screen and wait for the pop-out bar to
+appear, then click the Gear icon).
+
+Click ‘More PC Settings’.
+Click ‘General’.
+Scroll down, and click ‘Restart now’ under ‘Advanced startup’.
+Wait a bit.
+Click ‘Troubleshoot’.
+Click ‘Advanced Options’
+Click ‘Windows Startup Settings’
+Click Restart.
+press 7
+
+Blue-Screen with large Resolutions using RGB32
+Karl Lillevold:
+
+7th August 2015
+"forclip" informed me that if using a renderer with RGB32 output, for
+example VMR-9, for higher than HD resolutions (e.g. 2560x1440) the
+Helix YV12 converter will cause a crash. I investigated this and found
+that when I created version 1.3 and allowed up to 8192x8192, I failed to
+notice that the assembly coded YUV to RGB color converters written in
+1996 are hard-coded with a 2080 pixel wide limit. Back then no one
+foresaw resolutions would ever need to be higher :S
+
+All I can do at the moment is add this information to the thread, as I
+am unable to make any modifications to the assembly code, nor in fact
+build the projects due to build system incompatibilities. If staying in
+the YUV domain, the converters work fine up to 8192.
+
+Source: Doom9 Forum
+
+----------------------------------------------------------------------
+Changelog RC3: (Update Version with IYUV Codec) 1.2 / 1.3 (09/12/2016)
+----------------------------------------------------------------------
+Modified I420 Codec for IYUV Colorspace (same as I420) and added
+the "iyuvvfw.dll" Codec for both Versions.
+
+The I420 Codec no longer upsamples to YUY2 if the IYUV codec is
+selected and is meant to work this Way.
+
+The IYUV Codec now reports itself as "Helix IYUV 420 Codec".
+
+Fixed decoding Intel I420/IYUV Videos (32/64 Bit) with the Helix
+Codecs and works both ways now for encoding and decoding.
+
+Fixed decoding Drastic YCbCr I420/IYUV/YV12 Videos (32 Bit) with
+the Helix Codecs and works both ways now for encoding and decoding.
+
+Fixed decoding Arksoft IYUV and ATI YV12 Videos (32/64 Bit) with
+the Helix Codecs for encoding and decoding.
+
+Fixed Problems with Empia/Afa/SynTek and other Capture Drivers.
+
+Fixed Problems with Osprey/ATI/Matrox/Intel/Aurora/DVS/Aja and
+other popular Videoboards.
+
+Fixed Problems with Cinegy and other Ingest Systems.
+
+Fixed Problems with the Phillips MoviePlus and PixelPlus Drivers.
+
+Fixed Problems with LogiTech and other Webcam Drivers.
+
+Solved minor Problems with HonesTech HDV Encoder, MainConcept,
+Craaft Cinema, Cinegy, Cyberlink, Microsoft and Pegasus encoders.
+
+Solved Problems with the FourCC Codec install Order in the Registry.
+
+Solved Problems with DirectX, Direct Draw, Active Movie, Direct2D,
+Direct3D and OpenGL FourCC Mapping from I420 to IYUV and conforms now
+to the Microsoft White Paper for YUV Formats in Windows.
+
+The new INF-File restores the native 32 Bit Windows Codecs if the
+Helix Codecs are uninstalled and removed from the System.
+
+Other 64 Bit Codecs for I420/IYUV/YV12 are no longer replaced by
+the Helix Codecs and can co-exist now with the Helix Codecs.
+
+The Helix Codecs can now co-exist with the Drastic Codecs if the User
+installed the Drastic YCbCr Codecs and the Helix Codecs afterwards.
+
+Note:
+If you install the Helix Codecs first and afterwards the Drastic Codecs
+then the Helix Codecs are DISABLED ! Remember, first the Drastic Codecs
+and THEN the Helix Codecs.
+
+Other Fixes:
+The Problem with the original EXE-Version was, if the User removed
+the Helix Codecs from the System the original Codec for I420 was
+not restored and has been fixed in this Release.
+
+---------------------------------------------------------------------
+Changelog RC2: (Original Version without IYUV Codec) 1.3 (11/03/2010)
+---------------------------------------------------------------------
+Increased max. supported resolution from 2048x1152 to 8192x8192
+
+Note from Karl Lillevold:
+There's no need to upgrade for most users. I needed it for 3D HD
+videos, which are frequently represented as standard HD resolution
+Videos, where the two views are combined side-by-side or top-bottom.
+
+1.2 (10/09/2003 and 25/01/2004)
+Fixed problem with swapped U and V planes when saving to I420/YV12
+from other formats than I420/YV12
+
+NOTE: The Helix RC-2 is no longer available !
+
+(C)opyright 2016 Karl Lillevold
+
+Other product names, trademarks and registered trademarks mentioned
+in this Document are the property of their respective holders.
+-EoF-

@@ -1,0 +1,212 @@
+<!DOCTYPE doctype PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+  <title>AviSynth 2 - CVS snapshot</title>
+  <meta name="Generator" content="EditPlus">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <link rel="stylesheet" type="text/css" href="optimoz.css" />
+</head>
+<body bgcolor=f0f0f0>
+<h1>HuffYUV revisited</h1>
+
+<pre>Current version: 2.2.0</pre>
+
+<h3>Introducion</h3>
+
+<p>Huffyuv is a very fast, <em>lossless</em> Win32 video codec.
+"Lossless" means that the output from the decompressor is bit-for-bit
+identical with the original input to the compressor. "Fast" means a
+compression throughput of up to 38 megabytes per second on my 416 MHz
+Celeron.
+</p><p>Huffyuv is intended to replace uncompressed YUV as a video
+capture format. It is fast enough to compress full-resolution CCIR 601
+video (720 x 480 x 30fps) in real time as it's captured on my machine.
+Huffyuv also supports lossless compression of RGB data, so it can be
+used for the output of programs like VirtualDub.
+<p>&quot;HuffYUV Revisited&quot; is a new version I made to get rid of some annoyances I had.</p>
+
+<h3>Download</h3>
+Download <a href="huffyuv_220.zip">Huffyuv v2.2.0</a> binary. (19-12-03)
+<p>
+Download <a href="huffyuv_220_src.zip">Sourcecode</a>for Huffyuv v2.2.0. Released under the GPL. (19-12-03)
+
+<h3>What's new?</h3>
+<b>v2.2.0</b>
+<br>
+* Added &quot;Reduced resolution&quot;. This will save your file in HALF the orginal resolution, and upscale the video on the fly. Lossy, but very fast!<br>
+* HuffYUV is now storing interlaced mode in the AVI-file. Now interlaced files are properly decoded!<br>
+* Added MMX optimized YUV -> RGB conversion routines.<br>
+* HuffYUV will now suggest to store RGB32 (RGB with alpha), even if it is disabled. Alpha information will however be removed when on.<br>
+* HuffYUV should now support all resolutions flawlessly. Do however not that it is not recommended to use a resolution that isn't divideable by 8, when using Reduced Resolution, and YUY2 naturally must med divideable by 2.<br>
+* Minor General speedup of some internal routines. Should be a bit faster than older versions.<br>
+
+<p>
+<b>HuffYUV CCESP-patch 0.2.2</b>
+<br>
+As this version is based on the CCESP-patch 0.2.2 I will also include the changelist here:<br>
+  * Version 0.2.2 allows you to set the output buffer size. Might fix crashing.<br>
+  * No need to check "Always suggest RGB format for output" checkbox anymore (though checking it might be a good idea). <br>
+  * CCE will run faster if you are using YUY2 compressed avis (i.e. if you are using RGB compression, nothing will change). <br>
+  * Cleaner configuration dialog with tooltips. <br>
+  * Option to change the field threshold.<br>
+<br>
+<br>
+<br>
+
+<h2>BenRG's documentation</h2>
+<p>This section will contain Ben's original documentation, slightly updated.</p>
+
+<h3><a name="Requirements">System requirements</a></h3>
+
+<p>You'll need Windows 95, 98, Me, NT, or 2000 to run Huffyuv.
+
+</p><p>YUY2-&gt;RGB colorspace conversion and all of the compression
+methods except "predict left" require a processor with MMX. All Pentium
+II, Pentium III, and Athlon processors have MMX. Some original Pentiums
+have MMX. Pentium Pros do not have MMX.
+</p><p>If you want to use Huffyuv for video capture, your capture card
+must be able to capture in YUY2, UYVY, or RGB format. Most capture
+cards support one of these formats, but some, such as the Miro DC10
+series, will only capture in Motion JPEG format. If your card only
+supports Motion JPEG, you can't use Huffyuv for capture (although you
+can still use it for editing).
+</p><p>YUY2 and UYVY will compress better and more quickly than RGB,
+so use them rather than RGB if you can. If you have a Matrox card, try
+"Flying Dutchman's YUY2 enabling utility," available at <a href="http://www.desktopvideoworld.com/DTVW_downloads.htm">Desktop Video World</a>.
+
+
+</p><h3><a name="Installation">Installation</a></h3>
+
+<p>To install Huffyuv just download the zip file above, uncompress the files to a temporary directory, right-click on the <tt>huffyuv.inf</tt>
+file and select "Install." You can delete the files in the temporary
+directory after the installation completes (which takes only a fraction
+of a second). There should be no need to reboot.
+</p><p>If you're asked to insert a disk named "Huffyuv AVI lossless
+video codec," just click OK and select the appropriate directory if
+necessary.
+</p><p>To uninstall Huffyuv, use Add/Remove Programs in the Control Panel.
+
+
+</p><h3><a name="Capturing">Capturing with Huffyuv</a></h3>
+
+<p>How to tell your video capture program to use Huffyuv will depend on
+the program. In general, you should look for a "Video Format" dialog,
+and set the format to YUY2 or UYVY. Then you should look for a
+"Compression" dialog and choose Huffyuv from the list. (Do it in this
+order, because Huffyuv might not show up in the latter dialog unless
+you've already set the format in the former.)
+</p><p>Some capturing programs (including ATI's Multimedia Center) do
+not support external compressors and hence can't be used with Huffyuv.
+If you're using one of these, I recommend switching to Avery Lee's
+free, GPL'd <a href="http://www.virtualdub.org/">VirtualDub</a>.
+(Even if you're not using one of these you should probably switch
+anyway, since VirtualDub is a lot better than any bundled capture
+utility.)
+</p><h3><a name="Configuring">Configuring Huffyuv</a></h3>
+
+<p>You can get to the dialog by clicking the "Configure" button
+when you select Huffyuv as your compressor, or via the "Settings"
+button which is right next to "Remove" in the Multimedia Control Panel.
+</p><p>The options are, as you can see, self-explanatory.  However, I'll expand a little on the explanations here.
+
+</p><h4>Compression method</h4>
+
+<p>Here you can trade off compression speed against compression ratio.
+Generally speaking, the methods lower down on the list will give you
+better ratios, but this won't necessarily always be true. (In
+particular, if the benchmarks are to be believed, "predict left" is better than "predict grad" for 720x480 video.)
+
+</p><p>Huffyuv ships configured for the highest compression. If you
+find you're dropping frames, try moving to a lower compression level.
+With a modern processor and a modern IDE hard drive, you should be able
+to capture CCIR 601 video at maximal ("predict median") compression
+without problems.
+</p><p>"Predict median" isn't currently available for RGB compression,
+not because it's inapplicable there but simply because I haven't
+implemented it yet.
+</p><p>For RGB input you also have the option of converting to YUY2
+and then compressing that. (It's the last option in the drop-down list
+box.) This is not lossless, but often it doesn't matter because the
+same conversion is done anyway when you compress to MPEG or Indeo or
+any other lossy format.
+</p><h4>Always suggest RGB format for output</h4>
+
+<p>When a program reads a Huffyuv-compressed AVI file, it can either
+ask Huffyuv to decompress the video to a specific format (like RGB), or
+it can ask for the "default format." Huffyuv's default format is the
+format the video was originally compressed from, either YUY2 or RGB.
+</p><p>There are a number of video-processing programs out there which
+ask the decompressor to produce its default format, but then
+malfunction when Huffyuv returns YUY2. Huffyuv autodetects several of
+these programs (Premiere, Ulead Media Studio's Video Editor,
+AVI2MPG2_VFW, and Bink), and reports RGB instead of YUY2 to them.
+</p><p>The "Always suggest RGB" option makes Huffyuv do this in every
+application, not just the four mentioned above. If an application needs
+this option checked, please let me know which one so that I can add it
+to the list in future versions of Huffyuv, and save everyone some
+aggravation.
+</p><h4>Enable RGBA compression</h4>
+
+<p>Huffyuv can compress RGBA (RGB with alpha) images along with RGB and
+YUY2. The problem is that the format that applications like Adobe After
+Effects use for RGBA happens to be exactly the same as ordinary 32-bit
+RGB. I'm afraid that if RGBA compression is enabled by default, an
+innocent application might pass 32-bit RGB to Huffyuv, in which case
+Huffyuv would waste a bunch of space compressing the unused alpha
+channel. Most people don't need RGBA compression, so I took the safe
+route and made it an option.
+</p><h4>Swap fields on decompress</h4>
+
+<p>Some capture drivers are broken and get the field order backwards.
+If you're stuck with one of these, you can compensate by checking this
+option--proving once again that two wrongs make a right.
+</p>
+		<h4>Field Threshold</h4>
+		
+		When I added the YUY2 stuff described above, I discovered a hardcoded threshold that will trigger progressive
+		or field based compression. Something that was not acceptable, as
+		<li>NTSC has a threshold of 240,
+		<li>Progressive Frames have none at all.
+		<p>
+		I simply added another entry in <i>huffyu.ini</i> and added a way to edit it in the configuration dialog.<br>
+		You can change the value to any number between 1 and 16384.
+		<p>
+		If you're processing NTSC video, you should set it to 240, so that material with more than 240 lines will use
+		interlaced compression. For PAL the original value of 288 is right.
+		<p>
+		If you are doing progressive material, setting it to 480 or 576 lines will compress even video at this resolution
+		progressive. This should result in better compression.
+		<p>
+		If you set this option correctly you will get properly separated fields when using &quot;Reduce Resolution&quot;, if not, your fields will be blended, or you will have lower quality.
+<h4>Reduce Resolution</h4>
+<p>
+This mode is designed for fast editing of HuffYUV files in reduced resolution. This will enable you to edit your material in lower (and faster) quality.<p>
+When the image is delivered to HuffYUV it is very quickly scaled down to half it's size. This material is compressed and saved. When you open your file in an editing application it will report the original size to the program, and automatically (and very fast) upscale the video to full size when it has been decompressed.<p>
+This has the advantage that you will be able to work on very fast material, and when you're done editing - you simply replace the file with a full-quality version and render your project.<p>
+In general a three to four time speedup can be expected when working in Reduced resolution. But beware - this is a lossy process - DO NOT FORGET TO TURN IT OFF AGAIN AFTER USE!!<p>
+</p><h4>Enable console-window logging</h4>
+
+<p>If you check this, Huffyuv will open a console window whenever it's
+used and display various diagnostic messages. This makes it easier for
+me to troubleshoot problems via email.
+</p><h4>Email author / Visit home page</h4>
+
+<p>If your system is configured to make it possible, "Email author"
+will open a blank email message addressed to me, and "Visit home page"
+will open this page in your browser.
+<h3>Future improvements</h3>
+Some things I have been thinking about implementing:<br>
+- YV12 conversion routines.<br>
+- YV12 compression.<br>
+- CCIR 601 range limitation (might also help compression).<br>
+- Make a proper installer.<br>
+<h3>About</h3>
+The contributions are:<br>
+<b>(c) Ben Rudiak-Gould</b> (original code)<br>
+<b>(c) Klaus Post</b> (v 2.2.0 improvements)<br>
+<b>(c) Wanton</b> (CCESP-patch)<br>
+<b>(c) Microsoft</b> (Sample code)<br>
+</body>
+</html>

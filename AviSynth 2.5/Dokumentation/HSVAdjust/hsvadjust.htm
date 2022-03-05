@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <META NAME="GENERATOR" CONTENT="Microsoft FrontPage 4.0">
+   <TITLE>HSVAdjust</TITLE>
+   <style type="text/css">
+body      { font-family: verdana, arial, helvetica, sans-serif; color: #000000; 
+            font-size: 12px; background-color: #C8D4D8; text-align: Left; 
+            line-height: 150%;
+            padding: 0px;
+            margin: 6px;}
+
+h1        { font-family: verdana, arial, helvetica, sans-serif; font-size: 26px; 
+            line-height: 150%; color: #000000;
+            padding: 0px 0px 0px 8px
+            margin-left: 0px; margin-right: 0px; margin-top: 12px; margin-bottom: 12px;}
+
+h2        { font-family: verdana, arial, helvetica, sans-serif; font-size: 22px; 
+            line-height: 150%; color: #000000; 
+            background-color: #90A0C0;
+            padding:  0px 0px 0px 8px;
+            margin-left: 0px; margin-right: 0px; margin-top: 12px; margin-bottom: 12px; 
+            border: #8080D0; border-style: solid;
+            border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px}
+
+h3        { font-family: verdana, arial, helvetica, sans-serif; font-size: 18px; 
+            line-height: 150%; color: #000000;
+            padding: 0px 0px 0px 8px;
+            margin-left: 0px; margin-right: 0px; margin-top: 12px; margin-bottom: 12px;
+            border: #8080D0; border-style: solid; border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px}
+
+h4        { font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 12px;
+            font-style: normal; font-weight: bold; text-decoration: underline}
+
+a         { color: #005090; text-decoration: none; font-family: verdana, arial, helvetica, sans-serif }
+a:link    { color: #005090}
+a:visited { color: #005090}
+a:hover   { background-color: #FF6060; color: #005090}
+
+table     { font-size: 12px; margin-left: 0px; margin-top: 12px; margin-bottom: 12px;
+            line-height: 150% }
+
+pre       { font-size: 12px; font-family: Courier, mono;
+            margin-top: 10px; margin-bottom: 10px; 
+            background-color: #D0D0C0;
+            padding-left: 12px; padding-top: 12px; padding-right: 12px; padding-bottom: 12px;
+            border: #908030; border-style: solid; border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px}
+
+code      { font-family: Courier, mono; font-size: 12px; letter-spacing: 1px; color: #660033}
+var       { font-family: Verdana, Arial, Helvetica, sans-serif; font-weight: normal; font-size: 12px;
+            font-style: italic; letter-spacing: 1px; color: #660033}
+tt        { font-family: Courier, mono; font-size: 12px}
+em        { font-family: Courier, mono; font-weight: normal; color: #FFFFFF; font-style: normal}
+strong    { font-family: Courier, mono; font-weight: bold; color: #FFFF66; font-style: normal}
+cite      { border: 1px #3030A0 dotted; padding-left: 2px; padding-right: 2px; padding-top: 1px; padding-bottom: 1px}
+kbd       { color: #808000; font-family: Verdana, Arial, Helvetica, sans-serif; font-weight: normal; font-size: 10px; font-style: normal}
+</style>
+</HEAD>
+<BODY>
+
+<h1>HSVAdjust v0.1</h1>
+<h2>Abstract</h2>
+<b>author:</b>     Wilbert Dijkhof (wilbertdijkhof at yahoo.com)
+<br><b>version:</b>             v0.1<br>
+<b>download:</b>     <a href="http://www.wilbertdijkhof.com">http://www.wilbertdijkhof.com</a>
+<br><b>category:</b>   Color conversion and adjustment filters
+<br><b>requirements:</b>
+<ul>
+  <li>none</li>
+</ul>
+
+<p><b>license:</b> GPL v2</p>
+
+<h2>Description</h2>
+<p>HSVAdjust/HSLAdjust/HSIAdjust let's you rotate hues, control the strength of
+color (saturation), or modify the brightness of a clip. The type of brightness
+depends on the filter. It's value for HSVAdjust, lightness for HSLAdjust or
+intensity for HSIAdjust.</p>
+
+
+<p>The adjust hue, saturation and brightness values are clipped to their valid
+ranges before they are converted back to RGB.</p>
+
+
+<p>Note that all of the three spaces (HSV, HSL and HSI) are in fact
+approximations and the values are different with the exception that the hue in
+HSV and HSL coincide.&nbsp;</p>
+
+
+<h3>Syntax</h3>
+<P><code>HSVAdjust</code> (clip <var>clip</var>, float <var>hue</var> = 0, float
+<var>sat</var> = 1, float <var>bright</var> = 0, float <var>cont</var> = 1)<br>
+<code>HSLAdjust</code> (clip <var>clip</var>, float <var>hue</var> = 0, float
+<var>sat</var> = 1, float <var>bright</var> = 0, float <var>cont</var> = 1)<br>
+<code>HSIAdjust</code> (clip <var>clip</var>, float <var>hue</var> = 0, float
+<var>sat</var> = 1, float <var>bright</var> = 0, float <var>cont</var> = 1)
+</P>
+
+
+<h3>Examples</h3>
+
+
+<pre>image = ImageSource(&quot;F:\CompilingPlugins\HSVAdjust\girl.jpg&quot;)
+cv = image.HSVAdjust(sat=0.75)
+Stackhorizontal(image, cv)</pre>
+
+
+<table border="1" width="50%">
+  <tr>
+    <td width="100%" align="center"><img border="0" src="hsvadjust_sat075.jpeg" width="640" height="418"></td>
+  </tr>
+  <tr>
+    <td width="100%" align="center">left: image; right image.HSVAdjust(sat=0.75)</td>
+  </tr>
+</table>
+
+
+<table border="1" width="50%">
+  <tr>
+    <td width="100%" align="center"><img border="0" src="hsladjust_sat075.jpeg" width="640" height="418"></td>
+  </tr>
+  <tr>
+    <td width="100%" align="center">left: image; right image.HSLAdjust(sat=0.75)</td>
+  </tr>
+</table>
+
+
+<table border="1" width="50%">
+  <tr>
+    <td width="100%" align="center"><img border="0" src="hsiadjust_sat075.jpeg" width="640" height="418"></td>
+  </tr>
+  <tr>
+    <td width="100%" align="center">left: image; right image.HSVAdjust(sat=0.75)</td>
+  </tr>
+</table>
+
+
+<h3>Theory</h3>
+<p>The transformations are described and referenced in hsv_reference.doc.</p>
+
+
+<h2>Changelog</h2>
+<p>v0.1, 24th July 2011
+</p>
+<ul>
+  <li>Initial version.</li>
+</ul>
+</BODY>
+</HTML>

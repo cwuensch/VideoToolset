@@ -1,0 +1,3339 @@
+RT_Stats Avisynth Plugin by StainlessS
+
+http://forum.doom9.org/showthread.php?p=1584313#post1584313
+
+
+*****************************************************
+***************** STANDARD CLIP FUNCTIONS ***********
+*****************************************************
+
+
+RT_Stats(clip)
+ Standard filter function. Just shows version number of plugin on frame.
+ v2.5 plugin dll limited to v2.58 colorspaces.
+
+***
+***
+***
+
+RT_GraphLink(clip source, clip c1, ... , clip cn, bool b1, ... , bool bn)
+ Standard filter function. Roughly equivalent to "Echo()" in 2.6a4
+ This function is a standard filter graph function, not a runtime/compile time function.
+ It takes a compulsory source clip which it will return unchanged.
+ The clips, c1 to cn (one or more, at least one of them) are by default forcibly linked into
+ the filter graph. The bools b1 to bn are optional (zero or more) and would default to True
+ if not supplied. These bools will if false, switch OFF the forcible linking into the filter graph
+ for the corresponding clip c1 to cn.
+ Avisynth does not normally process any filter chains that do not contribute to the output clip,
+ this filter allows you to select graph chains that you wish to forcibly process.
+ The usual way to force process an unused chain is to do a StackHorizontal/Vertical and then crop it off again.
+ The forced clips should all be same length as the source clip (but no error if not), only frame numbers contained
+ in both source and forced clips will be forcibly accessed when frame n of source clip is accessed.
+ All args un-named. See also RT_YankChain.
+ Example: [will only render the TestA" and TestC images]
+  a=ImageSource("d:\avs\1.jpg",end=0)  # Single frame
+  TmpA = a.subtitle("TestA").ImageWriter("d:\avs\TestA_", type="png")   # Written
+  TmpB = a.subtitle("TestB").ImageWriter("d:\avs\TestB_", type="png")   # Skipped
+  TmpC = a.subtitle("TestC").ImageWriter("d:\avs\TestC_", type="png")   # Written
+  RT_GraphLink(a,TmpA,TmpB,TmpC,True,false)                             # 3rd bool defaults true
+  return Last
+
+***
+***
+***
+
+
+RT_Subtitle(clip source,string format,dat1,...,datn,int "align",int "x","y",bool "vcent"=false,bool "expx"=false,bool "expy"=false,int "esc"=1)
+ Standard filter function.
+ This function is a standard filter graph function, not a runtime/compile time function.
+ v2.5 plugin dll limited to v2.58 colorspaces.
+ Prints formatted text to clip frame using Avisynth Info.h source font (monospaced) and DDigit font renderer, faster than using
+ Subtitle system fonts. The unnamed 'format' string and optional unnamed 'dat' args are used to construct the text string that is
+ printed on frame, uses C/CPP printf() style formatting. The args 'align', 'x', and 'y', work in a similar fashion to
+ Avisynth Subtitle()
+ expx and expy control whether x and y are same as in SubTitle when eg y = -1 (vertical centered) or y=height (bottom aligned),
+ or as explicit coords when expy = true.
+
+ esc int, default 1. (0 -> 2). Escape code processing eg '\n' converted to NewLine.
+  0 = No Escape code processing.
+  1 = Esc codes processed only in format string. (Default)
+  2 = Esc codes processed in both format and data strings.
+
+   RT_Subtitle(c,"Hello there %s and %s.\nGoodbye %d.","Fred","Ted",2013,align=4,x=100,vcent=true)
+   would print
+
+   Hello there Fred and Ted.
+   Goodbye 2013.
+
+   at x pixel position 100 and y pixel position centered, the vcent=true will vertical center a block of text (align=4 or 5 or 6),
+   whereas Subtitle() starts at centred position and prints downwards from there (as default vcent=false).
+
+ Align, default = 7 ie top left (as on numeric keypad).
+ x and y allow modification of alignment, eg x= -1, centers x at mid point, x=width, would right align,
+ y=height would align at bottom of frame.
+ It is necessary to specify the optional arg names of x,y,align and vcent etc, as the dat args can take 0 or more variables
+ of any type, so Avisynth cannot tell when the list of dat args ends and the named optional args begins. I did
+ try to use the dat args last but Avisynth seems to get confused when you use dat= etc, it throws an error
+ saying something like "dat arg specified more than once", even if it was not.
+ printf Format spec here:- http://msdn.microsoft.com/en-us/library/56e442dc%28v=vs.71%29.aspx
+  NOTE, the only support for printing Bool variables is %s as string, ie prints "True" or "False".
+   To print only 1st letter of type bool:- ColorBars.KillAudio.RT_Subtitle("%.1s",true) prints 'T'
+
+ Formatting supported %[flags] [width] [.precision] type
+  flags, one of  "-,+,0, ,#"
+  width, integer, "*" supported (width supplied via dat arg).
+  Precision, integer, "*" supported (precision supplied via dat arg).
+  type,
+    "c,C,d,i,o,u,x,X",  Integer type, c,C=character, d,i=signed, o,u,x,X=unsigned.
+    "e,E,f,g,G",        Floating point type
+    "s,S",              String type (also Bool).
+
+ eg
+    colorbars.killaudio
+    FMT="%d ] \a%cCurrent_Frame=\a-%d"
+    ALPHA="0123456789ABCDEFGHIJKLMNOPQRSTUV-!"
+    ScriptClip("""
+      RT_Subtitle(FMT,current_frame,RT_Ord(ALPHA,(current_frame/25)%32+1),current_frame,align=5)
+    """)
+    return last
+
+  In the above example you see the sequence "\a%c" where %c is replaced with a character from ALPHA, "\a0"
+  selects color 0, "\aV" selects the last color (31). "\a-" selects the default color, and "\a!" selects
+  the hilite color. You can in Scriptclip() select colors programmatically, perhap selecting red to show an
+  error or bad metrics condition. The initially selected color will always be the default color (white).
+  Ripped from DDigit source code:
+    // Color control codes as strings.                      ASCII Code of Final char
+    #define DDIGIT_CC_DARKGRAY          "\a0"               // 48
+    #define DDIGIT_CC_DODGERBLUE        "\a1"               // 49
+    #define DDIGIT_CC_ORANGERED         "\a2"               // 50
+    #define DDIGIT_CC_ORCHID            "\a3"               // 51
+    #define DDIGIT_CC_LIME              "\a4"               // 52
+    #define DDIGIT_CC_AQUAMARINE        "\a5"               // 53
+    #define DDIGIT_CC_YELLOW            "\a6"               // 54
+    #define DDIGIT_CC_WHITE             "\a7"               // 55
+    #define DDIGIT_CC_SILVER            "\a8"               // 56
+    #define DDIGIT_CC_CORNFLOWERBLUE    "\a9"               // 57
+    #define DDIGIT_CC_ORANGE            "\aA"               // 65
+    #define DDIGIT_CC_PLUM              "\aB"               // 66
+    #define DDIGIT_CC_CHARTREUSE        "\aC"               // 67
+    #define DDIGIT_CC_POWDERBLUE        "\aD"               // 68
+    #define DDIGIT_CC_GOLD              "\aE"               // 69
+    #define DDIGIT_CC_GAINSBORO         "\aF"               // 70
+    #define DDIGIT_CC_Y_0               "\aG"               // 71
+    #define DDIGIT_CC_Y_1               "\aH"               // 72
+    #define DDIGIT_CC_Y_2               "\aI"               // 73
+    #define DDIGIT_CC_Y_3               "\aJ"               // 74
+    #define DDIGIT_CC_Y_4               "\aK"               // 75
+    #define DDIGIT_CC_Y_5               "\aL"               // 76
+    #define DDIGIT_CC_Y_6               "\aM"               // 77
+    #define DDIGIT_CC_Y_7               "\aN"               // 78
+    #define DDIGIT_CC_Y_8               "\aO"               // 79
+    #define DDIGIT_CC_Y_9               "\aP"               // 80
+    #define DDIGIT_CC_Y_A               "\aQ"               // 81
+    #define DDIGIT_CC_Y_B               "\aR"               // 82
+    #define DDIGIT_CC_Y_C               "\aS"               // 83
+    #define DDIGIT_CC_Y_D               "\aT"               // 84
+    #define DDIGIT_CC_Y_E               "\aU"               // 85
+    #define DDIGIT_CC_Y_F               "\aV"               // 86
+    #define DDIGIT_CC_HILITE            "\a!"               // 33
+    #define DDIGIT_CC_DEFAULT           "\a-"               // 45
+
+  In color codes eg "\aV", the 'a' is strictly case sensitive however the color number ('V') can be upper ot lower case.
+  In addition to color control codes, the filter will accept "\n" (NOT "\N", strictly case sensitive) or "\r"
+  as newline, and "\f" as forward space (move 1 right without printing anything), no other control codes are supported.
+  "\t" and TAB control codes are converted to a single space, I could think of no sensible way to handle tab when center or
+  right aligned, if there is a demand, I could maybe handle tab for left alignment only and replace with single space
+  for other alignment.
+    To embed a single BackSplash ("\") into the format string or even an argument dat (when esc=2) string you must insert a double
+  BackSlash ie "\\". To embed a single percent character ("%") into a format string, you must embed a double percent
+  sequence ie "%%". Reason is that such characters are used for formatting eg "%f" flags a float arg to embed into
+  the string and eg "\n" would mean insert newline into string.
+  Note, the colored text is not great in YV12 and quite awful in YV411, try to avoid YV411 at all times,
+  tis truly nasty.
+  To Print contents of multiline text file on frame:
+    AVISource("D:\AVS\TEST.AVI")
+    S=RT_ReadTxtFromFile("test.txt")
+    Scriptclip("""RT_Subtitle("%s",S,align=5,vcent=True)""")
+    return last
+
+ As can be seen from above example, you can also use eg Chr(10) (in the file) instead of "\n" or Chr(13), or Chr(13)+Chr(10)
+ instead of "\r\n" with identical results, CR, NL and CR/NL pairs are internally replaced by a single Chr(13).
+  To Print contents of multiline text file on frame, Scrolling upwards as for end credits:
+    AVISource("D:\AVS\TEST.AVI").ConvertToRGB32()
+    S=RT_ReadTxtFromFile("D:\avs\avi\test.txt")
+    DELAY=100
+    Scriptclip("""RT_Subtitle("%s",S,align=5,y=height+DELAY-current_frame,expy=true)""")
+
+ The above example uses the "expy" arg, which tells the filter to NOT interpret y == -1 as screen vertical
+ center align and to NOT interpret y=height as bottom aligned. ExpX does the same for the x arg. If you change
+ above to ExpY=false, as the text scrolls on screen and again when text scrolls off top of frame, there will be
+ a single frame where y==height OR y==-1, will align the text an cause a glitch in the video clip.
+ You could also embed eg color control codes into any above such scrolling text file for your amusement, eg
+ embedding "\a!" into the text file would switch on Hi-Lite-ed text. [needs esc=2 for esc codes in data strings]
+ If you want you can run above script with this text file as "test.txt" and because it has color control codes
+ embedded into it (eg the ripped DDigit source code earlier) so it will show the file, some lines of which will be
+ colored. This text file has NOT been prepared for that particular reason but may demo the embedded color codes.
+  RT_Subtitle() has the advantage of not requiring string memory as the string is created internally and
+ released on plugin destruction, whereas SubTitle() within ScriptClip will keep accumulating string memory
+ which is not released until Avisynth closes. Of course any eg concatenated strings supplied to RT_Subtitle
+ will be accumulated unless eg assigned to string variable external to Scriptclip.
+ The RT_Subtitle filter is intended to be used in providing on-frame metrics in a script, and not for final
+ output, use SubTitle() for that.
+ For any script using standard Subtitle() for metrics, it would not be at all surprising if that script were
+ to double (or more) in speed when replaced by RT_Subtitle, it really is quite light weight in comparison.
+
+ example to print colored text:-
+
+        Colorbars.KillAudio
+        S="""\a!\\a! DDIGIT_CC_HILITE
+        \a-\\a- DDIGIT_CC_DEFAULT
+        \a0\\a0 DDIGIT_CC_DARKGRAY
+        \a1\\a1 DDIGIT_CC_DODGERBLUE
+        \a2\\a2 DDIGIT_CC_ORANGERED
+        \a3\\a3 DDIGIT_CC_ORCHID
+        \a4\\a4 DDIGIT_CC_LIME
+        \a5\\a5 DDIGIT_CC_AQUAMARINE
+        \a6\\a6 DDIGIT_CC_YELLOW
+        \a7\\a7 DDIGIT_CC_WHITE
+        \a8\\a8 DDIGIT_CC_SILVER
+        \a9\\a9 DDIGIT_CC_CORNFLOWERBLUE
+        \aA\\aA DDIGIT_CC_ORANGE
+        \aB\\aB DDIGIT_CC_PLUM
+        \aC\\aC DDIGIT_CC_CHARTREUSE
+        \aD\\aD DDIGIT_CC_POWDERBLUE
+        \aE\\aE DDIGIT_CC_GOLD
+        \aF\\aF DDIGIT_CC_GAINSBORO
+        \aG\\aG DDIGIT_CC_Y_0
+        \aH\\aH DDIGIT_CC_Y_1
+        \aI\\aI DDIGIT_CC_Y_2
+        \aJ\\aJ DDIGIT_CC_Y_3
+        \aK\\aK DDIGIT_CC_Y_4
+        \aL\\aL DDIGIT_CC_Y_5
+        \aM\\aM DDIGIT_CC_Y_6
+        \aN\\aN DDIGIT_CC_Y_7
+        \aO\\aO DDIGIT_CC_Y_8
+        \aP\\aP DDIGIT_CC_Y_9
+        \aQ\\aQ DDIGIT_CC_Y_A
+        \aR\\aR DDIGIT_CC_Y_B
+        \aS\\aS DDIGIT_CC_Y_C
+        \aT\\aT DDIGIT_CC_Y_D
+        \aU\\aU DDIGIT_CC_Y_E
+        \aV\\aV DDIGIT_CC_Y_F"""
+        ALIGN = -1   # Horizontal Alignment. eg 1 or 2 or 3, As numeric keypad, -1 is AUTO align
+        DELAY=100
+        ESC=2   # esc=2, ESC codes allowed in data strings, 1=not allowed
+        MOD = RT_TxtQueryLines(S) * 20 + Height + DELAY
+        Scriptclip("""
+            M=(current_frame % MOD)
+            A=(ALIGN == -1) ? ((current_frame/MOD) % 3 + 1) : ALIGN
+            RT_Subtitle("%s",S,align=A,y=height+DELAY-M,expy=true,esc=ESC)
+        """)
+        return last
+
+
+*****************************************************
+************* FILESELECTOR GUI FUNCTIONS ************
+*****************************************************
+
+RT_FSelOpen(string "title"="Open",string "dir"="",string  "filt",string "fn="",bool "multi"=false,bool "debug"=false)
+
+ Function to select EXISTING filename using GUI FileSelector.
+
+ Title = Title bar text.
+ Dir   = Directory, "" = Current
+ Filt  = Lots, eg "All Files (*.*)|*.*"
+         [Displayed text | wildcard] [| more pairs of Displayed text and wildcard, in pairs ONLY].
+         first one is default.
+ fn    = Initially presented filename (if any).
+ multi = Multiply Select filenames. Allows selection of more than one filename at once.
+ debug = Send error info to DebugView window.
+
+ Returns
+   int, 0, user CANCELLED.
+   int, non zero is error (error sent to DebugView window).
+   String, Filename selected, Chr(10) separated multiline string if MULTI==true (and multiple files selected).
+
+   Example, to prompt for an AVI file and play it.
+    avi=RT_FSelOpen("I MUST have an AVI",filt="Avi files|*.avi")
+    Assert(avi.IsString,"RT_FSelOpen: Error="+String(avi))
+    AviSource(avi)
+
+***
+***
+***
+
+Function RT_FSelSaveAs(string "title"="Open",string "dir"="",string  "filt",string "fn="",bool "debug"=false)
+
+ Function to select filename for Save using GUI.
+
+ Title = Title bar text.
+ Dir   = Directory, "" = Current
+ Filt  = Lots, eg "All Files (*.*)|*.*"
+         [Displayed text | wildcard] [| more pairs of Displayed text and wildcard, in pairs ONLY].
+         first one is default.
+ fn    = Initially presented filename (if any).
+ debug = send errors to DebugView window.
+
+ Returns
+   int, 0, user CANCELLED.
+   int, non zero is error (error sent to DebugView window).
+   String, Filename selected.
+ Will prompt to overwrite if file already exists.
+
+***
+***
+***
+
+Function RT_FSelFolder(string "title"="",string "dir"=".",bool "debug"=false)
+
+ Function to select Folder using GUI.
+
+ Title = UNDERNEATH the title bar text, for instructions.
+ Dir   = Directory, Default "." = Current, ""=Root.
+ debug = Send errors to DebugView window.
+
+ Returns
+   int, 0, user CANCELLED.
+   int, non zero is error (ie -1, error sent to DebugView window, usually selecting non Folder object eg 'My Computer').
+   String, Folder selected (minus trailing BackSlash).
+
+
+*****************************************************
+***************** UTILITY FUNCTIONS *****************
+*****************************************************
+
+
+RT_Debug(string s1, ... , string sn,bool "name"=true,bool "Repeat"=true)
+ Non-clip function. Takes one or more strings, joins them together and then outputs the combined
+ string to OutputDebugString(), if strings are NOT space separated, it inserts a single space between them.
+ Useful during development Compile-time/Run-time scripts to monitor status in real time.
+ Can also output multiline string obtained via eg RT_ReadTxtFromFile.
+ Name: bool Default=True. If False, then does NOT output "RT_Debug: " at the beginning of each line, you
+ might want to replace with your own title in string s1.
+ Use DebugView utility to view and capture output. http://technet.microsoft.com/en-gb/sysinternals/bb545027
+ Usage eg:- RT_Debug("["+String(42)+"]","Going pretty good so far @","Line "+String(19))
+  Would Produce this "RT_Debug: [42] Going pretty good so far @ Line 19"
+ The above "RT_Debug:" title is present in all RT_Debug() output to the debugview window and you can (in DebugView),
+ filter out all lines that do not contain "RT_Debug:" so as to skip stuff that is of no interest (eg AVSPMod generates
+ some output, not sure but I think Avisynth v2.58 also generates lots of debug stuff).
+ NOTE, Any program can send output to DebugView window, if no debug viewer is present, it normally just disappears
+ down the plughole.
+ In DebugView, filter for eg "RT_Debug:" to skip all the extraneous stuff generated by other plugins/programs.
+  (In DebugView "Menu:Edit-Filter/Highlight", and enter "RT_Debug:".
+ v1.14, No longer converts characters 127->255 to SPACE, only chars 0->31 (excluding n/l and CR) converted to space.
+ Characters displayed via debugview are same as those via SubTitle, but those above 127 are dissimilar to the ones
+ produced via Avisynth source Info.h, used during eg plugin metrics display.
+ v1.23, Added Repeat arg, only used if Name==False.
+   If name==False and Repeat==True then outputs first string at beginning of each line, ie shows
+   your own name on each line where input strings contain Chr(10) line breaks. False output first string on first
+   line only.
+ Example to show characterset with both RT_Debug & Subtitle:
+ # ShowCharacterset.avs # Requires GScript & RT_Stats v1.14+
+    S=""
+    GSCript("""
+        for(y=0,15) {
+            s=s+"$"+RT_Hex(y*16,2)+ " "
+            for(x=0,15) {
+                n=y*16+x
+                c=(n==0 || n==9 || n==10 || n==13) ? Chr(1) : Chr(n)
+                # Convert Odd Effect chars to NO GRAPHIC {Square} Chr(1)
+                # NOTE, DebugView
+                #  Chr(0) {NUL} [Null or End of String], converted here to NO GRAPHIC Chr(1).
+                #  Chr(9) {TAB} [Horizontal TAB], produces SPACE, converted here to NO GRAPHIC Chr(1).
+                #  Chr(10) {LF} [Line Feed or NewLine], converted here to NO GRAPHIC Chr(1).
+                #  Chr(13) {CR} [Carriage Return], converted here to NO GRAPHIC Chr(1).
+                #
+                #  Chr(2) {SOH} [Start Of Heading ], Produces ODD effect , converted internally by RT_Debug to a NO GRAPHIC Chr(1).
+                s=s+c
+            }
+            s=s+Chr(10)
+        }
+    """)
+    colorbars(width=320,height=320).Trim(0,-1)
+    RT_Debug(s)
+    s=RT_StrReplace(s,Chr(10),"\n")
+    Subtitle(s,font="Courier New",lsp=0)
+    return  Last
+
+
+***
+***
+***
+
+RT_DebugF(string format,dat1,...,datn,string "name"="RT_DebugF:",int "TabSz"=4)
+ Sends  a formatted string to DebugView Window. The unnamed 'format' string and optional unnamed 'dat' args are used to construct the
+ text string that is sent to DebugView, uses C/CPP printf() style formatting.
+ Format: compulsory string controlling format and describing the datn type args that are expected.
+ datn: Variable number of data args of any type (excluding clip).
+ Name, Default "RT_DebugF:". Allows you to change the default name prepended to each line of text output to DebugView Window.
+ TabSz, Default 4 (1 ->32). TAB step setting used for Chr(9) tab ('\t')  character.
+ To set either Name or TabSz, you must use the named form eg Name="NewName:" or TabSz=8 as Avisynth does not know where the data args
+ end.
+
+ printf Format spec here:- http://msdn.microsoft.com/en-us/library/56e442dc%28v=vs.71%29.aspx
+  NOTE, the only support for printing Bool variables is %s as string, ie prints "True" or "False".
+ Formatting supported %[flags] [width] [.precision] type
+  flags, one of  "-,+,0, ,#"
+  width, integer, "*" supported (width supplied via dat arg).
+  Precision, integer, "*" supported (precision supplied via dat arg).
+  type,
+    "c,C,d,i,o,u,x,X",  Integer type, c,C=character, d,i=signed, o,u,x,X=unsigned (o=octal, x=Hex).
+    "e,E,f,g,G",        Floating point type
+    "s,S",              String type (also Bool).
+
+  Formatting Insertion point is marked with '%' character in the format string (as in Avisynth String function), if you wish to use
+  a percent character within the output string, it should be inserted twice in the format string ie '%%' will produce a single '%'.
+  The data datn arg strings do not require a double '%' character.
+
+  A Backslash character '\' introduces escape sequences, to insert a backslash character itself, you must supply a double
+  backslash sequence ie '\\'.
+  Converts embedded escape character sequences (Case Significant):-
+    '\\' Converted to '\'       Single Backslash
+    '\n' Converted to Chr(10)   NewLine
+    '\r' [and Chr(13)] Converted to Chr(10)   NewLine
+    '\t' [and Chr(9)] Converted to multiple SPACE's. Horizontal TAB (Tab positions relative to name + SPACE [if not ending in SPACE])
+    '\x', where x is ANY OTHER CHARACTER not included above, will be copied verbatim, ie '\x'.
+
+  Escape sequences are replaced only when occurring in the format string, if you need escapes in data string then use RT_String and
+  RT_Debug functions.
+
+  Example:
+   RT_DebugF("Hello there %s and %s.\nGoodbye %d.","Fred","Ted",2013)
+   would output same as:-   RT_Debug("Hello there Fred and Ted." + Chr(10) + "Goodbye 2013.")
+
+
+***
+***
+***
+
+RT_Call(String Cmd,bool "Hide"=false,bool "Debug"=false)
+ Run an external program using supplied cmd command line, hiding the console window if Hide==True.
+ Debug, If true, send some debug info to debugview including return code from called process.
+ DOS Filenames should be enclosed in quotes to avoid the system misinterpreting spaces in filenamess, see RT_QuoteStr().
+ Returns 0 if process successfully started, otherwise non zero (ie 1).
+  Example to write Aspect Ratio in form "1.333" to file D:\OUT\MEDINFO.TXT using command line version of MediaInfo.
+   RT_Call(RT_QuoteStr("D:\TEST\MediaInfo.Exe") + " --LogFile=" + RT_Quotestr("D:\OUT\MEDINFO.TXT") + \
+       " --Inform=Video;%DisplayAspectRatio% " + RT_Quotestr("D:\VID\1.mpg"))
+
+***
+***
+***
+
+
+RT_YankChain(clip,int "n"=current_frame,int "delta"=0)
+ Compile/runtime clip function.
+ n (default = current_frame) frame number.
+ delta (default = 0), frame number offset.
+ Forcibly process the filter graph chain for frame n + delta. Makes intention more explicit than eg RT_AverageLuma(n=i,w=1,h=1).
+ See also RT_GraphLink().
+ eg, Below, TmpA plays no part in output clip and so bitmap would not be written. Uncomment the RT_YankChain line and it will.
+    a=Colorbars.ShowFrameNumber
+    TmpA = a.subtitle("TestA").ImageWriter("TestA_", type="BMP")
+    #RT_YankChain(TmpA,n=42)                # Uncomment to forcibly write frame 42 of TmpA to bitmap
+    return MessageClip("All Done")
+
+
+***
+***
+***
+
+RT_ColorSpaceXMod(clip)
+ Return int, the natural cropping XMod for clip colorspace, eg YV411=4, YV12=2, YUY2=2, RGB=1
+ v2.5 plugin dll limited to v2.58 colorspaces.
+
+***
+***
+***
+
+RT_ColorSpaceYMod(clip,bool "Laced"=true)
+ Return int, the natural cropping YMod for clip colorspace, eg YV411=1, YV12=2, YUY2=1, RGB=1
+ Laced, bool. Default true. If Laced==true, returns doubled YMod.
+ v2.5 plugin dll limited to v2.58 colorspaces.
+
+***
+***
+***
+
+RT_GetProcessName(bool "parent"=false,bool "debug"=false)
+ Returns string, name of current process eg "VirtualDubMod.exe" or "AvsPMod.exe" or name of parent process
+ (the one that started our process eg "Explorer.exe"). Debug outputs some info to DebugView.
+
+
+***
+***
+***
+
+RT_GetLastError()
+ Return a error number describing previous system error (if available). Perhaps use after eg RT_Call.
+
+***
+***
+***
+
+RT_GetLastErrorString()
+ Return a string describing previous system error (if available).
+
+***
+***
+***
+
+RT_Version()
+ Returns the Float version number of RT_Stats, but slightly modified for beta versions.
+ A non beta version would return a number like 1.28, with two decimal digits of precision.
+ A version of v1.28Beta51 shown by RT_Stats() on frame, will return 1.27951 rather than 1.28.
+  9 in the 1/1000's position signifies the 2 digit beta version in the 1/10000's and 1/100000 columns.
+  This allows direct comparison of version numbers including Beta versions
+ You can use Avisynth VersionNumber() to get the main version number of Avisynth.
+
+***
+***
+***
+
+RT_VersionString()
+ Return RT_Stats version as a string eg "1.28Beta51".
+ You can use Avisynth VersionString() to get the main version number of Avisynth as a string.
+
+
+***
+***
+***
+
+RT_VersionDll()
+ Return RT_Stats[26].dll version as a Float eg 2.6 for Avistynth v2.6 plugin, or 2.5 for Avisynth 2.5 plugin.
+
+***
+***
+***
+
+RT_GetSystemEnv(String envname)
+ Returns a string from the System Environment with the env name of the string arg.
+ Returns "", if cannot find environment variable of given name.
+ eg, TEMP=RT_GetSystemEnv("TEMP") # to get TEMP folder path.
+ and eg
+ ComSpec=RT_GetSystemEnv("ComSpec") # might return "C:\WINDOWS\system32\cmd.exe"
+ To see the environment variables from command console, type 'set'.
+ http://en.wikipedia.org/wiki/Environment_variable
+
+***
+***
+***
+
+RT_LocalTimeString(Bool "file"=True)
+ Returns current local time as a string.
+ Where digits Y=Year, M=Month, D=Day, H=Hour, M=Minute, S=Second, m=millisecond.
+ When bool file==False, then string in format "YYYY-MM-DD HH:MM:SS.mmm"
+ When bool file==True (Default) string is in format "YYYYMMDD_HHMMSS_mmm"
+  Also when file==True, function first waits until the system tick count is incremented (about every 10ms)
+  before inquiring system time. This is to prevent 2 consecutive calls returning the same time string.
+  Perhaps useful for temporary filename generation.
+
+*****************************************************
+****************** STRING FUNCTIONS *****************
+*****************************************************
+
+Here we use the term Txt (text) to mean a multiline string ie multiple strings separated by newline [Chr(10)].
+
+
+RT_StrAddStr(String, String s1, ... , String sn)
+ Non-clip function.
+ Function to concatenate (join together) 2 or more strings.
+ D = RT_StrAddStr("A","B","C") same as D="A"+"B"+"C".
+ There is a bug in v2.58 and 2.6a3 when joining strings that result in sizes of [(n * 4096) - 1],
+ this function just gives an alternative method of joining strings. In v2.6a4 bug is fixed.
+
+
+***
+***
+***
+
+
+RT_StrReplace(string source,string find,string replace,bool "sig"=True) # Based on Algorithm by Vampiredom, Gavino & IanB.
+ String args 'source', 'find' and 'replace' unnamed and compulsory.
+ Takes a source string, searches for all occurences of find string and replaces the found strings with the replace string.
+ Can use "" in replace string (only in replace) to delete the found substrings from the source string.
+ Newlines are treated no differently to other characters, and could be replaced/deleted.
+ v1.14, added 'sig' arg,default true is Case Significant (as previous version). Set false for case insignificant find string.
+
+
+***
+***
+***
+
+
+RT_StrReplaceDeep(string source,string find,string replace,bool "sig"=True)
+ String args 'source', 'find' and 'replace' unnamed and compulsory.
+ Takes a source string, searches for all occurences of find string and replaces the found strings with the replace string.
+ Can use "" in replace string (only in replace) to delete the found substrings from the source string.
+ Newlines are treated no differently to other characters, and could be replaced/deleted.
+ Differs from RT_StrReplace in that if length of replace < length of find string will rescan after a replacement to see if
+ the replaced string combines with currently existing string to create another find string, If length replace >= find, then calls
+ RT_StrReplace instead. Useful to replace eg "  " with " ", (two spaces with 1 space), where more than two consecutive
+ spaces would end up with more than one consecutive resulting space if using plain RT_StrReplace.
+ v1.14, added 'sig' arg,default true is Case Significant (as previous version). Set false for case insignificant find string.
+
+
+***
+***
+***
+
+
+RT_StrReplaceMulti(string source,string find,string replace,bool "sig"=True)
+ String args 'source', 'find' and 'replace' unnamed and compulsory.
+ Takes a source string, searches for all occurences of find substrings and replaces the found substrings with the replace substrings.
+ Find string and Replace string are both multiline [Chr(10) separated] strings, both of n lines where find[i] and replace[i]
+ are matched pairs, ie the first line of a multiline find is replaced by the first line of a multiline replace, etc.
+ Can use "" in replace string (only in replace) to delete the found substrings from the source string.
+ Differs from RT_StrReplace, in that both find and replace strings are multiline strings and MUST match in number of lines.
+ Cannot use either carriage return [Chr(13)] or newline [Chr(10)] in find or replace as these are interpreted as end of current line,
+ you would need to use RT_StrReplace() instead.
+  eg S=RT_StrReplaceMulti("THE cat SAT.","SAT"+Chr(10)+"THE","sat"+Chr(10)+"The") produces "The cat sat.".
+ v1.14, added 'sig' arg,default true is Case Significant (as previous version). Set false for case insignificant find string.
+
+***
+***
+***
+
+RT_QuoteStr(string)
+ Non-clip function.
+ Encloses supplied string arg in double quotes, Use on filenames containing spaces.
+ Do NOT use with eg RT_FileDelete, only on filenames sent to a DOS command.
+
+***
+***
+***
+
+RT_StrPad(String,Int n,string "c"=" ")
+Pads an unnamed string to at least int n (unnamed) length with first character of string c (Default SPACE).
+
+***
+***
+***
+
+RT_FindStr(String S,string Substr,bool "Sig"=True,int "Pos"=1)
+ Finds unnamed string Substr in unnamed string S.
+ Optional bool Sig: Default=True, does case significant comparison, insignificant if false.
+ Optional int Pos: Default=1, is start position in string S to find string Substr. If Pos smaller than 1 or greater than length of string s,
+  then will return 0, Not Found.
+ Returns position (1 relative) of found string within the FULL LENGTH string S, or 0 if not found.
+ Differs from Avisynth FindStr in Sig and Pos args and in that if either string S or string Substr is "" then will ALWAYS return 0, 'Not Found',
+ Avisynth FindStr always returns 1 if SubStr="" even if S is also "".
+ Care must be taken if mixing RT_FindStr and RT_TxtFindStr or RT_FileFindStr, RT_FindStr returns 0 on error, the other
+ two return -ve on error(0 denoting valid line zero).
+
+***
+***
+***
+
+RT_TxtAddStr(String, String s1, ... , String sn)
+ Non-clip function.
+ Function to concatenate (join together) 2 or more strings with Chr(10) line separators.
+ If the first string is an empty string ("") it will not have a newline [Chr(10)] appended.
+ All other strings even empty strings will have a  newline [Chr(10)] inserted after them
+ (if they dont already have a trailing newline).
+ Any source string containing carriage return Chr(13) will have them converted to Chr(10).
+ X = RT_TxtAddStr("A","B","C")    same as X = "A" + Chr(10) + "B" + Chr(10) +"C" + Chr(10)
+ X = RT_TxtAddStr("","A","B","C") same as X = "" + "A" + Chr(10) + "B" + Chr(10) + "C" + Chr(10)
+
+***
+***
+***
+
+RT_TxtQueryLines(String)
+ Non-clip function.
+ String, the multiline string that you require a line count from.
+ Returns the number of Newline [Chr(10)] separated lines in a multiline string.
+  The last line does not have to be Chr(10) terminated, it still counts.
+
+***
+***
+***
+
+
+RT_TxtGetLine(String, Int "Line"=0)
+ Non-clip function.
+ Extract a single line from a multiline Newline[Chr(10)] separated string. Default=0 == first line.
+ The Line index is Zero Relative like frame number versus FrameCount.
+ The returned string has trailing Newlines and carriage returns stripped from it.
+ Throws an error if your requested line is >= to the number of lines in the multiline string.
+
+***
+***
+***
+
+RT_TxtFindStr(String S,string FndS,bool "Sig"=True,int "Pos"=1,int "Start"=0,int "Lines"=0)
+ Finds unnamed string FndS in unnamed multi-line text string S, starting at line 'Start' and searching 'Lines' number of string lines.
+ S: is a multi-line text string, ie a newline [CHR(10)] separated list of strings.
+ FndS: is a single string and will be considered terminated early at the first carriage return [Chr(13)] or newline [Chr(10)],
+ carriage returns and newlines will not be findable using this function.
+ Sig: Default=True, does case significant comparison, insignificant if false.
+ Pos: Default=1, is the character start position in an individual line of the multi-line string S to start searching
+   for the FndS string. Allows you to skip search on first Pos-1 characters within all single lines of multi-line string S.
+   If Pos less than 1, then will return -ve number (usually -1), Not Found.
+ Start: Default 0, is the 0 relative starting line where the searching begins within the multi-line string S.
+ Lines: Default 0(all lines). Number of lines in multi-line string to seach, starting at line 'Start'.
+ A -ve return is 'Not Found'. On success returns the line number of the first instance of a found string in the Start and Lines
+  range of lines. An empty "" FndS will always return -ve result, ie Not Found (as will all errors).
+ see RT_TxtQueryLines, to inquire number of single lines in a chr(10) separated multi-line string.
+ see RT_TxtGetLine to extract a single line from a multi-line string [without trailing Chr(10) or Chr(13)].
+ NOTE, Character position 'Pos' is 1 relative whereas multi-line line 'Start' index is 0 relative.
+  Care must be taken if mixing RT_FindStr and RT_TxtFindStr or RT_FileFindStr, RT_FindStr returns 0 on error, the other
+ two return -ve on error(0 denoting valid line zero).
+
+***
+***
+***
+
+RT_String(String format, dat1,...,datn,int "Esc"=1)
+
+ Returns a formatted string. The unnamed 'format' string and optional unnamed 'dat' args are used to construct the text string that is
+ returned, uses C/CPP printf() style formatting.
+ Format: compulsory string controlling format and describing the datn type args that are expected.
+ datn: Variable number of data args of any type (excluding clip).
+ Esc: Default 1, converts embedded escape sequences in format string, 2 convert escape sequences in both format and datn strings,
+   0 no escape sequence conversion done.
+   It is necessary to specify the "Esc" name if you wish to alter default, as Avisynth cannot tell when the variable number of data datn
+   args ends.
+   You might wish to turn off escape conversion if you want to send a multi-line string to Subtitle() without conversion of '\n' to Chr(10).
+
+ printf Format spec here:- http://msdn.microsoft.com/en-us/library/56e442dc%28v=vs.71%29.aspx
+  NOTE, the only support for printing Bool variables is %s as string, ie prints "True" or "False".
+ Formatting supported %[flags] [width] [.precision] type
+  flags, one of  "-,+,0, ,#"
+  width, integer, "*" supported (width supplied via dat arg).
+  Precision, integer, "*" supported (precision supplied via dat arg).
+  type,
+    "c,C,d,i,o,u,x,X",  Integer type, c,C=character, d,i=signed, o,u,x,X=unsigned (o=octal, x=Hex).
+    "e,E,f,g,G",        Floating point type
+    "s,S",              String type (also Bool).
+
+  Formatting Insertion point is marked with '%' character in the format string (as in Avisynth String function), if you wish to use
+  a percent character within the returned string, it should be inserted twice in the format string ie '%%' will produce a single '%'.
+  The data datn arg strings do not require a double '%' character.
+
+  A Backslash character '\' introduces escape sequences, to insert a backslash character itself, you must supply a double
+  backslash sequence ie '\\'.
+  When 'Esc' is non zero, converts embedded escape character sequences (Case Significant):-
+    '\\' Converted to '\'       Single Backslash
+    '\n' Converted to Chr(10)   NewLine
+    '\r' Converted to Chr(13)   Carriage Return
+    '\t' Converted to Chr(9)    Horizontal TAB
+    '\v' Converted to Chr(11)   Vertical TAB
+    '\f' Converted to Chr(12)   FormFeed
+    '\b' Converted to Chr(8)    BackSpace
+    '\a' Converted to Chr(7)    Bell
+    '\x', where x is ANY OTHER CHARACTER not included above, will be copied verbatim, ie '\x'.
+
+  eg
+   RT_String("Hello there %s and %s.\nGoodbye %d.","Fred","Ted",2013)
+   would return same as:-   "Hello there Fred and Ted." + Chr(10) + "Goodbye 2013."
+
+  Be aware that when 'Esc'=2, the string is constructed via two passes, the 1st pass inserts the data args into the format string,
+  2nd pass converts escape sequences, so the escape sequences could also exist in the datn args. Also, beware of constructing strings
+   which when joined together, form an escape sequence.
+  Take care when handling filenames with path backslash, suggest using 'Esc'=1 when data datn strings contain eg Filenames.
+
+***
+***
+***
+
+RT_TxtSort(String,int 'mode'=0)
+ Non-clip function.
+ Function to sort a Chr(10) separated multiline string.
+ The String arg is the multiline string, and 'mode' can be in range 0 to 11.
+  0 = Sort ascending, case insignificant
+  1 = Sort ascending, case significant
+  2 = Sort decending, case insignificant
+  3 = Sort decending, case significant
+  4 = Sort ascending, Filenames, digits sorted by value
+  5 = Sort ascending, Filenames, old style as for Windows 2000
+  6 = Sort decending, Filenames, digits sorted by value
+  7 = Sort decending, Filenames, old style as for Windows 2000
+  8 = Sort ascending, Integer number Strings
+  9 = Sort ascending, float number Strings
+  10= Sort decending, Integer number Strings
+  11= Sort decending, float number Strings
+
+***
+***
+***
+
+*****************************************************
+***************** FILENAME FUNCTIONS ****************
+*****************************************************
+
+RT_GetWorkingDir()
+ Return current Working directory, directory of script, or dir set by SetWorkingDir().
+ The returned directory ends with a backslash.
+
+***
+***
+***
+
+RT_FilenameSplit(string filename,int "get"=15)
+ Splits the un-named filename string into component parts selected by 'get' bit flags arg and returns the
+ parts joined together.
+ 'Get' (default 15, 1 -> 15), If set, Bit 0=DRIVE, 1=Dir, 2=Name, 4=Extension.
+ Add 1 for Drive (bit 0), add 2 for Dir (bit 1), add 4 for Name (bit 2), add 8 for Extension (bit 3).
+ Some combinations do not make sense, eg Drive + Extension (1+8=9). Below sensible options.
+   1  = Drive (includes trailing ':')
+   2  = Dir (includes trailing '\')
+   3  = Drive + Dir
+   4  = Name
+   6  = Dir + Name
+   7  = Drive + Dir + Name
+   8  = Extension (includes leading '.')
+   12 = Name + Extension
+   14 = Dir + Name + Extension
+   15 = Drive + Dir + Name + Extension
+ Assuming a current working directory of eg "D:\avs\avi\", 'filename'="test.avi" and 'get'=15, returns "D:\avs\avi\test.avi",
+ so given a relative filename and default 'get'=15, is equivalent to RT_GetFullPathName(filename).
+
+***
+***
+***
+
+RT_GetFullPathName(string "name")
+ Creates an absolute or full path name for the specified relative path 'name'.
+  eg 'RT_GetFullPathName("test.avs")' might return "D:\avs\test.avs".
+ Throws and error if cannot return path.
+
+***
+***
+***
+
+RT_GetFileExtension(string s)
+ Returns filename extension from the supplied filename, including '.' prefix.
+
+***
+***
+***
+
+RT_FileRename(String OldFilename,String NewFileName)
+  Renames a file from OldFilename to NewFilename.
+  This function renames the file or directory specified by OldFilename to the name given by NewFilename.
+  The OldFilename must be the path of an existing file or directory.
+  The NewFilename must not be the name of an existing file or directory.
+  You can use the function to move a file from one directory or device to another by giving a different path in the NewFileName argument.
+  However, you cannot use the function to move a directory. Directories can be renamed, but not moved.
+
+  Return 0 on success.
+  On Error, returns
+    -1, Access denied or read only, or NewFileName already exists or could not be created (invalid path),
+        or oldname is a directory and newname specifies a different path.
+    -2, OldFilename File or Path not found.
+    -3, NewFileName contains invalid characters.
+    -4, Unknown error.
+
+
+*****************************************************
+******************** FILE FUNCTIONS *****************
+*****************************************************
+
+
+RT_FileQueryLines(String)
+ Non-clip function.
+ String, Filename, Name of text file to query.
+ Returns number of lines in a text file. Returns 0 for a zero length file.
+ You can use Exist() to inquire whether a file exists or not, beforehand.
+
+***
+***
+***
+
+RT_WriteFile(String FileName, string format,dat1,...,datn,bool "Append"=False)
+ Writes  a formatted string to FileName file. The unnamed 'format' string and optional unnamed 'dat' args are used to construct the
+ text string that is written, uses C/CPP printf() style formatting.
+ Format: compulsory string controlling format and describing the datn type args that are expected.
+ datn: Variable number of data args of any type (excluding clip).
+ Append, Default False, optional and MUST be supplied with name (eg Append=True) as we do not know where optional data args end,
+ Appends to file if already exists, else opens new FileName.
+
+ printf Format spec here:- http://msdn.microsoft.com/en-us/library/56e442dc%28v=vs.71%29.aspx
+  NOTE, the only support for printing Bool variables is %s as string, ie prints "True" or "False".
+ Formatting supported %[flags] [width] [.precision] type
+  flags, one of  "-,+,0, ,#"
+  width, integer, "*" supported (width supplied via dat arg).
+  Precision, integer, "*" supported (precision supplied via dat arg).
+  type,
+    "c,C,d,i,o,u,x,X",  Integer type, c,C=character, d,i=signed, o,u,x,X=unsigned (o=octal, x=Hex).
+    "e,E,f,g,G",        Floating point type
+    "s,S",              String type (also Bool).
+
+  Formatting Insertion point is marked with '%' character in the format string (as in Avisynth String function), if you wish to use
+  a percent character within the output string, it should be inserted twice in the format string ie '%%' will produce a single '%'.
+  The data datn arg strings do not require a double '%' character.
+
+  A Backslash character '\' introduces escape sequences, to insert a backslash character itself, you must supply a double
+  backslash sequence ie '\\'.
+  Converts embedded escape character sequences (Case Significant):-
+    '\\' Converted to '\'       Single Backslash
+    '\a' Converted to Chr(7)
+    '\b' Converted to Chr(8)
+    '\t' Converted to Chr(9)
+    '\n' Converted to Chr(10)   NewLine
+    '\r' [and Chr(13)] Converted to Chr(10)   NewLine
+    '\v' Converted to Chr(11)
+    '\f' Converted to Chr(12)
+    '\x', where x is ANY OTHER CHARACTER not included above, will be copied verbatim, ie '\x'.
+
+  Escape sequences are replaced only when occurring in the format string, if you need escapes in data string then use RT_String.
+
+  Example:
+   RT_WriteFile(FileName,"Hello there %s and %s.\nGoodbye %d.","Fred","Ted",2013,Append=False)
+
+
+***
+***
+***
+
+RT_TxtWriteFile(String,String,bool "append"=false)
+ Non-clip function.
+ The first arg is a string of text that you want to write to a file.
+ The second arg is the output filename.
+ Returns the number of lines written or -1 if file error, cannot open or write error.
+ An empty write string ("") would return 0 unless newline terminated [chr(10)].
+ Append, if true appends to existing file. NOTE, the return value does NOT include any already existing
+ lines if append is true. (use RT_FileQueryLines to inquire total number lines when append = true).
+
+***
+***
+***
+
+RT_ReadTxtFromFile(String ,Int "Lines"=0,Int "Start"=0)
+ Non-clip function.
+ String Filename, Name of text file to load into a string.
+ Lines=0=unlimited. Set to number of leading lines in text file to load, eg 1 = load only the first line of text file.
+ The return string is n/l ie Chr(10) separated, and carriage returns are removed from the returned string.
+ If source file was missing newline on very last line, it will append a newline so that all lines are similarly formatted.
+ v1.03, Added Start arg default=0=very first line (relative 0). Would have been nice to have start and lines in reverse
+ order but implemented as above to not break scripts.
+ Throws an error if your requested Start is >= to the number of lines in the file, or zero len file.
+ To fetch the last line of a text file, use eg Start = RT_FileQueryLines(Filename) - 1 (Start is zero relative).
+ You could eg get the last line of a d2v file which might look like this:- "FINISHED  100.00% VIDEO"
+
+
+***
+***
+***
+
+
+RT_WriteFileList(String,String,bool "append"=false)
+ Non-clip function.
+ This function, takes as the first string, a filename template with wildcards, this template can be eg
+ "Fred.jpg" or "Fr?d.jp*g". where the '?' character matches any single character and the '*' wildcard matches zero or more characters.
+ v1.03, Can take multiple pipe ('|') separated Wilcards in the extension ONLY, as in "D:\Pics\*.BMP|JP*G|PNG"
+ The second string is the output filename which will be created and contain the files matching the input file template.
+ The function will return the number of filenames written into the output file. Directories are ignored altogether
+ and not written to the output file. A return of -1 indicates a problem opening/writing the output file.
+ v1.06, Append, if true appends to existing file. NOTE, the return value does NOT include any already existing
+ filenames if append is true (use RT_FileQueryLines to inquire total number of filenames when append = true).
+
+
+***
+***
+***
+
+
+RT_FileDelete(string fn)
+ Delete unnamed file fn. Use with care.
+ Returns 0 = OK. -1 = access denied / read only. -2 = Path not found OR is Directory. -3 = Unknown error.
+ NOTE, Do not use RT_QuoteStr() on filenames, only use on filenames sent to a DOS command.
+
+
+***
+***
+***
+
+
+RT_FileFindStr(String FileName,string FndS,bool "Sig"=True,int "Pos"=1,int "Start"=0,int "Lines"=0)
+ Finds unnamed string 'FndS' in 'FileName' text file, starting at line 'Start' and searching 'Lines' number of text lines.
+ FileName: Name of a file containing text to search.
+ FndS: is a string and will be considered terminated early at the first carriage return [Chr(13)] or newline [Chr(10)], carriage returns
+ and newlines will not be findable using this function.
+ Sig: Default=True, does case significant comparison, insignificant if false.
+ Pos: Default=1, is the character start position in an individual line of text to start searching for the FndS string.
+   Allows you to skip search on first Pos-1 characters within all lines of text.
+   If Pos less than 1, then will return -ve number (usually -1), Not Found.
+ Start: Default 0, is the 0 relative starting line where the searching begins in the text file.
+ Lines: Default 0(all lines). Number of lines text to seach, starting at 'Start' line.
+ A -ve return is 'Not Found'. On success returns the line number of the first instance of a found string in the Start and Lines
+  range of lines. An empty "" FndS will always return -ve result, ie Not Found.
+ see RT_FileQueryLines, to inquire number lines in a text file.
+ see RT_ReadTxtFromFile to extract a range of lines from a text file.
+ NOTE, Character position 'Pos' is 1 relative whereas multi-line line 'Start' index is 0 relative.
+  Care must be taken if mixing RT_FindStr and RT_TxtFindStr or RT_FileFindStr, RT_FindStr returns 0 on error, the other
+ two return -ve on error(0 denoting valid line zero).
+
+
+***
+***
+***
+
+RT_GetFileTime(string filename,int item)
+ Returns string, one of three times associated with filename file.
+ Error if cannot access file. (debugview for error string).
+ Item, int, (0 -> 2). 0=Creation Time, 1=Last Write/Modified Time 2=Last Accessed Time,
+ The return string is always of format "YYYY-MM-DD HH:MM:SS.mmm" and so can be used to
+ compare whether one file time is later than another using string comparison.
+ The time strings returned are in UTC (Coordinated Universal Time), not local time.
+ v1.28Beta5, added milliseconds to string.
+ Prior to use, you can check if file exists using built-in Exist() function.
+
+
+***
+***
+***
+
+*****************************************************
+************** CONVERSION FUNCTIONS *****************
+*****************************************************
+
+
+RT_Hex(int , int "width"=0)
+ First arg is an integer to convert to a hexadecimal string.
+ Width, (0, 0 -> 8) is the minimum width of the returned string.
+  eg RT_Hex(255,4) returns "00FF".
+
+
+***
+***
+***
+
+
+RT_HexValue(String,"pos"=1)
+ Returns an int conversion of the supplied hexadecimal string.
+ Conversion will cease at the first non legal number base digit, without producing an error
+ Fixes HexValue bug in 2.58 & 2.6a3. eg "FFFFFFFF" returns 2147483647 (0x7FFFFFFF) instead of the correct -1 (As most/all calculators)
+ Bug is fixed in Avisynth v2.6a4.
+ v1.14, Added optional pos arg default=1, start position in string of the HexString, 1 denotes the string beginning. Will return 0
+ if error in 'pos' ie if pos is less than 1 or greater than string length.
+
+
+***
+***
+***
+
+
+RT_NumberString(int ,int "base"=10, int "width"=0)
+ First arg is an integer to convert to a number base/radix string.
+ Base, (10, 2 -> 36), is the number base or radix, eg 2 == Binary, 8 == Octal, 10 == Denary/Decimal, 16 == Hexadecimal.
+  The default of 10 (decimal) will just convert a number to its decimal string equivalent possibly with a '-' minus sign.
+  All number bases with the exception of decimal, will be unsigned form, ie -1 to hexadecimal will produce "FFFFFFFF",
+  (the sign is in the digits rather than as separate 'sign and magnitude' used in decimal representation).
+  The digits used for the base are, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ". Binary uses first two; decimal, the first 10;
+  Hexadecimal the first 16; base 36 all 36 digits.
+ Width, (0, 0 -> 32) is the minimum width of the returned string.
+  eg RT_NumberString(255,16,4) returns "00FF".
+ To convert a Float to a decimal string use Avisynth native "String()" func.
+
+
+***
+***
+***
+
+
+RT_NumberValue(String,int "base"=10,int "pos"=1)
+ Returns an int conversion of the supplied number base string.
+ Base, (10, 2 -> 36) is the number base that the string uses.
+ To convert a Decimal string to a Float, use Avisynth native "Value()" func.
+ Conversion will cease at the first non legal number base digit, without producing an error.
+  eg RT_NumberValue("1100",2) returns 12 from the binary string.
+ v1.14, Added optional pos arg default=1, start position in string of the number string, 1 denotes the string beginning. Will return 0
+ if error in 'pos' ie if pos is less than 1 or greater than string length.
+
+
+*****************************************************
+***************** BITWISE FUNCTIONS *****************
+*****************************************************
+
+
+RT_BitNOT(int)
+ Returns the integer result of a bitwise NOT operation on it's int argument.
+
+***
+***
+***
+
+RT_BitAND(int, int)
+ Returns the integer result of a bitwise AND operation on the two int arguments.
+
+***
+***
+***
+
+RT_BitOR(int, int)
+ Returns the integer result of a bitwise OR operation on the two int arguments.
+
+***
+***
+***
+
+RT_BitXOR(int, int)
+ Returns the integer result of a bitwise XOR operation on the two int arguments.
+
+***
+***
+***
+
+RT_BitLSL(int, int)
+ Returns the integer result of a Logical Shift Left on the first integer, by a shift count of the second int.
+ An Arithmetic Shift Left and a Logical Shift Left, are essentially the same.
+
+***
+***
+***
+
+RT_BitLSR(int, int)
+ Returns the integer result of a Logical Shift Right on the first integer, by a shift count of the second int.
+ Logical shift right will shift zeros into the high bits.
+
+***
+***
+***
+
+RT_BitASL(int, int)
+ Returns the integer result of an Arithmetic Shift Left on the first integer, by a shift count of the second int.
+ An Arithmetic Shift Left and a Logical Shift Left, are essentially the same.
+
+***
+***
+***
+
+RT_BitASR(int, int)
+ Returns the integer result of an Arithmetic Shift Right on the first integer, by a shift count of the second int.
+ Arithemtic shift right will shift into the high bits, zeros for a +ve number and ones for a -ve number, so -ve
+ numbers will stay -ve and +ve stay +ve.
+
+***
+***
+***
+
+RT_BitTST(int, int)
+ Returns the bool result of a bit test on first integer, the bit number is given in the second int.
+ A zero in the bit returns False and a 1 returns True.
+
+***
+***
+***
+
+RT_BitCLR(int, int)
+ Returns the integer result of a bit clear (make 0) on first integer, the bit number is given in the second int.
+
+***
+***
+***
+
+RT_BitSET(int, int)
+ Returns the integer result of a bit Set (make 1) on first integer, the bit number is given in the second int.
+
+***
+***
+***
+
+RT_BitCHG(int, int)
+ Returns the integer result of a bit change (0->1, 1->0) on first integer, the bit number is given in the second int.
+
+***
+***
+***
+
+RT_BitROR(int, int)
+ Returns the integer result of a bit Rotate Right on first integer, the bit rotate count is given in the second int.
+
+***
+***
+***
+
+RT_BitROL(int, int)
+ Returns the integer result of a bit Rotate Left on first integer, the bit rotate count is given in the second int.
+
+***
+***
+***
+
+RT_BitSetCount(int)
+ Return an int, the count of the number of set bits (1's) in arg int.
+
+
+*****************************************************
+**********       RT_ARRAY FUNCTIONS       ***********
+*****************************************************
+
+ RT_Stats ARRAY functions allow fast access to a file based Array of up to 3 dimensions of fixed element type,
+Bool, Int, Float, String, or BIN. BIN is a BYTE (8 bit) sized Int where only lowest 8 bits of Int are stored in the Array
+as an unsigned 8 bit Int, upper 24 bits ignored.
+ The maximum possible file size is about 2GB, and depends on number and size of dimensions and element type and size.
+Element types Bool and BIN require 1 byte, Int and Float 4 bytes, and String is of fixed maximum length (user chosen) up to
+256KB (256 * 1024, no nul terminating character is stored in an Array String).
+Maximum TOTAL possible number of elements in Array is ($7FFFFFFF - Header_Size) / Element_Size. (Header_Size=32*1024)
+ RT_ArrayAlloc, allows you to create an array file with a fixed number of dimensions and where the 2nd and/or 3rd dimensions
+of a multi-dimensional array are fixed in size but the size of the first dimension can 'grow', single dimension arrays can
+'grow' too. You can create an array where the first dimension is 0 (any other dimensions fixed), ie no elements pre-allocated
+in array file, in this case you can use RT_ArrayExtend to 'grow' the first dimension of the array so that it can be used. In addition,
+single dimension arrays can also use RT_ArrayAppend to add elements to the end of the array.
+ An Array file also allows up to 1024 Attributes of types Int or Float, which can be used for whatever your heart desires, these
+attributes are stored in the Array file header which is 32768 bytes, so the actual data starts at $8000 hex.
+ You could use the Array functions to return multiple results from a script function to the caller via a caller supplied Array
+filename, perhaps with some kind of status variable returned directly.
+
+***
+***
+***
+
+RT_ArrayAlloc(string FileName,int "Type"=1,int "Dim1"=0,int "Dim2"=0,int "Dim3"=0,int "StringLenMax"=256)
+
+ Creates a file to hold a one, two or three dimensional Array of elements of type Bool, Int, Float, String, or BIN.
+  BIN is a BYTE (8 bit) sized Int where only lowest 8 bits of Int are stored in array as an unsigned 8 bit int, upper 24 bits ignored.
+
+ Filename, Array Filename, no default.
+
+ Type, int, default 1(0->4). 0=Bool, 1=Int, 2 = Float, 3 = String, 4 = BIN. Type of the array elements, fixed for lifetime of array.
+   v1.40, NOTE, There is also a type 5 (double) which is not of use to the user, although a type 5 array will accept Float
+   (as double is not an Avisynth type). Type 5 is implemented for use by RT_Stats internal functions to store higher precision results.
+   Array type double (5) will be returned as Float to Avisynth script.
+
+ Dim1, Dim2, Dim3, all Default 0, range 0 or greater. Number of array elements per dimension (max 3 dimensions).
+  Where Dim1 & Dim2 & Dim3 all at default 0, will be 1 dimensional unallocated Array.
+  Dim1 governs the pre-allocated size of the array first dimension.
+    The first dimension can 'grow' for 1, 2 or 3 dimensional arrays. (RT_ArrayExtend, or for single dimension only RT_ArrayAppend)
+  Dim2 and Dim3 fix the number of array dimensions for the lifetime of the array, and also the size of dimensions 2 and 3.
+
+   Dim1 Dim2 Dim3   Dimension 1 is 0, NO elements allocated, can use RT_ArrayExtend to 'grow' size of first dimension for use.
+    0    0    0     SINGLE dimension array. Can ALSO use RT_ArrayAppend to add elements to end of the single dimension array
+    0    0   >0     ILLEGAL, Throws error condition.
+    0   >0    0     TWO dimension array, Dim2 fixes size of 2nd dimension. CANNOT use RT_ArrayAppend.
+    0   >0   >0     THREE dimension array, Dim2 & Dim3 fix size of 2nd & 3rd dimensions. CANNOT use RT_ArrayAppend.
+
+   Dim1 Dim2 Dim3   Dimension 1 is Dim1 in size, elements ARE pre-allocated, initialized to zeros and can be used. Can also 'grow'.
+   >0    0    0     SINGLE dimension array. Can ALSO use RT_ArrayAppend as well as RT_ArrayExtend.
+   >0    0   >0     ILLEGAL, Throws error condition.
+   >0   >0    0     TWO dimension array, Dim2 fixes size of 2nd dimension. Can ALSO use RT_ArrayExtend.
+   >0   >0   >0     THREE dimension array, Dim2 & Dim3 fix size of 2nd & 3rd dimensions. Can ALSO use RT_ArrayExtend.
+                    (initialized to zeros, Bool=False,Float=0.0,String="").
+
+ StringLenMax, default 256(1 -> (256 *1024)). Fixed Maximum string length excluding nul term. Error if string length exceeds.
+  Only used for Type=3 (string).
+
+ Returns total number of elements in array.
+ All RT_ArrayXXXX() errors produce an error alert.
+
+ It makes little sense to set either Dim2 or Dim3 to 1 although this will not cause an error condition, just be less efficient,
+ a 3 dimensional array with all dimensions 1, refers only to a single element but will take slightly longer to calculate the
+ linear array offset.
+
+***
+***
+***
+
+RT_ArrayGetDim(string FileName,int "Dim"=0)
+ Returns number of dimensions in array or the size of any 1 of the dimensions.
+ Filename, Array Filename, no default.
+ Dim, default 0. (Range 0 -> 3).
+  0, returns the number of dimensions in the array.
+  1->3, returns size of that dimension.
+  Invalid dimensions will return 0, eg RT_ArrayGetDim(FileName,Dim=2) on single dimension array returns 0.
+  Error if Dim less than than 0 or greater than 3.
+
+***
+***
+***
+
+RT_ArrayGetType(string FileName)
+ Filename, Array Filename, no default.
+ Returns int, Type as set by RT_ArrayAlloc. 0=Bool, 1=Int, 2 = Float, 3 = String, 4 = BIN.
+   NOTE, There is also a type 5 (double) which is not of use to the user, although a type 5 array will accept Float
+   (as double is not an Avisynth type). Type 5 is implemented for use by RT_Stats internal functions to store higher precision results.
+   Array type double (5) will be returned as Float to Avisynth script.
+
+***
+***
+***
+
+RT_ArrayGetElSize(string FileName)
+ Filename, Array Filename, no default.
+ Returns int, element size, Type 0(bool)=1, 1(int)=4, 2(float)=4, 3(string)=StringLenMax, 4(BIN)=1, as set by RT_ArrayAlloc.
+   The private type 5 (double) would return 8 as the element size.
+***
+***
+***
+
+RT_ArrayGetNels(string FileName)
+ Filename, Array Filename, no default.
+ Returns int, total number of elements in array as set by RT_ArrayAlloc, or current number of elements if RT_ArrayAppend used to add
+ elements to end of single dimension array, or RT_ArrayExtend used to increase Dim1 dimension.
+ For a 3 dimensional array where Dim1=10, Dim2=20,Dim3=30 would return 10*20*30 ie 6000.
+
+***
+***
+***
+
+RT_ArrayGetDim1Max(string FileName)
+ Filename, Array Filename, no default.
+ Returns int, maximum theoretical Dim1 dimension for the current array with current fixed size Dim2 and Dim3 dimensions.
+ For 1 dimension Array: (maximum +ve integer - header size) / ElSize.
+ For 2 dimension Array: (maximum +ve integer - header size) / (ElSize * Dim2).
+ For 3 dimension Array: (maximum +ve integer - header size) / (ElSize * Dim2 * Dim3).
+
+***
+***
+***
+
+RT_ArrayGetNelMax(string FileName)
+ Filename, Array Filename, no default.
+ Returns int, maximum number of elements that could theoretically be stored in current array, taking into account the
+ current number of dimensions and the size of dimensions 2 and 3.
+
+***
+***
+***
+
+RT_ArrayGet(string FileName,int ix1,int "ix2",int "ix3")
+ Returns array element of variable Type as set in RT_ArrayAlloc. Type BIN returns an Int range 0 -> 255.
+ Filename, Array Filename, no default.
+ ixl, int, zero relative. 1st subscript of array. Valid range 0 -> RT_ArrayGetDim(FileName,1)-1.
+ ix2, int, zero relative. 2nd subscript of array. Valid range 0 -> RT_ArrayGetDim(FileName,2)-1.
+  Only valid if 2 or 3 dimensional array. For single dimension array, can omit, supply RT_Undefined(), or -1.
+ ix3, int, zero relative. 3rd subcript of array. Valid range 0 -> RT_ArrayGetDim(FileName,3)-1.
+  Only valid if 3 dimensional array. For 1 or 2 dimension array, can omit, supply RT_Undefined(), or -1.
+
+***
+***
+***
+
+RT_ArraySet(string FileName,Var,int ix1,int "ix2",int "ix3")
+ Filename, Array Filename, no default.
+ Var, a variable of Type as set in RT_ArrayAlloc. (NOTE position in arg list changed)
+ ixl, int, zero relative. 1st subscript of array. Valid range 0 -> RT_ArrayGetDim(FileName,1)-1.
+ ix2, int, zero relative. 2nd subscript of array. Valid range 0 -> RT_ArrayGetDim(FileName,2)-1.
+  Only valid if 2 or 3 dimensional array. For single dimension array, can omit, supply RT_Undefined(), or -1.
+ ix3, int, zero relative. 3rd subcript of array. Valid range 0 -> RT_ArrayGetDim(FileName,3)-1.
+  Only valid if 3 dimensional array. For 1 or 2 dimension array, can omit, supply RT_Undefined(), or -1.
+ Returns total number of elements in array.
+
+***
+***
+***
+
+RT_ArrayExtend(string FileName,int "Add"=1)
+ Extends first dimension of 1, 2 and 3 dimension arrays and initializes additional elements to zero.
+    (initialized to zeros, Bool=False,Float=0.0,String="").
+ Filename, Array Filename, no default.
+ Add, Int default 1. How much to increase size of 1st dimension.
+ Returns new size of 1st dimension.
+
+***
+***
+***
+
+RT_ArrayAppend(string FileName,Var)
+ Adds a variable to end of single dimension array and increments the Nel count.
+ Filename, Array Filename, no default.
+ Var, a variable of Type as set in RT_ArrayAlloc.
+ Returns number of elements in single dimension array.
+ Error if multi dimensional array.
+
+***
+***
+***
+
+RT_ArraySetAttrib(string FileName,int ix, Value)
+ There are 1024 available attributes in the Array file header, that can be used for whatever purpose you like,
+  RT_ArrayAlloc() initializes all Attributes to type Int, 0.
+ Filename, Array Filename, no default.
+ Ix, Attribute array element index range 0 -> 1023.
+ Value, Int or Float, The value that Attrib(ix) will be set to.
+ Returns Value. Error if type not of type Int or type Float.
+
+***
+***
+***
+
+RT_ArrayGetAttrib(string FileName,int ix)
+ There are 1024 available attributes in the Array file header, that can be used for whatever purpose you like,
+ Filename, Array Filename, no default.
+ Ix, Attribute array element index range 0 -> 1023.
+ Returns the value of the user set attribute Int or Float (or type Int 0 if not yet set).
+
+***
+***
+***
+
+RT_ArrayGetStrAttrib(String Filename,Int ix)
+ There are 10 (currently) available String attributes in the Array file header, that can be used for whatever purpose you like, they are
+ 1024 (maximum) characters in length excluding nul terminating character (nul not stored in file).
+ Filename, Array Filename, no default.
+ Ix, String Attribute array element index range 0 -> 9.
+ Returns the value of the user set string attribute.
+ NOTE, if  supplied ix is -1, then will return the number (Int) of available string attributes (currently 10).
+ NOTE, if  supplied ix is -2, then will return the maximum string length allowed (Int) of string attributes (currently 1024).
+
+***
+***
+***
+
+RT_ArraySetStrAttrib(String Filename,Int ix, String s)
+ There are 10 (currently) available string attributes in the Array file header, that can be used for whatever purpose you like,
+  RT_ArrayAlloc() initializes all String Attributes to "", ie zero length.
+ Filename, ARRAY Filename, no default.
+ Ix, Attribute array element index range 0 -> 9.
+ s, The string that String_Attrib(ix) will be set to.
+ Returns 0. Error if type not of type String.
+
+***
+***
+***
+
+
+RT_ArrayTypeName(Int Type)
+  Type, Int (0 -> 5), as value returned by RT_ArrayFieldType(Filename,Field), returns the type as a string.
+  Returns 0="Bool", 1="Int", 2 = "Float", 3 = "String", 4 = "Bin", 5 = "Double".
+  NOTE, type 5 "Double" is an RT_Stats Private type, ie used internally by RT_Stats to store floating point values as double,
+  if used from within Avisynth script, will get and set values as Type Float (but stored in DB as double, 8 bytes instead of 4).
+  There is little point to using type double in avisynth script, will just make files bigger and take a little longer to access.
+
+***
+***
+***
+
+RT_ArrayGetID(String Filename,Int ix)
+ There are 16 ID attributes in the Array file header that may be used internally by array utility functions rather than using user
+ attributes. This function allows script functions to use the same ID's (int or float) for whatever purpose a scriptor requires.
+ Built in utilty functions will use these to eg match an array to some clip, store Width or whatever.
+ Filename, ARRAY Filename, no default.
+ Ix, ID array element index range 0 -> 15.
+ Returns the value of the set ID, Int or Float (or type Int 0 if not yet set).
+
+***
+***
+***
+
+RT_ArraySetID(String Filename,Int ix, Value)
+ There are 16 ID attributes in the Array file header, that may be used internally by array utility functions rather than using user
+ attributes. This function allows script functions to use the same ID's (int or float) for whatever purpose a scriptor requires.
+ RT_ArrayAlloc() initializes all ID's to type Int, 0.
+ Filename, Array Filename, no default.
+ Ix, ID array element index range 0 -> 15.
+ Value, Int or Float, The value that ID(ix) will be set to.
+ Returns Value. Error if type not of type Int or type Float.
+
+
+*****************************************************
+**********       DBASE FUNCTIONS          ***********
+*****************************************************
+
+RT_Stats DBASE functions allow fast access to a file based DataBase where each record can have up to 1024 fields of variable type,
+Bool, Int, Float, String, or BIN. BIN is a BYTE (8 bit) sized Int where only lowest 8 bits of Int are stored in the DBase field
+as an unsigned 8 bit Int, upper 24 bits ignored.
+
+ The maximum possible file size is about 2GB, and the number of records is restricted by ($7FFFFFFF - Header_Size) / Record_Size
+where $7FFFFFFF is maximum +ve integer, Header_Size is 32*1024 and Record_Size is sum of all Field sizes.
+Field types Bool and BIN require 1 byte, Int and Float 4 bytes, and String is of fixed maximum length (user chosen) up to
+256KB ((256 * 1024), no nul terminating character is stored in a DBase String).
+ In addition to the DBase records, a DBase file allows up to 1024 Attributes of types Int or Float, which can be used for
+whatever your heart desires, these attributes are stored in the DBase file header.
+ You could use the DBase functions to return multiple results from a script function to the caller via a caller supplied DBase
+filename. The DBase functions also make it more likely that script functions could be written to eg find where edits between
+two clips have been made, or previously impossible/implausible tasks performed.
+ Currently, the DBase functions are just primitive access functions, it is possible that some future update may have functions
+added for eg sorting or searching or selecting records, who knows. :)
+
+
+***
+***
+***
+
+RT_DBaseAlloc(String Filename,Int Records,String TypeString,Int "StringLenMax"=256)
+ Creates a file to hold DataBase records. Each record can have up to 1024 fields of varying type, Bool, Int, Float, String, or BIN.
+  BIN is a BYTE (8 bit) sized Int where only lowest 8 bits of Int are stored in DBase field as an unsigned 8 bit int, upper 24 bits ignored.
+    v1.40,  NOTE, There is also a type double which is not of use to the user, although a type double field will accept Float
+  (as double is not an Avisynth type). Type double is implemented for use by RT_Stats internal functions to store higher precision results.
+  Type double will be returned as Float to Avisynth script.
+
+ Filename, DBASE Filename, no default.
+
+ Records, int zero or more. Number of records to create, initalized to zeros (initialized to zeros, Bool=False,Float=0.0,String="").
+
+ TypeString, string holding record construction data. One character for each field, valid characters are "bifsn" or Uppercase.
+  'b' = BOOL, 'i' = INT, 'f' = FLOAT, 's' = STRING, 'n' = BIN. (the private type double uses 'e' or 'E' in the TypeString)
+  The 's' STRING construction character can be followed by numeric digits describing fixed maximum string length (excluding
+    any nul term character), otherwise StringLenMax is used by default instead.
+    For no particular reason, I have limited the maximum string length to 256K, ie 256 * 1024, throws an error if greater.
+
+ StringLenMax Default=256. Default length of String fields if no explicit string length defined following TypeString S constructor char.
+
+ Example TypeString:-
+   "ifffs1024bsn", 1st field Int, 3 Float fields, 1 string field of length=1024, 1 Bool field, 1 string field using length of
+   StringLenMax, and 1 BIN field. 8 Fields in all (0->7).
+
+ Returns number of records created.
+ All RT_DBaseXXXX() errors produce an error alert.
+
+***
+***
+***
+
+RT_DBaseRecords(String Filename)
+ Filename, DBASE Filename, no default.
+ Returns current number of records in Filename database.
+
+***
+***
+***
+
+RT_DBaseRecordSize(String Filename)
+ Filename, DBASE Filename, no default.
+ Returns record size, ie sum of field sizes.
+
+***
+***
+***
+
+RT_DBaseRecordsMax(String Filename)
+ Filename, DBASE Filename, no default.
+ Returns maximum theoretical number of records that could be stored in file based on (Maximum +ve int - header size) / Record Size.
+  (where record size is sum of all field sizes).
+
+***
+***
+***
+
+RT_DBaseFields(String Filename)
+ Filename, DBASE Filename, no default.
+ Return number of fields per record.
+
+***
+***
+***
+
+RT_DBaseFieldType(String Filename,Int Field)
+ Filename, DBASE Filename, no default.
+ Field, range 0 -> RT_DBaseFields(Filename) - 1
+ Return type of Field. 0=Bool, 1=Int, 2 = Float, 3 = String, 4 = BIN. (Private type DOUBLE returns 5).
+
+***
+***
+***
+
+RT_DBaseFieldSize(String Filename,Int Field)
+ Filename, DBASE Filename, no default.
+ Field, range 0 -> RT_DBaseFields(Filename) - 1
+ Return size of Field in bytes. Bool=1, Int=4, Float=4, String length as set by RT_DBaseAlloc(), BIN=1. (Private type DOUBLE size = 8).
+
+***
+***
+***
+
+RT_DBaseGetField(String Filename,Int Record,Int Field)
+ Filename, DBASE Filename, no default.
+ Record, range 0 -> RT_DBaseRecords(Filename) - 1
+ Field, range  0 -> RT_DBaseFields(Filename)  - 1
+ Returns contents of a field belonging to the particular record.
+
+***
+***
+***
+
+RT_DBaseSetField(String Filename,Int Record,Int Field, FieldVar)
+ Sets a single Field in a Record to FieldVar.
+ Filename, DBASE Filename, no default.
+ Record, range 0 -> RT_DBaseRecords(Filename) - 1
+ Field, range  0 -> RT_DBaseFields(Filename)  - 1
+ FieldVar, variable of type as set by RT_DBaseAlloc().
+ Returns the current number of records.
+
+***
+***
+***
+
+RT_DBaseSet(String Filename,Int Record, FieldVar_1, ... , FieldVar_n)
+ Simultaneously sets all fields of a record. All field variables must be supplied.
+ Filename, DBASE Filename, no default.
+ Record, range 0 -> RT_DBaseRecords(Filename) - 1
+ FieldVar_1, ... , FieldVar_n. A variable for each field of type as set by RT_DBaseAlloc().
+ Returns the current number of records.
+
+***
+***
+***
+
+RT_DBaseExtend(String Filename,Int "Add"=1)
+ Adds a number of blank records to Filename Database. (initialized to zeros, Bool=False, Float=0.0, String="").
+ Filename, DBASE Filename, no default.
+ Add, Int default 1, Number of blank records to add to the DataBase.
+ Returns the current number of records.
+
+***
+***
+***
+
+RT_DBaseAppend(String Filename, FieldVar_1, ... , FieldVar_n)
+ Creates a record from Field Vars and appends it to the end of the DataBase file. All field variables must be supplied.
+ Filename, DBASE Filename, no default.
+ FieldVar_1, ... , FieldVar_n. A variable for each field of type as set by RT_DBaseAlloc().
+ Returns the current number of records.
+
+***
+***
+***
+
+RT_DBaseGetAttrib(String Filename,Int ix)
+ There are 1024 available attributes in the DataBase file header, that can be used for whatever purpose you like,
+ Filename, DBASE Filename, no default.
+ Ix, Attribute array element index range 0 -> 1023.
+ Returns the value of the user set attribute Int or Float (or type Int 0 if not yet set).
+
+***
+***
+***
+
+RT_DBaseSetAttrib(String Filename,Int ix, Var)
+ There are 1024 available attributes in the DataBase file header, that can be used for whatever purpose you like,
+  RT_DBaseAlloc() initializes all Attributes to type Int, 0.
+ Filename, DBASE Filename, no default.
+ Ix, Attribute array element index range 0 -> 1023.
+ Value, Int or Float, The value that Attrib(ix) will be set to.
+ Returns Value. Error if type not of type Int or type Float.
+
+***
+***
+***
+
+RT_DBaseGetStrAttrib(String Filename,Int ix)
+ There are 10 (currently) available String attributes in the DataBase file header, that can be used for whatever purpose you like, they are
+ 1024 (maximum) characters in length excluding nul terminating character (nul not stored in file).
+ Filename, DBASE Filename, no default.
+ Ix, String Attribute array element index range 0 -> 9.
+ Returns the value of the user set string attribute.
+ NOTE, if  supplied ix is -1, then will return the number (Int) of available string attributes (currently 10).
+ NOTE, if  supplied ix is -2, then will return the maximum string length allowed (Int) of string attributes (currently 1024).
+
+
+***
+***
+***
+
+RT_DBaseSetStrAttrib(String Filename,Int ix, String s)
+ There are 10 (currently) available string attributes in the DataBase file header, that can be used for whatever purpose you like,
+  RT_DBaseAlloc() initializes all String Attributes to "", ie zero length.
+ Filename, DBASE Filename, no default.
+ Ix, Attribute array element index range 0 -> 9.
+ s, The string that String_Attrib(ix) will be set to.
+ Returns 0. Error if type not of type String.
+
+***
+***
+***
+
+RT_DBaseTypeName(Int Type)
+  Type, Int (0 -> 5), as value returned by RT_DBaseFieldType(Filename,Field), returns the type as a string.
+  Returns 0="Bool", 1="Int", 2 = "Float", 3 = "String", 4 = "Bin", 5 = "Double".
+  NOTE, type 5 "Double" is an RT_Stats Private type, ie used internally by RT_Stats to store floating point values as double,
+  if used from within Avisynth script, will get and set values as Type Float (but stored in DB as double, 8 bytes instead of 4).
+  There is little point to using type double in avisynth script, will just make files bigger and take a little longer to access.
+
+***
+***
+***
+
+RT_DBaseGetID(String Filename,Int ix)
+ There are 16 ID attributes in the DBase file header that may be used internally by DBase utility functions rather than using user
+ attributes. This function allows script functions to use the same ID's (int or float) for whatever purpose a scriptor requires.
+ Built in utilty functions will use these to eg match a DBase to some clip, store Width or whatever.
+ Filename, DBase Filename, no default.
+ Ix, ID array element index range 0 -> 15.
+ Returns the value of the set ID, Int or Float (or type Int 0 if not yet set).
+
+***
+***
+***
+
+RT_DBaseSetID(String Filename,Int ix, Value)
+ There are 16 ID attributes in the DBase file header, that may be used internally by DBase utility functions rather than using user
+ attributes. This function allows script functions to use the same ID's (int or float) for whatever purpose a scriptor requires.
+ RT_DBaseAlloc() initializes all ID's to type Int, 0.
+ Filename, DBase Filename, no default.
+ Ix, ID array element index range 0 -> 15.
+ Value, Int or Float, The value that ID(ix) will be set to.
+ Returns Value. Error if type not of type Int or type Float.
+
+
+*****************************************************
+******************** MISC FUNCTIONS *****************
+*****************************************************
+
+
+RT_Undefined()
+ Returns same as undefined() in v2.6. Defined(RT_Undefined()) would return false.
+
+
+***
+***
+***
+
+RT_VarExist(string)
+ Given the name (string) of the variable that you want to test for existence, returns true if exists, else false.
+ Eg, #a=32
+    RT_Debug(string(RT_VarExist("a")))  # would output 'false' to debugview unless '#a=32' uncommented. {Defined(a) would fail with error}.
+    return colorbars()
+
+***
+***
+***
+
+RT_FunctionExist(string)
+ Given the name (string) of the Function (plugin) that you want to test for existence, returns true if exists, else false.
+
+***
+***
+***
+
+RT_Ord(string,int "pos"=1)
+ Returns same as 'Ord' in v2.6, the ASCII code for the 1st letter in string (0 if empty string "").
+ v1.17, Added pos arg, default 1, ie 1st character in string. Returns 0 if pos < 1 or greater than string length.
+ Could possibly use a string as a sort of BYTE sized int array containing non zero values.
+
+***
+***
+***
+
+RT_Timer()
+ Returns time in seconds since start of process.
+ Usage:
+   s=RT_Timer()
+   Test()
+   e=RT_Timer()
+   Str="Test Start="+String(s,"%.2f")+" End="+String(e,"%.2f")+" Time="+String(e-s,"%.2f")+"secs"
+   SubTitle(str)
+   RT_Debug(str)
+
+***
+***
+***
+
+RT_TimerHP()
+    Returns a higher precision time than RT_Timer (If available on your system, otherwise uses same routine as RT_Timer).
+    Note, where RT_Timer returns time elapsed in seconds since start of process, RT_TimerHP is not defined to return anything
+    in particular, the only thing that is meaningful is the difference between returns from 2 calls to RT_TimerHP.
+    DO NOT mix times from RT_Timer with RT_TimerHP, results may be meaningless.
+    Usage:
+       s=RT_TimerHP()      Test()       e=RT_TimerHP()
+       Str="Test Start="+String(s,"%.3f")+" End="+String(e,"%.3f")+" Time="+String(e-s,"%.6")+"secs"
+       SubTitle(str)
+
+***
+***
+***
+
+RT_IncrGlobal(string GlobalName,int "Init"=1)
+ Given the name of a Global Int variable, will increment that Global (ie add 1 to it) and return the result.
+ If Global int does not exist, will initialize it to the optional Init arg, default 1.
+ So if GlobalInt is already initialized to 1, then RT_IncrGlobal("GlobalInt") sets GlobalInt to 2
+ (equiv:- Global GlobalInt = GlobalInt + 1).
+ If GlobalName exists in local scope as a local variable, then it will set the same named Global Variable
+ to the value of the local variable + 1, local variables 'hide' similarly named Global variables, and a plugin
+ cannot tell the difference between local and global variables, so make sure you do not use local variables
+ of similar names to global ones.
+ Will throw an error if GlobalName exists but variable is not of type Int.
+
+***
+***
+***
+
+RT_ScriptDir()
+ Returns String, Path to Script Directory. Same as ScriptDir in Avisynth v2.6.
+ Returns "", if cannot find ScriptDir.
+
+***
+***
+***
+
+RT_ScriptFile()
+ Returns String, filename of Script without path. Same as ScriptFile in Avisynth v2.6.
+ Returns "", if cannot find ScriptFile.
+
+***
+***
+***
+
+RT_ScriptName()
+ Returns String, filename of Script including path. Same as ScriptName in Avisynth v2.6.
+ Returns "", if cannot find ScriptName.
+
+***
+***
+***
+
+RT_PluginDir()
+ Returns String, path to Avisynth plugins directory.
+ Returns "", if plugin dir not found.
+
+***
+***
+***
+
+RT_InternalFunctions()
+ Returns String, SPACE separated list of internal filter and function names.
+ Returns "", if cannot find InternalFunctions.
+ If you like a good read try this:-
+  S=RT_StrReplace(RT_InternalFunctions," ",Chr(10))
+  ColorBars.ScriptClip("""RT_Subtitle("%s",S,align=5,y=height+100-current_frame,expx=true,expy=true)""").killaudio
+
+***
+***
+***
+
+RT_PluginFunctions()
+ Returns String, SPACE separated list of external filter and function names.
+ Returns "", if cannot find PluginFunctions.
+ If you like a good read try this:-
+ S=RT_StrReplace(RT_PluginFunctions," ",Chr(10))
+ ColorBars.ScriptClip("""RT_Subtitle("%s",S,align=5,y=height+100-current_frame,expx=true,expy=true)""").killaudio
+
+***
+***
+***
+
+RT_PluginParam(String FunctionName)
+ FunctionName, String, name of Avisynth built-in or Plugin filter or function name.
+ Returns "", if FunctionName Parameter string not found.
+ Returns String, the Avisynth CPP Interface style argument specifier string used by Avisynth to determine argument types and optional names.
+  Optional arguments have square brackets surrounding their name as in [name] and are followed by a type specifier character that gives
+  the type. Unnamed arguments are not optional. eg "cc[arg1]b[arg2]i" would be two compulsory unnamed clip args, followed by optional
+  'arg1' of type bool and optional 'arg2' of type int.
+    # Argument type specifier strings.
+      c - Video Clip
+      i - Integer number
+      f - Float number
+      s - String
+      b - boolean
+      . - Any type (dot)
+    # Array Specifiers
+      i* - Integer Array, zero or more
+      i+ - Integer Array, one or more
+      .* - Any type Array, zero or more
+      .+ - Any type Array, one or more
+    #    Etc
+   To show params:-
+      colorbars().Killaudio()
+      S=RT_PluginParam("RT_YStats")
+      S=RT_StrReplace(S,"[",Chr(10)+"[")
+      RT_Subtitle(s)
+
+***
+***
+***
+
+RT_VarType(var)
+  Returns type of var arg as an int.
+    Returns,
+        0   = Type BOOL
+        1   = Type INT.
+        2   = Type FLOAT
+        3   = Type STRING
+        4   = Type CLIP
+        -1  = Type UNDEFINED
+  Avoids multiple tests in script to establish a variable type.
+  eg, RT_VarType(66.6) returns 1, ie FLOAT.
+  NOTE, If called without an arg, it will return type of implicit Last (Undefined if no clip implicitly/explicitly assigned to Last).
+
+***
+***
+***
+
+RT_VarIsSame(var Var1, ...,var Varn,Bool "Sig")
+  Accepts two or more variables of any type. NOTE, if only 1 arg supplied, will use implicit Last as first arg.
+  Returns Bool, False if args are not all of same type AND/OR value.
+  Return True, if all args same type and value.
+  Sig, Bool Default True. Only used where variables are either String or Clip.
+     Type String,
+        Compares strings same length and contents.
+        Sig==True,  case significant comparison ('a' != 'A').
+        Sig==False, case insignificant comparison ('a' = 'A').
+     Type Clip,
+        Compares clip video attributes, frame Width, Height, ColorSpace.
+        If first clip has no video (HasVideo==False) then all other clips must also have no video (other video attributes not tested).
+        If Sig==False, Audio Not considered in comparison.
+        If Sig==True, audio is considered.
+            If first clip has no audio (HasAudio==False) then all other clips must also have no audio (other audio attributes not tested).
+            If first clip does have audio, then all other clips must have audio and same Number of Audio Channels, Sample Rate,
+            and Sample Type (int16, Float etc).
+        No other attributes are taken into account, (ie FrameRate, FrameCount etc).
+  *** NOTE ***, as we cannot tell where variable number of Varn args ends, you must use optional 'sig' arg with the name ie 'sig=True'.
+
+
+*****************************************************
+******************* WEIRD FUNCTIONS *****************
+*****************************************************
+
+
+RT_FloatAsRGBA(float)
+ Given a float arg, returns an int formatted as for use as a color to eg BlankClip.
+ Can later be recovered from that clip using RT_RGB32AsFloat().
+
+***
+***
+***
+
+RT_RGB32AsFloat(clip,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0)
+ Compile/Runtime clip function.
+ Given an RGB32 clip that had a pixel value created via RT_FloatAsRGBA(), gets that pixel and returns as the
+ original float given to RT_FloatAsRGBA. By creating single pixel clips and stacking them horizontally/vertically,
+ you can use a frame as a two dimensional array of float, perhaps use the frame number for a third dimension.
+
+
+***
+***
+***
+
+RT_RGB32AsInt(clip,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0)
+ Compile/Runtime clip function.
+ Given an RGB32 clip that had a pixel value created from an Int, gets that pixel and returns as the
+ original Int. By creating single pixel clips and stacking them horizontally/vertically,
+ you can use a frame as a two dimensional array of Int, perhaps use the frame number for a third dimension.
+
+
+****************************************
+******* MASKED Luma Y Functions ********
+****************************************
+
+Compile time/runtime functions, Planar, YUY2, RGB24 & RGB32. (RGB internally converted to YUV-Y).
+
+The compiletime/runtime clip functions share some common characteristics:-
+
+The 'n' arg is an optional frame number and defaults to 'current_frame' if not specified.
+The x,y,w,h, coords specify the source rectangle under scrutiny and are specified as for Crop(), the default 0,0,0,0 is full frame.
+If 'interlaced' is true, then every other line is ommited from the scan, so if eg y=1, then scanlines 1,3,5,7 etc are scanned,
+if eg y=4 then scanlines 4,6,8,10 etc are scanned. The 'h' coord specifies the full height scan ie same whether interlaced is true
+or false, although it will not matter if the 'h' coord is specified as eg odd or even, internally the height 'h' is reduced by 1
+when interlaced=true and 'h' is even.
+
+Matrix: Conversion matrix for conversion of RGB to YUV-Y Luma.  0=REC601 : 1=REC709 : 2 = PC601 : 3 = PC709,
+  Default = (Width > 1100 OR Height>600) then 3(PC709) else 2(PC601). YUV not used
+
+The optional mask clip, governs which pixels are processed by the functions. Where a luma pixel in selected area of the the mask clip is
+in range "MaskMin" to "MaskMax" inclusive, then those pixels will be processed. The Mask must also be Planar but not
+necessarily the same colorspace as clip c, also must be same dimensions and have at least the same number of frames as clip c.
+Calling without mask clip OR with MaskMin=0,MaskMax=255 will effectively ignore the mask and scan full x,y,w,h area.
+
+
+RT_YPlaneMin(clip c,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,bool "interlaced"=false,
+      float "threshold"=0.0, int "Matrix"=(Width>1100||Height>600?3:2),clip "mask"=NOT_USED,int "MaskMin"=128,"MaskMax"=255)
+  Return int -1, if no valid pixels in Mask clip.
+  Returns int value minimum luma (0 -> 255) in frame(n+delta) for area x,y,w,h.
+  Threshold is a percentage, stating how many percent of the pixels are allowed below minimum (ignore extreme pixels ie noise).
+  Threshold is % of valid mask pixels processed if Mask supplied. The threshold is optional and defaults to 0.0.
+
+***
+***
+***
+
+RT_YPlaneMax(clip c,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,bool "interlaced"=false,
+      float "threshold"=0.0,int "Matrix"=(Width>1100||Height>600?3:2),clip "mask"=NOT_USED,int "MaskMin"=128,"MaskMax"=255)
+  Return int -1, if no valid pixels in Mask clip.
+  Returns int value maximum luma (0 -> 255) in frame(n+delta) for area x,y,w,h.
+  Threshold is a percentage, stating how many percent of the pixels are allowed above maximum (ignore extreme pixels ie noise).
+  Threshold is % of valid mask pixels processed if Mask supplied. The threshold is optional and defaults to 0.0.
+
+***
+***
+***
+
+RT_YPlaneMinMaxDifference(clip c,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,
+      bool "interlaced"=false,float "threshold"=0.0, int "Matrix"=(Width>1100||Height>600?3:2),clip "mask"=NOT_USED,int "MaskMin"=128,"MaskMax"=255)
+  Return int -1, if no valid pixels in Mask clip.
+  Returns int value luma range (maximum - minimum difference) (0 -> 255) in frame(n+delta) for area x,y,w,h.
+  Threshold is a percentage, stating how many percent of the pixels are allowed below minimum or above maximum (ignore extreme pixels ie noise).
+  Threshold is % of valid mask pixels processed if Mask supplied. The threshold is optional and defaults to 0.0.
+
+***
+***
+***
+
+RT_YPlaneMedian(clip c,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,bool "interlaced"=false,
+    int "Matrix"=(Width>1100||Height>600?3:2),clip "mask"=NOT_USED,int "MaskMin"=128,"MaskMax"=255)
+  Return int -1, if no valid pixels in Mask clip.
+  Returns int value luma median [equiv RT_YPlaneMin(threshold=50.0)] (0 -> 255) in frame(n+delta) for area x,y,w,h.
+
+***
+***
+***
+
+RT_AverageLuma(clip c,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,bool "interlaced"=false,
+    int "Matrix"=(Width>1100||Height>600?3:2),clip "mask"=NOT_USED,int "MaskMin"=128,"MaskMax"=255)
+  Return int -1, if no valid pixels in Mask clip.
+  Returns FLOAT value average luma (0.0 -> 255.0) in frame(n+delta) for area x,y,w,h.
+
+***
+***
+***
+
+RT_YPlaneStdev(clip c,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,bool "interlaced"=false,
+    int "Matrix"=(Width>1100||Height>600?3:2),clip "mask"=NOT_USED,int "MaskMin"=128,"MaskMax"=255)
+  Return int -1, if no valid pixels in Mask clip.
+  Returns FLOAT value luma Standard Deviation (0.0 -> 255.0) in frame(n+delta) for area x,y,w,h.
+  Standard Deviation (Changed, from Sample Standard Deviation with Bessels Correction).
+  http://en.wikipedia.org/wiki/Standard_deviation
+
+***
+***
+***
+
+RT_YInRange(clip c,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,bool "interlaced"=false,
+      int "lo"=128,int "hi"=lo,int "Matrix"=(Width>1100||Height>600?3:2),clip "mask"=NOT_USED,int "MaskMin"=128,"MaskMax"=255)
+  Return int -1, if no valid pixels in Mask clip.
+  Returns FLOAT value (0.0 -> 1.0) being the amount of pixels in the range "lo" to "hi" (inclusive), 1.0 is equivalent to 100%.
+  Implemented as requested by Martin53 (thankyou), NOTE, differs from other funcs that return range 0.0 to 255.0.
+  NOTE, lo defaults to 128, "hi" defaults to "lo".
+
+***
+***
+***
+
+RT_YPNorm(clip c,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,bool "interlaced"=false,
+      float "mu"=0.0,int "d"=1,int "p"=1,int "u"=1,int "Matrix"=(Width>1100||Height>600?3:2),clip "mask"=NOT_USED,int "MaskMin"=128,"MaskMax"=255)
+  Return int -1 if no valid pixels in Mask clip.
+  Returns FLOAT value greater or equal to 0.0, being the "Minkowski P-norm" (range depends upon values of 'd' and 'u') for frame(n+delta)
+  area x,y,w,h, and selected Chan channel (0=R,1=G,2=B, RGB32 3=ALPHA)
+  mu, Float, default 0.0 (0.0 -> 255.0)
+  d,  int,   default 1 (1 -> 255)       # downscale
+  p,  int,   default 1 (1 -> 16)        # power
+  u,  int,   default 1 (1 -> 255)       # final upscale before returning result (experimental)
+  Formula is: sum_over_pixels[ ((pixel-mu)/d)^p ]^(1/p) * u
+  or in words: d and u are scaling aids. The differences between the pixel values and mu are scaled, taken to the power of p and added up
+  over the frame. The sum is taken to the p-th root and finally rescaled.
+  mu=0, d=1, p=1, u=1 yields the average.
+  mu=average, d=1, p=2, u=1 yields the standard deviation (uncorrected sample standard deviation).
+  Implemented as requested by Martin53 (thankyou). *** EXPERIMENTAL ***
+  http://en.wikipedia.org/wiki/P-norm#The_p-norm_in_finite_dimensions
+  http://en.wikipedia.org/wiki/Minkowski_distance
+
+
+***
+***
+***
+
+
+RT_Ystats(clip c,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,bool "interlaced"=false,
+      float "threshold"=0.0,int "lo"=128,int "hi"=lo,int "flgs"=255,string "prefix"="YS_",
+        float "mu"=0.0,int "d"=1,int "p"=1,int "u"=1, int "Matrix"=(Width>1100||Height>600?3:2),clip "mask"=NOT_USED,int "MaskMin"=128,"MaskMax"=255)
+  Returns multiple results as for above single frame Luma sampling functions as Local Variables (prefixed with the prefix string arg).
+  The args up to "interlaced", are as for all other clip functions, "threshold" used only for "RT_YPlaneMin", "RT_YPlaneMax" and
+  "RT_YPlaneMinMaxDifference" equivalent routines with same functionality.
+  "lo" and "hi" are used only with the "RT_YInRange" equivalent routine with same functionality.
+  "mu" and "d" and "p" and "u" are used only with the "RT_YPNorm" equivalent routine with same functionality.
+  The new arg "Flgs" selects which results you want returned and the string "Prefix" that is prepended
+  to the returned Local variable names.
+  The actual return result is a copy of the flgs arg with any non valid bits reset, ie the Local variables that were set.
+  Local variables are NOT altered for any function not selected in flgs.
+  Returns 0 if no pixels found in search area of mask within MaskMin and MaskMax.
+
+  Flgs_Bit_Number   Add_To_Flgs     Equivalent_Function             Local_Var_Set_Excluding_Prefix
+     0                 1($01)        RT_YPlaneMin()                     "yMin"        (0->255)
+     1                 2($02)        RT_YPlaneMax()                     "yMax"        (0->255)
+     2                 4($04)        RT_YPlaneMinMaxDifference()        "yMinMaxDiff" (0->255)
+     3                 8($08)        RT_YPlaneMedian()                  "yMed"        (0->255)
+     4                16($10)        RT_AverageLuma()                   "yAve"        (0.0->255.0)
+     5                32($20)        RT_YPlaneStdev()                   "yStdev"      (0.0->255.0)
+     6                64($40)        RT_YInRange()                      "yInRng"      (0.0->1.0)
+     7               128($80)        RT_YPNorm()                        "yPNorm"      (0.0->??? depends upon d and u)
+  RT_Ystats() allows you to inquire multiple results simultaneously, with not much more overhead than calling a single individual
+  routine, however, you should not select sub functions that you dont need as there may be an additional unnecessary overhead.
+  The Default flgs=255($FF) are all bits set and so sets ALL Local vars at once.
+  RT_Ystats(flgs=1+2+16) would set Local vars "YS_yMin", "YS_yMax" and "YS_yAve" for full frame current_frame.
+
+  In addition to above Local Variables, RT_YStats() sets an int Local variable (where default prefix) of "YS_PixelCount" being
+  the number of pixels in mask area X,Y,W,H between MaskMin and MaskMax inclusive, or pixels scanned in X,Y,W,H area where mask
+  not used.
+  NOTE, If no valid flg bits set (eg $FF00), then returns 0, YS_PixelCount and all other variables remain as before call.
+  Assuming some valid flg bits, if no valid pixels were found in mask then function returns 0, and only YS_PixelCount would be set
+  to 0, no other variables are touched (remain as before call, undefined if not previously existing).
+  Example usage:
+    ScriptClip("""
+      got = RT_Ystats(c,mask=Mask,flgs=$10) # AverageLuma
+      (got != 0) ? RT_debug("AverageLuma = " + String(YS_yAve) + "PixelCount = " + String(YS_PixelCount)) : RT_Debug("NO VALID PIXELS FOUND")
+    """)
+
+
+********************************************
+********* RGB MASKED Channel FUNCTIONS *****
+********************************************
+
+ RGB32, RGB24 source clip.
+
+ The source clip c must be RGB32 or RGB24.
+
+ The compiletime/runtime clip functions share some common characteristics.
+ The 'n' and (where used) 'n2' args are the optional frame numbers and default to 'current_frame' if not specified.
+ The x,y,w,h, coords specify the source rectangle under scrutiny and are specified as for Crop(), the default 0,0,0,0 is full frame.
+ If 'interlaced' is true, then every other line is ommited from the scan, so if eg x=0,y=1, then scanlines 1,3,5,7 etc are scanned,
+ if eg x=0,y=4 then scanlines 4,6,8,10 etc are scanned. The 'h' coord specifies the full height scan ie same whether interlaced is true
+ or false, although it will not matter if the 'h' coord is specified as eg odd or even, internally the height 'h' is reduced by 1 when
+ interlaced=true and 'h' is even.
+
+ Optional mask clip Planar ONLY [v2.6 colorpspaces OK]
+ The Planar mask clip, governs which pixels are processed by the functions. Where a luma pixel in selected area of the the mask clip is
+ in range "MaskMin" to "MaskMax" inclusive, then those pixels will be processed.
+ Mask MUST, be same dimensions and have at least the same number of frames as clip c.
+ Calling without mask OR with MaskMin=0,MaskMax=255 will effectively ignore the mask and scan full x,y,w,h area.
+
+ The Chan arg specifies which R or G or B channel to process [the multi-functional RT_RgbChanStats() function also allows a Chan arg of -1,
+ which processes R and G and B simulaneously for all functions selected by flgs arg, also allowed is chan arg of -2 which additionally
+ processes the ALPHA channel if RGB32 but throws an error if RGB24].
+ Default Chan is 0 (Red), 1 = Green, 2=Blue channel and 3=ALPHA channel when RGB32 ONLY else error.
+
+***
+***
+***
+
+RT_RgbChanMin(clip c,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,
+        bool "interlaced"=false,float "threshold"=0.0,
+        int "chan"=0,int "mask"=NOT_USED, int "MaskMin"=128,"MaskMax"=255)
+  Return int -1, if no valid pixels in Mask clip.
+  Returns int minimum value (0 -> 255) in frame(n+delta) for area x,y,w,h, and selected Chan channel (0=R,1=G,2=B, RGB32 3=ALPHA)
+  Threshold is a percentage, stating how many percent of the pixels are allowed below minimum (ignore extreme pixels ie noise).
+  Threshold is % of valid mask pixels processed. The threshold is optional and defaults to 0.0.
+
+***
+***
+***
+
+RT_RgbChanMax(clip c,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,
+        bool "interlaced"=false,float "threshold"=0.0,
+        int "chan"=0,int "mask"=NOT_USED, int "MaskMin"=128,"MaskMax"=255)
+  Return int -1, if no valid pixels in Mask clip.
+  Returns int maximum value (0 -> 255) in frame(n+delta) for area x,y,w,h, and selected Chan channel (0=R,1=G,2=B, RGB32 3=ALPHA)
+  Threshold is a percentage, stating how many percent of the pixels are allowed above maximum (ignore extreme pixels ie noise).
+  Threshold is % of valid mask pixels processed. The threshold is optional and defaults to 0.0.
+
+***
+***
+***
+
+RT_RgbChanMinMaxDifference(clip c,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,
+        bool "interlaced"=false,float "threshold"=0.0,
+        int "chan"=0,int "mask"=NOT_USED, int "MaskMin"=128,"MaskMax"=255)
+  Return int -1, if no valid pixels in Mask clip.
+  Returns int channel range [maximum - minimum difference] (0 -> 255) in frame(n+delta) for area x,y,w,h, and selected Chan channel
+    (0=R,1=G,2=B, RGB32 3=ALPHA)
+  Threshold is a percentage, stating how many percent of the pixels are allowed below minimum or above maximum (ignore extreme pixels ie noise).
+  Threshold is % of valid mask pixels processed. The threshold is optional and defaults to 0.0.
+
+***
+***
+***
+
+RT_RgbChanMedian(clip c,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,bool "interlaced"=false,
+     int "chan"=0,int "mask"=NOT_USED, int "MaskMin"=128,"MaskMax"=255)
+  Return int -1, if no valid pixels in Mask clip.
+  Returns int channel median [equiv RT_RgbChanMin(threshold=50.0)] (0 -> 255) in frame(n+delta) for area x,y,w,h, and selected Chan channel
+    (0=R,1=G,2=B, RGB32 3=ALPHA)
+
+***
+***
+***
+
+RT_RgbChanAve(clip c,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,bool "interlaced"=false,
+    int "chan"=0,int "mask"=NOT_USED, int "MaskMin"=128,"MaskMax"=255)
+  Return int -1, if no valid pixels in Mask clip.
+  Returns FLOAT average channel value (0.0 -> 255.0) in frame(n+delta) for area x,y,w,h, and selected Chan channel (0=R,1=G,2=B, RGB32 3=ALPHA).
+
+***
+***
+***
+
+RT_RgbChanStdev(clip c,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,bool "interlaced"=false,
+    int "chan"=0,int "mask"=NOT_USED, int "MaskMin"=128,"MaskMax"=255)
+  Return int -1, if no valid pixels in Mask clip.
+  Returns FLOAT Standard Deviation channel value(0.0 -> 255.0) in frame(n+delta) for area x,y,w,h, and selected Chan channel
+    (0=R,1=G,2=B, RGB32 3=ALPHA)
+  Standard Deviation. http://en.wikipedia.org/wiki/Standard_deviation
+
+***
+***
+***
+
+RT_RgbChanInRange(clip c,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,bool "interlaced"=false,
+      int "chan"=0,int "lo"=128,int "hi"=lo,int "mask"=NOT_USED, int "MaskMin"=128,"MaskMax"=255)
+  Return int -1, if no valid pixels in Mask clip.
+  Returns FLOAT value (0.0 -> 1.0) being the amount of pixels in the range "lo" to "hi" (inclusive) in frame(n+delta) for area x,y,w,h,
+  and selected Chan channel (0=R,1=G,2=B, RGB32 3=ALPHA), 1.0 is equivalent to 100%.
+  Implemented as requested by Martin53 (thankyou), NOTE, differs from other funcs that return range 0.0 to 255.0.
+  NOTE, lo defaults to 128, "hi" defaults to "lo".
+
+***
+***
+***
+
+RT_RgbChanPNorm(clip c,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,bool "interlaced"=false,
+      int "chan"=0,float "mu"=0.0,int "d"=1,int "p"=1,int "u"=1,int "mask"=NOT_USED, int "MaskMin"=128,"MaskMax"=255)
+  Return int -1 if no valid pixels in Mask clip.
+  Returns FLOAT value greater or equal to 0.0, being the "Minkowski P-norm" (range depends upon values of 'd' and 'u') for frame(n+delta)
+  area x,y,w,h, and selected Chan channel (0=R,1=G,2=B, RGB32 3=ALPHA)
+  mu, Float, default 0.0 (0.0 -> 255.0)
+  d,  int,   default 1 (1 -> 255)       # downscale
+  p,  int,   default 1 (1 -> 16)        # power
+  u,  int,   default 1 (1 -> 255)       # final upscale before returning result (experimental)
+  Formula is: sum_over_pixels[ ((pixel-mu)/d)^p ]^(1/p) * u
+  or in words: d and u are scaling aids. The differences between the pixel values and mu are scaled, taken to the power of p and added up
+  over the frame. The sum is taken to the p-th root and finally rescaled.
+  mu=0, d=1, p=1, u=1 yields the average.
+  mu=average, d=1, p=2, u=1 yields the standard deviation (uncorrected sample standard deviation).
+  Implemented as requested by Martin53 (thankyou).   *** EXPERIMENTAL ***
+  http://en.wikipedia.org/wiki/P-norm#The_p-norm_in_finite_dimensions
+  http://en.wikipedia.org/wiki/Minkowski_distance
+
+***
+***
+***
+
+RT_RgbChanStats(clip c,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,bool "interlaced"=false,
+      float "threshold"=0.0,int "chan"=0,int "lo"=128,int "hi"=lo,int "flgs"=255,string "prefix"="RCS_",
+      float "mu"=0.0,int "d"=1,int "p"=1,int "u"=1,int "mask"=NOT_USED, int "MaskMin"=128,"MaskMax"=255)
+  Returns multiple results as for above single frame RGB channel sampling functions as Local Variables (prefixed with the prefix string arg).
+  The args up to "interlaced", are as for all other clip functions, "threshold" used only for "RT_RgbChanMin", "RT_RgbChanMax" and
+  "RT_RgbChanMinMaxDifference" equivalent routines with same functionality.
+  "lo" and "hi" are used only with the "RT_RgbChanInRange" equivalent routine with same functionality.
+  "mu" and "d" and "p" and "u" are used only with the "RT_RgbChanPNorm" equivalent routine with same functionality.
+  The new arg "Flgs" selects which results you want returned and the string "Prefix" that is prepended
+  to the returned Local variable names.
+  The actual return result is a copy of the flgs args with any non valid bits reset, ie the Local variables that were set.
+  Local variables are NOT altered for any function not selected in flgs.
+  Returns 0 if no pixels found in search area of mask within MaskMin and MaskMax.
+
+  Flgs_Bit_Number   Add_To_Flgs     Equivalent_Function             Local_Var_Set_Excluding_Prefix_and_Chan_postfix
+     0                 1($01)        RT_RgbChanMin()                     "Min"        (0->255)
+     1                 2($02)        RT_RgbChanMax()                     "Max"        (0->255)
+     2                 4($04)        RT_RgbChanMinMaxDifference()        "MinMaxDiff" (0->255)
+     3                 8($08)        RT_RgbChanMedian()                  "Med"        (0->255)
+     4                16($10)        RT_RgbChanAve()                     "Ave"        (0.0->255.0)
+     5                32($20)        RT_RgbChanStdev()                   "Stdev"      (0.0->255.0)
+     6                64($40)        RT_RgbChanInRange()                 "InRng"      (0.0->1.0)
+     7               128($80)        RT_RgbChanPNorm()                   "PNorm"      (0.0->??? depends upon d and u)
+  The Channel Postfix is of the form "_0", where 0 is RED, 1 is GREEN and 2 is Blue, 3 is ALPHA(RGB32 ONLY), and is appended to the
+  base name described above. So eg RT_RgbChanMin for RED channel 0 with default Prefix is "RCS_Min_0".
+  RT_RgbChanstats() allows you to inquire multiple results simultaneously, with not much more overhead than calling a single individual
+  routine, however, you should not select sub functions that you dont need as there may be an additional unnecessary overhead.
+  The Default flgs=255($FF) are all bits set and so sets ALL Local vars at once.
+  RT_RgbChanStats(flgs=1+2+16) would set Local vars "RCS_Min_0", "RCS_Max_0" and "RCS_Ave_0" for full frame current_frame, Red Channel.
+
+  In addition to above Local Variables, RT_RgbChanStats() sets an int Local variable (where default prefix) of "RCS_PixelCount_0" being
+  the number of Red Channel pixels in mask area X,Y,W,H between MaskMin and MaskMax inclusive.
+
+  NOTE, RT_RgbChanStats() allows Chan to be -1, where ALL three R, and G, and B channels are processed simultaneouly for ALL functions
+   selected by flgs arg (ALPHA Channel is NOT processed).
+   A chan arg of -2 (RGB32 ONLY allowed) will additionally process the ALPHA channel as well as R+G+B.
+  Also Note, (where default Prefix) RCS_PixelCount_x is also set (identically) for all channels when Chan == -1 or -2.
+  NOTE, If no valid flg bits set (eg $FF00), then returns 0, RCS_PixelCount_x and all other variables remain as before call.
+  Assuming some valid flg bits, if no valid pixels were found in mask then function returns 0, and only RCS_PixelCount_x would be set
+  to 0, no other variables are touched (remain as before call, undefined if not previously existing).
+  Example usage:
+    ScriptClip("""
+      got = RT_RgbChanStats(c,mask=Mask,chan=-1,flgs=$10) # Ave
+      (got != 0)
+        \ ? RT_Debug(RT_String("AveR = %f AveG = %f AveB = %f Pixels = %d",RCS_Ave_0,RCS_Ave_1,RCS_Ave_2,RCS_PixelCount_0))
+        \ : RT_Debug("NO VALID PIXELS FOUND")
+    """)
+
+***************************************
+*** RGB Combined channels Functions ***
+***************************************
+
+
+ RT_RgbInRange(clip,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,bool "interlaced"=false, \
+      int "RLo"=128,int "RHi"=RLo,int "GLo"=128,int "GHi"=GLo,int "BLo"=128,int "BHi"=BLo)
+  Returns float value (0.0 -> 1.0) being the amount of pixels with all channels in the range "cLo" to "cHi" (inclusive,  c==R or G or B),
+  1.0 is equivalent to 100%.
+  NOTE, differs from other funcs that return range 0.0 to 255.0. NOTE, cLo defaults to 128, "cHi" defaults to "cLo".
+  RLo: Default 128, lower bound of pixel values of Red Channel to search for.
+  RHi: Default RLo, upper bound of pixel values to Red Channel search for.
+  GLo: Default 128, lower bound of pixel values of Green Channel to search for.
+  GHi: Default GLo, upper bound of pixel values to Green Channel search for.
+  BLo: Default 128, lower bound of pixel values of Blue Channel to search for.
+  BHi: Default BLo, upper bound of pixel values to Blue Channel search for.
+
+
+**************************************************
+*** General Clip Functions Colorspace agnostic ***
+**************************************************
+
+RT_ChanAve(clip c,int "n"=current_Frame,string "Prefix"=RCA_")
+    Sets channel averages for clip c frame n, as local variables, 0.0 -> 255.0. RGB24/32, YUY2, Planar.
+    Returns the number of channels in clip ie 3 unless Y8 where returns 1.
+    Default Prefix is "RCA_" so for YV12, would return 3 (3 channels) and set
+    YUV
+     RCA_Ave_0 = Luma Ave
+     RCA_Ave_1 = U Ave
+     RCA_Ave_2 = V Ave.
+    RGB,
+     RCA_Ave_0 = Red Ave
+     RCA_Ave_1 = Grn Ave
+     RCA_Ave_2 = Blue Ave.
+    Y8
+     RCA_Ave_2 = Luma Ave
+     RCA_Ave_2 = 128
+     RCA_Ave_3 = 128,
+    NOTE, No support for alpha channel of RGB32, although could be added if anybody thought it useful.(returns num of channels = 3)
+
+***
+***
+***
+
+RT_FrameDifference(clip c,clip c2,int "n"=current_frame,int "n2"=current_frame,Float "ChromaWeight"=1.0/3.0)
+    Returns difference between clip c frame n and clip c2 frame n2 (0.0 -> 255.0).
+    ChromaWeight range 0.0 -> 1.0.
+    For RGB, returns same as RGBDifference.
+    For Y8 returns same as LumaDifference.
+    For non Y8 Planar returns Lumadif + Chromadif with chroma weighted by ChromaWeight arg.
+      Returns:- (1.0 - ChromaWeight) * Lumadif + ChromaWeight * ((Udif + Vdif)/2.0).
+
+***
+***
+***
+
+RT_AvgLumaDif(clip clp, int "n"=current_frame,Bool "Slices"=False,Int "Matrix"=(Width>1100||Height>600?3:2) )
+
+  The function, returns the average of pixel pair differentials for a given frame n, ignoring frame perimeter (1 pixel
+  perimeter around frame edge), range 0.0 -> 255.0.
+
+  Args:
+    n, Int, Default current_frame.
+    Slices, Bool Default False.
+      False, Analyze every adjacent pixel pair in the frame with the exception of frame perimeter.
+      True,  Analyze adjacent pixel pairs in the frame, all 4x4 pixel block boundaries are treated as perimeter pixels
+        and omitted from processing along with the frame perimeter pixels.
+    Matrix, Int, Default = (Width > 1100 OR Height>600) then 3(PC709) else 2(PC601). YUV not used
+      Conversion matrix for conversion of RGB to YUV-Y Luma.  0=REC601 : 1=REC709 : 2 = PC601 : 3 = PC709,
+
+  The function finds the average luminosity differential by analyzing every adjacent pixel pair within the video frame,
+  (both horizontal and vertical, not diagonal) with an option to only process every other 2x2 horizontal and vertical block
+  to ensure any slice (e.g. h.264, h.265) boundaries are excluded. By calling this function before and again after a given
+  filter, this function quantifies a filter's affect on luminosity contrast.
+    NOTE: The perimeter pixels are intentionally ignored as they often incur higher quantization errors.
+
+   'x'= Process, '.'=Don't Process
+
+          Slices=false                 Slices=true
+    ........................    ........................
+    .xxxxxxxxxxxxxxxxxxxxxx.    .xx..xx..xx..xx..xx..xx.
+    .xxxxxxxxxxxxxxxxxxxxxx.    .xx..xx..xx..xx..xx..xx.
+    .xxxxxxxxxxxxxxxxxxxxxx.    ........................
+    .xxxxxxxxxxxxxxxxxxxxxx.    ........................
+    .xxxxxxxxxxxxxxxxxxxxxx.    .xx..xx..xx..xx..xx..xx.
+    .xxxxxxxxxxxxxxxxxxxxxx.    .xx..xx..xx..xx..xx..xx.
+    .xxxxxxxxxxxxxxxxxxxxxx.    ........................
+    .xxxxxxxxxxxxxxxxxxxxxx.    ........................
+    .xxxxxxxxxxxxxxxxxxxxxx.    .xx..xx..xx..xx..xx..xx.
+    .xxxxxxxxxxxxxxxxxxxxxx.    .xx..xx..xx..xx..xx..xx.
+    ........................    ........................
+
+***
+***
+***
+
+*****************************************************
+********** RUNTIME CLIP COMPARISON FUNCTIONS ********
+*****************************************************
+
+ The compiletime/runtime clip functions share some common characteristics.
+ The 'n' and (where used) 'n2' args are the optional frame numbers and default to 'current_frame' if not specified.
+ The x,y,w,h, coords specify the source rectangle under scrutiny and are specified as for Crop(), the default 0,0,0,0 is full frame.
+ If 'interlaced' is true, then every other line is ommited from the scan, so if eg x=0,y=1, then scanlines 1,3,5,7 etc are scanned,
+ if eg x=0,y=4 then scanlines 4,6,8,10 etc are scanned. The 'h' coord specifies the full height scan ie same whether interlaced is true
+ or false, although it will not matter if the 'h' coord is specified as eg odd or even, internally the height 'h' is reduced by 1 when
+ interlaced=true and 'h' is even.
+ Some of the functions have 'x2' and 'y2' args for a second frame (which could be the same frame).
+ Note, 'x2' and 'y2' default to 'x' and 'y' respectively.
+
+
+ RT_YDifference(clip,int "n"=current_frame,int "delta"=1,int "x"=0,int "y"=0,int "w"=0,int "h"=0,int "x2"=x,int "y2"=y,
+      bool "interlaced"=false,int "Matrix"=(Width>1100||Height>600?3:2))
+  Returns FLOAT value luma difference (0.0 -> 255.0) between frame n area x,y,w,h, and frame (n+delta) area x2,y2,w,h.
+  Note, by default it will be equivalent to YDifferenceToNext as delta defaults to 1 and x,y,w,h defaults full frame.
+  Note, 'x2' and 'y2' default to 'x' and 'y' respectively.
+
+  Eg, RT_YDifference(clip,delta=0,y2=1,interlaced=true)
+    Would difference the even and odd lines of the same frame,
+
+***
+***
+***
+
+RT_LumaDifference(clip,clip2,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,
+    int "n2"=current_frame,int "delta2"=0,int "x2"=x,int "y2"=y,bool "interlaced"=false,int "Matrix"=(Width>1100||Height>600?3:2))
+  Returns FLOAT value luma difference (0.0 -> 255.0) between clip frame (n+delta) area x,y,w,h, and clip2 frame (n2+delta2) area x2,y2,w,h.
+  Note, 'x2' and 'y2' default to 'x' and 'y' respectively.
+
+
+***
+***
+***
+
+
+RT_LumaSceneChange(clip,clip2,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,
+    int "n2"=current_frame,int "delta2"=0,int "x2"=x,int "y2"=y,bool "interlaced"=false,int "Matrix"=(Width>1100||Height>600?3:2), \
+    Float "Bias"=0.0,Float "Gain"=1.0,Float "Cont"=1.0,Float "Rpow"=1.0,Float "Spow"=1.0,Float "SPMid"=0.5,Bool "Pord"=false)
+
+  Returns FLOAT value (0.0 -> 255.0) scene change detection between clip frame (n+delta) area x,y,w,h, and clip2 frame (n2+delta2) area x2,y2,w,h.
+  Note, 'x2' and 'y2' default to 'x' and 'y' respectively.
+   v1.21, Modified how it works. Creates a look up table (lut) which is used for the pixel differences between same pixel in frames
+   (n+delta) and (n2+delta2). The lut is created using args "Bias" through to "Pord" and a sort of levels type internal function
+   creates the lut. An absolute pixel difference is taken between corresponding pixels and then the contents of the lut for that difference is
+   added to the sum of differences, and finally the average is taken. Is sort of like mt_lutxy("x y - abs").Lut().AverageLuma()
+   Additional Args:
+    Bias, Default 0.0,  (-512  -> 512).  Equivalent to Bias in RGBAdjust(), ie brightness.
+    Gain, Default 1.0,  (-8.0  -> 8.0).  Equivalent to Gain in RGBAdjust(), varies slope.
+    Cont, Default 1.0,  (-8.0  -> 8.0).  Contrast. A bit like Cont in ColorYUV.
+    RPow, Default 1.0,  (0.1   -> 4.0).  Similar to Gamma.
+    SPow, Default 1.0,  (0.1   -> 4.0).  S shaped power curve.
+    SPMid,Default 0.5,  (0.01  -> 0.99). Mid point control for SPow.
+    Pord, Default False (False -> True). Governs which power function is applied first. False (default) applies RPow 1st,
+         True Applies SPow 1st. Only applies if both power functions not at default 1.0.
+    All Defaults for lut creation are linear and will be equivalent to RT_LumaDifference(). As currently implemented, may provide
+    alternative functionality other than scene change detection, but no idea what those applications could be.
+    A graphing program with VB source is provided in the zip, so you can play with sliders to choose function args.
+    Func versions previous to v1.21, used args similar to:- gain=4.0,rpow=0.5 with remaining args at default.
+      The old default, gave less prominence to big differences so that a few pixels with massive difference were limited in
+      the overall effect on results. New args produce a linear LUT by default.
+
+  Scene change metric between current frame and next frame, whilst ignoring 32 pixels of crud at bottom:-
+    SC = RT_LumaSceneChange(Last,Last,delta2=1,h=-32)
+   and exactly the same thing again:
+    SC = RT_LumaSceneChange(Last,Last,n2=current_frame+1,h=-32)
+  There are two arg clips for flexibility, might usually both be same, but might want to measure against two separate clips and so
+  implemented as above.
+  Scene change detection between current frame top field and bottom field, whilst ignoring 32 pixels of crud at bottom:-
+   SC = RT_LumaSceneChange(Last,Last,y2=1,interlaced=true,h=-32) # Expect higher metrics here.
+
+
+***
+***
+***
+
+RT_LumaMovement(clip,clip2,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,
+    int "n2"=current_frame,int "delta2"=0,int "x2"=x,int "y2"=y,bool "interlaced"=false,int "Matrix"=(Width>1100||Height>600?3:2),
+    int "Mode"=0,int "BlkW"=64,int "BlkH"=64 \
+    Float "Bias"=0.0,Float "Gain"=1.0,Float "Cont"=1.0,Float "Rpow"=1.0,Float "Spow"=1.0,Float "SPMid",Bool "Pord"=false)
+  Returns FLOAT value (0.0 -> 255.0) movement detection between clip frame (n+delta) area x,y,w,h, and clip2 frame (n2+delta2) area x2,y2,w,h.
+  Note, 'x2' and 'y2' default to 'x' and 'y' respectively.
+  There are two modes available, 0 (Default) = RT_LumaDifference() : 1 = RT_LumaSceneChange().
+  BLKW/BLKH (default 64), Block size. Minimum 8 (silently limited to frame dimensions), Must be EVEN.
+  RT_LumaMovement() splits the frames into block sized lumps and calls the desired mode RT_LumaDifference or RT_LumaSceneChange
+  function to get a metric for each of those blocks. The metric returned is the block metric with the highest value, and so is more
+  sensitive to localized movement. Best control of localized movement sensitivity is by changing blk size, lower is more sensitive.
+  If Interlaced is true, then only every other horizontal scanline in BLKH will be scanned.
+  v1.21, See RT_LumaSceneChange() for additional args when Mode=1 (ignored when Mode = 0).
+
+***
+***
+***
+
+RT_LumaCorrelation(clip,clip2,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,int "n2"=current_frame,
+    int "delta2"=0,int "x2"=x,int "y2"=y,bool "interlaced"=false,int "Matrix"=(Width>1100||Height>600?3:2))
+  Returns FLOAT value luma correlation (-1.0 -> 1.0) between clip frame (n+delta) area x,y,w,h, and clip2 frame (n2+delta2) area x2,y2,w,h.
+  Note, 'x2' and 'y2' default to 'x' and 'y' respectively.
+  Pearson's Sample Correlation Coefficient.
+  http://en.wikipedia.org/wiki/Correlation_and_dependence
+  http://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient
+  Uses equivalent routine to the JMac698's JCorr plugin here:
+  http://forum.doom9.org/showthread.php?t=165386
+  and here:
+  http://forum.doom9.org/showthread.php?p=1495098#post1495098
+
+
+***
+***
+***
+
+RT_LumaPixelsDifferent(clip c,clip c2,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0, \
+        int "n2"=current_frame,int "delta2"=current_frame,int "x2"=0,int"y2"=0,bool "interlaced"=false,            \
+        int "matrix"=(Width>1100||Height>600?3:2),int "Thresh"=0)
+
+    Compares clip c frame (n+delta) at x,y,w,h, and clip c2 frame (n2+delta2) at x2,y2,w,h, and returns amount of pixels
+    whose pixel luma difference is greater than Thresh (RGB converted to Luma-Y using Matrix).
+    Matrix 0=Rec601, 1=Rec709, 2=PC601, 3=PC709.
+    If Interlaced=True, then skips every other raster line, eg process only y, y+2, y+4 etc.
+    Thresh Default 0, returns number of pixels that are not exactly the same.
+    Return value is in range 0.0 (meaning none) to 255.0 meaning 100% of pixels.
+
+***
+***
+***
+
+RT_LumaPixelsDifferentCount(clip c,clip c2,int "n"=current_frame,int "delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0, \
+        int "n2"=current_frame,int "delta2"=current_frame,int "x2"=0,int"y2"=0,bool "interlaced"=false,            \
+        int "matrix"=(Width>1100||Height>600?3:2),int "Thresh"=0)
+
+    Compares clip c frame (n+delta) at x,y,w,h, and clip c2 frame (n2+delta2) at x2,y2,w,h, and returns number of pixels
+    whose pixel luma difference is greater than Thresh (RGB converted to Luma-Y using Matrix).
+    Matrix 0=Rec601, 1=Rec709, 2=PC601, 3=PC709.
+    If Interlaced=True, then skips every other raster line, eg process only y, y+2, y+4 etc.
+    Thresh Default 0, returns number of pixels that are not exactly the same.
+    Note, returns the number of pixels whose difference is greater than Thresh, so ranges 0 -> (Width*Height).
+
+***
+***
+***
+
+The functions allow no errors in coordinates except height off by 1 when interlaced.
+Silently correcting coordinate errors can hide bugs for decades, better to be made aware of bugs so they can be corrected and
+erroneous results avoided.
+
+
+Here a few example uses:-
+
+
+scriptclip(""" Subtitle(String(RT_YDifference(Last,delta=0,y2=1,interlaced=true) )) """)
+# difference even and odd lines of current_frame.
+# ---------
+scriptclip(""" Subtitle(String(RT_YDifference(Last, n=current_frame-1, delta=2) )) """)
+# difference the frames either side of current frame.
+# ---------
+scriptclip(""" Subtitle(String(RT_YDifference(Last, delta=1, y=10,  h=1) )) """)
+# difference frames current_frame and current_frame+1, single scanline 10.
+# ---------
+scriptclip(""" Subtitle(String(RT_AverageLuma(Last,x=16,y=16,w=-16,h=-16) )) """)
+# get average luma of current_frame ignoring crud around edges of frame.
+# ---------
+scriptclip(""" Subtitle(String(RT_AverageLuma(Last,h=-12,interlaced=true) )) """)
+# get average luma of current_frame top field, ignoring 12 lines of crud at bottom of frame.
+# ---------
+scriptclip(""" Subtitle(String(RT_AverageLuma(Last,y=1,h=-12,interlaced=true) )) """)
+# get average luma of current_frame bottom field, ignoring 12 lines of crud at bottom of frame.
+# ---------
+scriptclip(""" std =RT_YPlaneStdev(Last) Subtitle(String(std) ) """)
+# Luma standard deviation of current_frame.
+# ---------
+scriptclip(""" sum =RT_LumaCorrelation(Last,Last,delta=1) Subtitle(String(Sum) ) """)
+# Luma Correlation between current_frame and current_frame + 1
+# ---------
+scriptclip(""" sum =RT_LumaCorrelation(Last,Last,y2=1,interlaced=true) Subtitle(String(Sum) ) """)
+# Luma Correlation between current_frame top field and current_frame bottom field.
+# ---------
+
+
+# Requires GScript and ShowChannels plugins.
+AviSource("D:\avs\avi\1.avi").trim(0,0999)
+
+   Sum = 0.0
+   SumHi=0.0    # Hi part Extra precision (need for longer scans)
+   SumLo=0.0    # Lo part Extra precision
+   GScript("""
+     for(n=0,FrameCount()-1) {
+       Tmp = RT_AverageLuma(n)
+       RT_Debug("RT_Debug:","["+String(n)+"]","AveLuma = "+String(Tmp)) # Real Time Debug Info using DebugView
+ #       Sum = Sum + Tmp    # Were gonna use extra precision instead
+       SumLo = SumLo + Tmp
+       SumHi = SumHi + floor(SumLo / 256.0)  # Hi part, Extra Precision
+       SumLo = frac(SumLo / 256.0) * 256.0   # Lo part, Extra Precision
+     }
+   """)
+ #   Sum=Sum/Float(FrameCount())     # Were gonna use extra precision instead
+   Sum = (SumHi / Float(FrameCount()) * 256.0) + (SumLo / Float(FrameCount()))
+   s=ShowChannels(ver=true)          # Show eg Ave Luma for frame and Accumulated Ave luma for all frames visited
+   s.Subtitle(String(Sum),Align=1)
+
+ # The sum variable shown on bottom left via Subtitle, is the accumulated Average Luma for entire clip, will be valid on the LAST FRAME.
+ # ShowChannels used for result comparison.
+
+
+
+
+*****************************************************
+****** SCRIPT CONVERSION TO PLUGIN FUNCTIONS ********
+*****************************************************
+
+ Below fns converted from previously existing script functions which will also be supplied so that you can see the logic,
+ any changes after v1.10 plugin versions may not be reflected in the later script versions.
+
+
+
+RT_GetSAR(clip,dar float)
+  Gets Sample (pixel) Aspect Ratio from DAR Display Aspect Ratio.
+
+***
+***
+***
+
+RT_GetDAR(clip,sar float)
+  Gets DAR Display Aspect Ratio from SAR, Sample (pixel) Aspect Ratio.
+
+***
+***
+***
+
+RT_SignalDAR(float) # See Megui wiki (name change from SetDAR)
+  Signal DAR to MEGUI. Sets Global vars MeGUI_darX and MeGUI_darY which are read during MEGUI loading of AVS file.
+
+***
+***
+***
+
+RT_SignalDAR2(int darx,int dary)
+  As for RT_SignalDAR() except it allows setting of numerator and denominator individually.
+  Signal DAR to MEGUI. Sets Global vars MeGUI_darX and MeGUI_darY which are read during MEGUI loading of AVS file.
+
+***
+***
+***
+
+RT_GetCropDAR(clip,float DAR,float "X"=0,float "Y"=0,Float"W"=0,float "H"=0)
+  Call prior to Crop/Resize with (possibly fractional) cropping to calc resultant DAR, X,Y,W,H are cropping coords
+  DAR = FAR * SAR   :::   FAR = DAR / SAR   :::   SAR = DAR / FAR
+  Cropping affects FAR & usually DAR, resizing does not affect DAR (unless also cropped). Resizing affects FAR and maybe SAR.
+  We dont allow eg -ve X
+
+***
+***
+***
+
+RT_QueryLumaMinMax(clip c,int "Samples"=32,float "Ignore"=0.2,String "Prefix"="QLMM",bool "DEBUG"=false,int "X"=0,int "Y"=0,int "W"=0,int "H"=0, \
+     int "Matrix"=(Width>1100||Height>600?3:2),int "Start"=Undefined,int "End"=Undefined)
+  Prescan function to get Luma Min,Max for clip scanning Samples frames area x,y,w,h.
+  Returns luma min/max as string Default eg "QLMMMin=25 QLMMMax=244", use eg "Eval(RT_QueryLumaMinMax())" to set variables for use in script.
+
+  Samples:=32=frames to sample from clip, limited to Framecount.
+   Samples = 0 converted to FrameCount and Auto Credits skipping disabled.
+
+  Ignore:=0.2=Percentage of extreme pixels to ignore (noise) when getting luma min/max (As Threshold arg for YPlaneMin/Max).
+
+  Prefix:="QLMM"=Prefix for return string values.
+
+  DEBUG:=false= dont show. True=debug info. Need DebugView: http://technet.microsoft.com/en-gb/sysinternals/bb545027
+
+  X=Y=W=H=0=Full frame, as crop, area to examine.
+
+  Matrix:, For conversion of RGB to YUV-Y, 0 = Rec601, 1 = Rec709, 2 = PC601, 3 = PC709
+   Default for RGB is 3(PC709) if Width > 1100 || Height > 600 Else 2(PC601) : YUV not used
+   For RGB, it probably does not make sense to use anything other than PC levels.
+
+  Start: Default Undefined. Start frame of scan area. The Start arg overrides Auto Intro credits skipping.
+
+  End: Default Undefined. End frame for scan area. Overrides Auto End credits skipping. 0 (or less) will be converted to Framecount - 1.
+
+
+  If user supplied Start and End frame numbers given then that marks the range of frames from which to select the Samples frames.
+    If neither Start nor End given, the function tries to avoid sampling artificial black/white in Intro and End Credits sequences,
+  for Auto Intro and End Credits Skipping to be set to 5% (of FrameCount for Intro Skipping) and 90% (for End Skipping), the number of
+  frames between them must be greater or equal to 250 frames, and MUST also be greater than Samples, otherwise Auto skipping ignored and
+  the Start and End frame numbers are set to 0 and Framecount - 1.
+    If a user supplies eg a Start frame number ONLY, then End Skipping has to comply with the same above conditions, range between End Skip
+  frame and user supplied Start has to be at least 250 frames and greater than Samples, otherwise End frame set to FrameCount - 1. The
+  same conditions apply if only a user supplied End frame only.
+  After either user supplied Start/End, or via Auto Credits skipping, or defaulted to 0 & FrameCount -1, we have a sample scan range.
+  Setting Debug=True, will send debug info including resulting sample frame range to DebugView window.
+
+  Usage:  Clip global Auto levels using Levels() filter.
+    AUTOLEVEL_STRENGTH = 0.5      # 0.0 -> 1.0
+    Eval(RT_QueryLumaMinMax())    # using default values, sets QLMMMin and QLMMMax.
+    if(IsRGB()) {                  # Requires GScript
+      CSMin = 0
+      CSMax = 255
+    } else {
+      CSMin = 16
+      CSMax = 235
+    }
+    ALMin = Int(CSMin - ((CSMin - QLMMMin) * AUTOLEVEL_STRENGTH) + 0.5) # Round Up
+    ALMax = Int(CSMax - ((CSMax - QLMMMax) * AUTOLEVEL_STRENGTH))       # Round down
+    Levels(ALMin,1.0,ALMax,CSMin,CSMax,Coring=False)                    # DO NOT use Coring
+
+***
+***
+***
+
+
+Function RT_QueryBorderCrop(clip c,int "Samples"=32,Float "Thresh"=-32,bool "Laced"=true, \
+    int "XMod",int "YMod",int "WMod"=XMod,int "HMod"=YMod, \
+    bool "Relative"=false, String "Prefix"="QBCrop",int "RLBT"=15,bool "DEBUG"=false,float "Ignore"=0.2, \
+    int "Matrix" = (c.Width>1100||c.Height>600?3:2), \
+    Float "ScanPerc"=49.0,int "Baffle"=4, bool "ScaleAutoThreshRGB"=true,bool "ScaleAutoThreshYUV"=false,Float "ATM"=4.0, \
+    int "Start"=Undefined,int "End"=Undefined)
+
+ Prescan function to get coords for eg cropping black borders by sampling Samples frames. Planar, YUY2, RGB.
+ Borders are detected by sampling at Samples frames, at scanlines (h/v) using AverageLuma (RGB is converted to Luma Y at either TV or
+ PC levels, See Matrix). This sampling is done on all 4 sides of the frame.
+ If a scanline Average luma is below or equal to Thresh, then is considered possible black border, above considered possible image,
+ if Baffle [default=4] adjacent scanlines above Thresh, then it IS image.
+
+ Simultaneously returns 4 sets of strings holding crop coords, here is one set: "QBCropX=8 QBCropY=8 QBCropW=640 QBCropH=480".
+ String sets are Chr(10) separated, the 'exact found' coords set as above, not rounded at all and possibly throwing an error if
+ you try to crop, although could use in eg resize.
+ Second set using eg "QBCropXL=8", which is CropLess("L" trailer), ie when rounding for Xmod,WMod etc may leave some black border.
+ Third set using eg "QBCropXM=8", which is CropMore, ie when rounding for Xmod,WMod etc may crop some image.
+ Forth set using eg "QBCropXP=8", which is CropPlus, moves border positions an extra 2 pixels inwards on each edge and then as CropMore.
+ The non-exact coords try to center the coords when cropping for larger WMod/HMod's so as to evenly crop from eg both left and right instead of
+ just one side. Also returned in the return string is the used Threshold, perhaps set by AutoThresh, as eg "QBCropThresh=32.0"
+ You can use eg Eval(RT_QueryBorderCrop()) to set values into QBCropX, QBCropY,QBCropW,QBCropH etc variables.
+
+ Args:-
+
+   Samples=32, Number of frames to sample from source clip c.
+    As an observation, most clips have good border recogition within the 1st 2 sampled frames using the default -32.0 AUTOTHRESH
+    although have noticed some dark clips that required ~8 samples (maybe more) for full recognition @ default Thresh = -32.0
+    We use a default Samples=32, because we are intrinsically paranoid.
+      If number of frames between frame at 5% of framecount and frame at 90% of framecount is greater than 250 and is also greater
+    than Samples, will ignore the first 5% and last 10% of frames when both auto-thresholding and crop sampling to try to negate
+    effects of artificial black in titles and end credits. Can override the Auto Credits skipping by setting Start and/or End frame
+    of range to sample.
+      Samples = 0, will be converted to Samples = FrameCount - 1, ie auto credits skipping disabled  and ALL FRAMES SAMPLED,
+    of use for very short scenes, not for general full movie clips.
+
+   Thresh: Default= -32.0 (==DEFAULT AUTOTHRESH, any -ve Thresh is AUTOTHRESH where Thresh adjustments are automatic).
+
+    Thresh > 0: (Explicit Threshold)
+      A user supplied +ve Thresh should be at correct TV/PC levels for the the clip being worked on ie 16->235 for TV levels and
+      0->255 for PC Levels (RGB, as appropriate for matrix being used).
+
+    Thresh <= 0: (AUTOTHRESH)
+      When Thresh <= 0, the clip will be sampled over Samples frames to find the minimum YPlaneMin (using Matrix if RGB) which
+      we will call MINLUMA and an Explicit Threshold calculated by adding MINLUMA to abs(Thresh), after that it is processed
+      as for Thresh > 0: (Explicit Threshold) as noted above, but, before adding MINLUMA, some AUTOTHRESH massaging and scaling occurs.
+
+      Here AUTOTHRESH Thresh massaging and scaling occurs in sequence:-
+      1 ) if (Thresh == DEFAULT AUTOTHRESH && ATM < 32.0) (DEFAULT AUTOTHRESH = exactly -32.0, defaulted OR user supplied):
+            Let sampstart and sampend, be starting and ending frames numbers after any Auto Credits skipping and/or user set Start or End.
+            Let Samples be limited to sampend-sampstart+1.
+            Let SampRange (Sample Range) = SampEnd-SampStart+1.
+            samples_massage =(Samples>=16)           ? 1.0 : (Samples-1)   * (1.0/(16-1))           # No massaging if Samples >= 16
+            range_massage   =(SampRange >= (250*16)) ? 1.0 : (SampRange-1) * (1.0/((250*16)-1))     # No massaging if SampRange >= 4000
+             Both samples_massage and range_massage will be in range 0.0 to 1.0.
+             Thresh = -(((samples_massage * range_massage) * (32.0 - ATM)) + ATM)
+              This adjustment to Auto Thresh is to reduce the possibility of overcropping on eg a dark low 'Samples' clip, or where
+              source SampRange (ie temporal frame set) is too small to take a reliable sample from.
+              Resulting massaged Thresh will range between -ATM and -32.0.
+              Although massaging is intended to reduce overcropping, it could result in not cropping enough border (less disastrous),
+              its a bit of a balancing act really. See also ATM.
+      2 ) If RGB AND PC matrix(default) AND ScaleAutoThreshRGB==True(default) then
+            Thresh= Thresh*(255.0/(235-16))
+      3 ) If YUV AND ScaleAutoThreshYUV==True(default=false) then
+            Thresh= Thresh*(255.0/(235-16))
+
+      Steps 2) and 3) above, by default treat a -ve AUTOTHRESH as being @ TV Levels and so Scale RGB Thresh to PC levels but not YUV.
+      If you want to supply a PC levels AUTOTHRESH Thresh for RGB, then simply set ScaleAutoThreshRGB=false to inhibit scaling.
+      Note, if a TV levels Matrix is supplied for RGB, then scaling will always be inhibited.
+       If your clip is YUV at PC levels and you want to use eg DEFAULT AUTOTHRESH (-32.0, which is considered to be @ TV levels),
+      then set ScaleAutoThreshYUV=True to enable Thresh scaling.
+       If your clip is YUV at PC levels and you want to use a PC levels AUTOTHRESH (-ve) then leave ScaleAutoThreshYUV at default false
+      which does not scale Thresh.
+      After any scaling, MINLUMA is then added to abs(Thresh) and processed as for +ve Explicit Threshold as noted above.
+      NOTE, Above QueryBordeCrop step 1) 'massages' DEFAULT AUTOTHRESH (exactly -32.0) if low samples count or if short clip. Reason being to
+       avoid overcropping when insufficient data available for reliable cropping. It is considered better to not crop enough or at all,
+       than to overcrop. You can override by simply setting an explicit threshold (+ve) of eg 40.0, or setting a NON-DEFAULT auto thresh
+       (-ve) eg -16.0 or -32.1, where YPlaneMin is established for the sampled frames and then abs(thresh) is added to that value which
+       is then used as an explicit thresh.
+
+
+   Laced:, Default=true, true for Interlaced.    (Modifies defaults for YMod,HMod, explicit YMod/HMod will override).
+          QueryBordeCrop automatically deduces colorspace cropping restrictions and sets internal XMod and YMod,
+          eg XMod and YMod would both be set to 2 for YV12, for YUY2 Xmod=2, YMod=1, etc.
+          If Laced==true, then internal YMod is doubled so as not to destroy chroma.
+          Below WMod and HMod are both defaulted to internal XMod and YMod respectively after the Laced hint is applied to YMod.
+
+   XMod:, Default=The natural cropping XMod for clip colorsapace, eg YV411=4, YV12=2, YUY2=2, RGB=1
+   YMod:, Default=The natural cropping YMod for clip colorsapace, eg YV411=1, YV12=2, YUY2=1, RGB=1: BUT, Doubled if laced=true.
+     NOTE, XMod, YMod, If overridden must all be multiples of the colorspace natural cropping XMod,YMod else throws error.
+     NOTE, As We now use natural XMod,Ymod, might be best to never alter defaults for XMod,YMod, suggest only change
+       Laced, WMod and HMod as required, XMod and YMod left in-situ so as not to break scripts.
+
+   WMod:, Default=The natural chroma cropping restriction of the colorspace concerned, eg 2 for YV12.
+   HMod:, Default=The natural chroma cropping restriction of the colorspace concerned, BUT, doubled if laced=true.
+    The above WMod,HMod sets rounding for legal cropping coords for colorspace concerned.
+    WMod MUST be a multiple of internal XMod as described under Laced above, or it will throw an error.
+    HMod MUST be a multiple of internal YMod as described under Laced above, or it will throw an error. If eg colorspace is
+      YV12 then YMod would be set to 2, and if Laced, then YMod would be doubled to 4, so HMod MUST be a multiple of 4.
+      Some encoders may require an WMod/HMod of eg 8 or 16, and if set thus, would crop off more or less depending upon
+      which CropMode is used, if later resizing will be done, then encoder requirements can be satisfied during the resize.
+      NOTE, Some players and VirtualDubMod (Helix YV12 decoder) dont like WMOD less than 4 (Vdub latest, OK, internal decoder).
+        If eg VDMod show blank frame, OR eg player halts saying eg "No combination of filters cound be found to render frame"
+        then set WMod to a multiple of 4. We do not do this by default as Current VDub and some player/encoders may work just fine.
+        If you dont care about possibility of losing a couple of pixels then always supply WMod=4 to avoid display problems.
+
+   Relative:=false, False returns Width and Height, true returns Width/Height relative eg QBCropW=-6 QBCropH=-4.
+
+   Prefix:="QBCrop", string for returned variable names, only use valid variable name characters eg NO SPACES. Default returns eg "QBCropX".
+
+   RLBT:=15=All Borders, Bitflags of edges to crop, 15 ($0F) crops all four. Each letter in the name 'RLBT' represents an edge and bit position
+    starting with 'R' in bit 3 representing the value 8 (2^3=8). 'L' = bit 2=4 (2^2=4), 'B' = bit 1=2 (2^1=2), 'T' = bit 0=1 (2^0=1).
+    To calculate the RLBT bitflags, for 'R'(Right) add 8, for 'L'(Left) add 4, for 'B'(Bottom) add 2, and for 'T'(Top) add 1.
+    Add all of the bit flags together 8+4+2+1 (=15) crops all four edges, 8+4 crops only Right & Left, and 2+1 crops only Bottom & Top.
+
+   DEBUG:=False=No Debug. Set True for debugging info, need DebugView: http://technet.microsoft.com/en-gb/sysinternals/bb545027
+     The debug info output shows eg range limiting of Samples and sample info and resultant auto set Thresh. You are encouraged
+     to use debug to see the eg the auto Thresh massaging in action, it may help to understand usage of the function. MS DebugView
+     can also be used to view output from other plugins and programs that can also be useful.
+
+   Ignore:=0.2, Percentage of darkest pixels to ignore during AutoThresh scan to detect minimum luma pixel of all sampled frames.
+     (ignores extreme values ie noise, as for Threshold arg in YPlaneMin).
+
+   Matrix:, RGB ONLY. For conversion of RGB to YUV-Y, 0 = Rec601, 1 = Rec709, 2 = PC601, 3 = PC709
+      Default for RGB is:- If clip Width > 1100 OR clip Height > 600 Then 3(PC709) , else 2(PC601) : YUV not used
+      The defaults are for PC601 & PC709 range 0-255.
+      So as to not require different AutoThresh for RGB, if clip c is RGB AND matrix is PC Levels AND Thresh < 0.0 and ScaleAutoThreshRGB=true,
+      then Thresh will be scaled to RGB full range ie Thresh = Thresh * (255.0/(235.0-16.0)) ONLY when AutoThresh (ie Thresh < 0.0,
+      YPlaneMin relative).
+      When +ve Thresh is explicitly supplied (Thresh > 0.0) it is not scaled and assumed to be already correct range TV or PC levels.
+
+   ScanPerc:=49.0=Scan only 49 percent width and height (left, right, top bot) when detecting borders, special use only. Range 1.0 -> 99.0.
+    ScanPerc implemented because of this post by Jmac698: http://forum.doom9.org/showthread.php?p=1604004#post1604004
+
+   Baffle:=4, Number of scanlines (h/v) that must break threshold to be considered image (can avoid noise around frame edges).
+      Does not usually need changing but might be of use to avoid some kind of eg teletext data at top of frame in broadcast video.
+
+   ScaleAutoThreshRGB: bool default True. If true and RGB and Matrix at PC levels, and Thresh -ve (autothresh) then thresh will (after any
+      auto Thresh massaging) be scaled to PC levels. By default, -ve Auto Thresh is considered to be at TV levels, and so will be scaled to
+      to PC levels to match the matrix setting. If ScaleAutoThreshRGB is False Then autothresh is considered to be at PC levels and not scaled.
+
+   ScaleAutoThreshYUV: bool default False. If true and YUV and Thresh -ve (autothresh) then Thresh will (after any auto Thresh massaging),
+      be scaled to PC levels. By default, -ve Auto Thresh is considered to be at TV levels, this allows you to change that assumption when
+      source clips are at PC levels. If supplying PC levels clip and PC levels autothresh then leave this setting at false (no scaling).
+      The above seemingly awkward  settings are due to having to deal with YUV @ TV levels and RGB @ PC levels with the possibility of
+      YUV @ PC levels.
+
+   ATM: Float default 4.0 (0.5 -> 32.0). Silently limited to valid range.
+      ATM allows user to set the DEFAULT AUTOTHRESH massaging minimum. When eg samples = 1, then auto thresholding is of course quite
+      unreliable and so auto Thresh would be 'massaged' to -ve(ATM), other values of Samples below 16 will likewise have auto thresh
+      massaged but to a lesser degree, linearly between -ve(ATM) for Samples == 1 and -ve(32.0) for Samples == 16.
+        Auto Thresh massaging also takes into account the frame range of samples (first sampled frame to last sampled frame inclusive)
+      and this is mixed together with any samples massaging then applied to auto Thresh.
+      Previous (Fixed) default for ATM was 0.5, for maximum safety so that a single Samples scan would NOT overcrop. The new ATM arg default
+      of 4.0 is a less paranoid safety setting which should in most cases work well but with a very short clip or eg single image then
+      user might be better off giving the minimum ATM of 0.5. An ATM of 32.0 will switch OFF default auto thresh massaging.
+      So long as sample range is about 4000+ frames  and Samples at least 16(default 32), then there will be no auto thresh massaging and
+      current default is unlikely to need changed, with very short clips or reduced Samples count, then you might want to reduce ATM, for
+      maximum paranoia, set ATM=0.5 to 1.0, especially in an app that processes single images. See Thresh.
+
+   Start: Default Undefined. Start frame of scan area. Overrides Auto Intro credits skipping.
+      For Auto Intro and End Credits Skipping to be set to 5% (of FrameCount for Intro Skipping) and 90% (for End Skipping), the number of
+      frames between them must be greater or equal to 250 frames, and MUST also be greater than Samples, otherwise Auto skipping ignored and
+      the Start and End frame numbers are set to 0 and Framecount - 1. If a user supplies eg a Start frame number ONLY, then End Skipping
+      has to comply with the same conditions, range between End Skip frame and user supplied Start has to be at least 250 frames and greater
+      than Samples, otherwise End frame set to FrameCount - 1.
+       After either via Auto Credits skipping, or user supplied Start/End, or defaulted to 0 & FrameCount -1, we have a sample scan range.
+
+   End: Default Undefined. End frame for scan area. Overrides Auto End credits skipping. 0 (or less) will be converted to Framecount - 1.
+      See previous Start setting.
+
+Cropping will likely fail on END CREDITS ONLY clips, where on black background, and will probably crop off the sides that are no
+different in average luma to any letterbox borders, if you cannot see the borders, then neither can QueryBordeCrop(), even setting the
+auto Thresh to eg -1.0 or 0.0 is quite likely to fail. (See RLBT edge bitflags).
+
+If cropping too much border, then increase Samples or reduce Thresh or lower ATM if short clip.
+If not cropping enough border then border is being seen as image, increase Thresh (for -ve Thresh , make more -ve).
+
+ To speed up, you may want to leave Auto-Thresh alone and reduce samples, but there is danger that it will not detect all borders (overcrop).
+Suggest you do not go below Samples=16, although early default for samples was 12, we use a paranoid setting of 32 by default.
+However, QueryBordeCrop is quite sprightly and you will probably not need to reduce Samples, but if you are interested in how long it takes to
+do it's auto thresh scanning, the time taken is output via the debug arg to DebugView. Clips that have no letter
+boxing are quickest dealt with and those with largest borders take most time as it has to scan the borders of all Samples frames, looking for
+image. Doing a short test as I write this on a 10 mins 12 secs PAL DVD vob of Cabaret, it took 2.765secs where borders = Crop(28,92,-24,-92)
+with default args except for Debug=true (Core Duo, Duel Core 2.14Ghz, Sata 2).
+
+NOTE, The plugin AutoCrop() uses a Thresh of 40.0 and samples == 5 by default (No AutoThresh), but the base logic is not too dissimilar.
+
+Final NOTE, the args to especially note are:- WMod, you might want to supply WMod=4 if using VDubMod (some players might try to download codec),
+And Laced=False if you always process progressive or deinterlaced, And ATM set between 0.5 and 4.0 if very short clips/single-image.
+
+***
+***
+***
+
+
+Function RT_YInRangeLocate(clip c,int "n"=current_frame,int "Delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,int "Baffle"=8,float "Thresh"=0.0, \
+    int "Lo"=128,int "Hi"=255,Int "Matrix"=(Width>1100||Height>600?3:2),String "Prefix"="YIRL_",bool "Debug"=false, \
+    int "Baffle_W"=Baffle,int "Baffle_H"=Baffle)
+
+ Function to scan frame n+delta for an area where percentage of pixels in luma range Lo to Hi (inclusive) breaks a threshold over at
+ least Baffle consecutive number of scanlines (all four sides).
+ Returns True on Successful location else false. On success sets Local var Coords.
+
+ RT_YInRangeLocate tests scanlines from outer most scanlines (h and v), towards inner most, stops where it finds Baffle consecutive scanlines
+ that contain more than Thresh percent of pixels in range Lo to Hi. Object interiors are not tested and so could be hollow.
+ Would also give +ve result for a disjoint shape like this
+   --
+  |  |
+   --
+ Args:
+  n: default = current_frame in runtime environment.
+  Delta: Default = 0
+  X:Y:W:H: All default=0 as in crop. Area to search, default is full frame.
+  Baffle: Default=8, minimum number of scanlines that must have a percentage of pixels in range Lo to Hi, greater than Thresh. Avoids noise.
+  Thresh: Default=0.0 (0.0->100.0). Percentage pixels above which breaks Threshold. Default is any pixel in the range Lo to Hi will break threshold.
+  Lo: Default 128, lower bound of pixel values to search for.
+  Hi: Default 255, upper bound of pixel values to search for.
+  Matrix: Default for RGB is 3(PC709) if width > 1100 or height > 600 Else 2(PC601) : YUV not used
+  Prefix: Default "YIRL_", prefix for Local Var coords set on successful location of object, eg YIRL_X, YIRL_Y, YIRL_W, YIRL_H.
+  Debug: Default false. If true outputs info to debugView.
+  Baffle_W, Default Baffle. Thickness of Left and Right side vertical edges, silently limited to width W of search area.
+  Baffle_H, Default Baffle. Thickness of Top and Bottom horizontal edges, silently limited to height H of search area.
+
+
+***
+***
+***
+
+Function RT_RgbInRangeLocate(clip c,int "n"=current_frame,int "Delta"=0,int "x"=0,int "y"=0,int "w"=0,int "h"=0,int "Baffle"=8,float "Thresh"=0.0, \
+    int "RLo"=128,int "RHi"=255,int "GLo"=128,int "GHi"=255,int "BLo"=128,int "BHi"=255, \
+    String "Prefix"="RGBIRL_",bool "Debug"=false,int "Baffle_W"=Baffle,int "Baffle_H"=Baffle)
+
+ Function to scan frame n+delta for an area where percentage of pixels in all 3 RGB channels range cLo to cHi (inclusive, c==R or G or B)
+ breaks a threshold over at least Baffle consecutive number of scanlines (all four sides).
+ Returns True on Successful location else false. On success sets Local var Coords.
+
+ RT_RgbInRangeLocate() tests scanlines from outer most scanlines (h and v), towards inner most, stops where it finds Baffle consecutive scanlines
+ that contain more than Thresh percent of pixels in range cLo to cHi. Object interiors are not tested and so could be hollow.
+ Would also give +ve result for a disjoint shape like this
+   --
+  |  |
+   --
+ Args:
+  n: default = current_frame in runtime environment.
+  Delta: Default = 0
+  X:Y:W:H: All default=0 as in crop. Area to search, default is full frame.
+  Baffle: Default=8, minimum number of scanlines that must have a percentage of pixels in range Lo to Hi, greater than Thresh. Avoids noise.
+  Thresh: Default=0.0 (0.0->100.0). Percentage pixels above which breaks Threshold.
+    Default is any pixel with all three channels in range cLo to cHi, will break threshold.
+  RLo: Default 128, lower bound of pixel values of Red Channel to search for.
+  RHi: Default 255, upper bound of pixel values to Red Channel search for.
+  GLo: Default 128, lower bound of pixel values of Green Channel to search for.
+  GHi: Default 255, upper bound of pixel values to Green Channel search for.
+  BLo: Default 128, lower bound of pixel values of Blue Channel to search for.
+  BHi: Default 255, upper bound of pixel values to Blue Channel search for.
+  Prefix: Default "RGBIRL_", prefix for Local Var coords set on successful location of object, eg RGBIRL_X, RGBIRL_Y, RGBIRL_W, RGBIRL_H.
+  Debug: Default false. If true outputs info to debugView.
+  Baffle_W, Default Baffle. Thickness of Left and Right side vertical edges, silently limited to width W of search area.
+  Baffle_H, Default Baffle. Thickness of Top and Bottom horizontal edges, silently limited to height H of search area.
+
+*****************************************************
+******       DBase Utility Functions         ********
+*****************************************************
+
+
+RT_QwikScanCreate(clip c,string DB,string "PrevDB"="",string "NextDB"="",int "matrix"=(Width>1100||Height>600?3:2),bool "Debug"=False)
+    Creates a DataBase set used to quickly scan a clip for frame matching, DataBases used by RT_QwikScan.
+    c, clip used to create database frame fingerprint info.
+    PrevDB, DBase filename, used to find frames prior to a 'start frame'.
+    NextDB, DBase filename, used to find frames after a 'start frame'.
+      Either PrevDB or NextDB (or both) must be given.
+    Matrix, used to convert RGB to Luma_Y for Fingerprint creation.
+    Debug, True sends a little info to DebugView window (google).
+    Maximum PrevDB/NextDB size is restricted to 524279 records(frames).
+
+***
+***
+***
+
+RT_QwikScan(clip SearchClip,Int SeachStart,clip FindClip,Int FindFrame,string DB,string PNDB,
+    \ Float "LumaTol"=1.0,int "Flags"=1,
+    \ Float "LC"=1.0,Float "LD"=1.0,Float "FD"=1.0,Float "PD"=1.0,int "PC"=(SearchClip.Width*SearchClip.Height+127)/255, int "XP"=1,
+    \ Float "ChromaWeight"=1.0/3.0,Int "PDThresh"=0
+    \ int "Maxdistance"=SearchClip.FrameCount-1,bool "Inclusive"=True,string "Prefix"="QWKS_")
+
+    Developer function only, not for the casual scriptor.
+    Function that scans a clip using pair of database files to find a sequence of candidate frames that could match a target FindFrame.
+    Returns frame number of possible matching frame, or -1 meaning NOT FOUND.
+
+    ARGS:-
+
+    SearchClip, the clip to search, and used as arg to RT_QwikScanCreate to create DB, PrevDB and NextDB database files that hold
+      "FingerPrint" and frame location data to assist in rapid location of candidate frames.
+
+    SearchStart, frame number in SearchClip where searching will start, see also Inclusive.
+
+    FindClip, clip holding FindFrame to match.
+
+    FindFrame, Frame number of the FindClip frame that is to be matched.
+
+    DB, Filename of the 'FingerPrint' Dbase. Created via RT_QwikScanCreate.
+
+    PNDB, Filename of the frame locator Dbase. Created via RT_QwikScanCreate as either PrevDB or NextDB.
+      Use the PrevDB if searching frames prior to SearchStart in SearchClip, or the NextDB if search frames after SearchStart.
+      See also 'Inclusive'.
+
+   OPTIONAL ARGS:
+
+    LumaTol (default 1.0), +- Luma Tolerance (0.0 -> 16.0). Allow for mismatch in luma between SearchClip and FindClip. If eg the FindClip
+      pixels can vary by as much as +- 4 pixel levels, then set LumaTol to 4.0, the bigger this number the slower the function, but it
+      should be still quite fast with most clips even up to a LumaTol of maximum 16.0, the bigger this number, the more frames will fit
+      the fingerprint and so there will be more candidate frames to check.
+
+    Flags (Int, default=1 ie LumaCorrelation Exit Condition), Bit flags, sets the additional Exit Conditions of the function.
+
+        Bit 0 set eg $01, Sets the LumaCorrelation Exit Condition.
+        Bit 1 set eg $02, Sets the LumaDifference  Exit Condition.
+        Bit 2 set eg $04, Sets the FrameDifference Exit Condition.
+        Bit 3 set eg $08, Sets the PixelsDifferent Exit Condition.
+        Bit 4 set eg $10, Sets the PixelsDifferentCount Exit Condition.
+
+        To eg set Exit conditions LumaCorrelation + FrameDifference + PixelsDifferent, then add 1 + 4 + 8 (1+4+8=13=$0D).
+
+        If exit conditions set, then there may be info generated in the Exit and Best Match returned local variables.
+
+    LC, LumaCorrelation Exit Condition Threshold (Float, default 1.0, Range 0.0 -> 255.0).
+        Selected when bit 0 of Flags is set.
+        LC is the Threshold for RT_LumaCorrelation, if the match is less or equal to this then the Exit Condition is satisfied.
+        We have 'swizzled' the values returned by RT_LumaCorrelation() here to something akin to half range "Pearson's Distance".
+        See Pearson’s Distance here: http://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient
+        where Pearson's Distance is equivalent to:
+
+            PD(x,y) = 1.0 - Correlation(x,y)
+
+        and our Swizzled half range version using equivalent to:-
+
+            SwizzledLC(x,y) = Min( (1.0 - RT_LumaCorrelation(x,y)) * 255.0, 255.0 )
+
+        Correlation    Pearsons_Distance    Swizzled_LC
+            1.0              0.0               0.0                Total +ve Correlation
+            0.0              1.0              255.0                  UnCorrelated
+           -1.0              2.0              255.0               Total -ve Correlation
+
+        so instead of the RT_LumaCorrelation normal range -1.0 -> 1.0, we use 0.0 -> 255.0 where 0.0 means exact match and 255.0 means
+        unmatched, Swizzled RT_LumaCorrelation results that were -ve are clipped at 255.0 so we consider Total -ve Correlation to be no
+        more distant than UnCorrelated, ie photo invert of find frame cannot be more distant than 'totally unmatched'.
+          We have done this for 2 reasons. Firstly, to make it the same (roughly) as the other exit conditions, the closer to zero, the
+        better the match. 2nd reason is, Avisynth Floats have only 6 significant digits of decimal precision. So eg 0.999999 is about as
+        good as it gets (closest to 1.0 without actually being 1.0). When we 'swizzle' the numbers to make 0.0 an exact match, we can
+        supply a more precise threshold which will be used at double precision within the function.
+        Eg 0.0000000000000000000000000000001 is still a valid float (and in this case it is only 1 significant digit of precision).
+        Despite the swizzling, we will keep the name LC LumaCorrelation (PD already taken).
+          LumaCorrelation is slower than LumaDifference but it may be more appropriate if there is a big difference in
+        luma beteen SearchClip and FindClip, it is less perturbed by difference in brightness or contrast.
+        See RT_LumaCorrelation.
+
+    LD, LumaDifference  Exit Condition Threshold (Float, default 1.0, Range 0.0 -> 255.0).
+        Selected when bit 1 of Flags is set.
+        LD is the Threshold for RT_LumaDifference, if the match is less or equal to this then the Exit Condition is satisfied.
+        See RT_LumaDifference.
+
+    FD, FrameDifference Exit Condition Threshold (Float, default 1.0, Range 0.0 -> 255.0).
+        Selected when bit 2 of Flags is set.
+        FD is the Threshold for RT_FrameDifference, if the match is less or equal to this then the Exit Condition is satisfied.
+        The RT_FrameDifference Exit Condition uses the ChromaWeight arg to weight chroma for YUV colorspaces.
+        For RGB, RT_FrameDifference is equivalent to RGBDifference. For Y8 it is equivalent to LumaDifference.
+        For non Y8 YUV, returns:- (1.0 - ChromaWeight) * Lumadif + ChromaWeight * ((Udif + Vdif)/2.0).
+        See RT_FrameDifference.
+
+    PD, PixelsDifferent Exit Condition Threshold (Float, default 1.0, Range 0.0 -> 255.0).
+        Selected when bit 3 of Flags is set.
+        PD is the Threshold for RT_LumaPixelsDifferent, if the match is less or equal to this then the Exit Condition is satisfied.
+        PD is amount of pixels, that are different with 0.0 meaning none and 255.0 meaning 100%.
+        Also takes PDThresh as an argument, difference between individual pixels has to be greater than this to be counted.
+        PixelsDifferent is similar to below PixelsDifferentCount, but using a frame size relative way of specifiying the exit condition.
+        (PDThresh default=0, count all differences). (RGB converted to Luma-Y).
+        See RT_LumaPixelsDifferent and also PDThresh.
+
+    PC, PixelsDifferentCount Exit Condition Threshold (int, default=(SearchClip.Width*SearchClip.Height+127)/255,
+        Range 0 -> SearchClip.Width*SearchClip.Height).
+        Selected when bit 4 of Flags is set.
+        PC is the Threshold for RT_LumaPixelsDifferentCount, if the match is less or equal to this then the Exit Condition is satisfied.
+        PC is a pixel count, ranging 0 -> (Width * Height). Allows you to set maximum number of pixels that are different.
+        Also takes PDThresh as an argument, difference between individual pixels has to be greater than this to be counted.
+        (PDThresh default=0, count all differences). (RGB converted to Luma-Y).
+        See RT_LumaPixelsDifferentCount and also PDThresh.
+
+    XP, (Default 1), Sets eXtra Paranoia for EXIT Conditions.
+        0 = Off
+        1 = LOOSELY BETTER THAN (v1.42 changed STRICTLY BETTER THAN to mode 3, and using this one instead).
+            Continue searching while next frame is a loosely better Exit Condition match ('next frame' meaning dependant upon search direction).
+            Differs from STRICTLY BETTER THAN in that it scans along equal matches and if a better match found along that equal matches
+            path, then will return that match, if no better match occurs along an equal match path, then returns the previous frame number
+            that was better than previous matches. So, the last frame returned will be better than all previous matches, but some adjacent
+            previous matches may have been equal to each other.
+        2 = BETTER THAN OR EQUAL
+            Continue searching while next frame is a better or equal Exit Condition match ('next frame' meaning dependant upon search direction).
+        3 = STRICTLY BETTER THAN
+            Continue searching while next frame is a better Exit Condition match ('next frame' meaning dependant upon search direction).
+            Does not scan along equal match paths.
+
+          When an exit condition occurs eg LumaDifference, then QWKS_BM_LD_XP will be set to the count of additional frames traversed due
+        to finding a match that is better or equal (depending upon whether XP==1 or XP==2, or XP==3) to the initial frame that caused the exit
+        condition. In such cases, both QWKS_BM_LD and QWKS_BM_LD_FRM will also be set to (in this case) LumaDifference and the final frame
+        (with XP offset) that was found to be a better or equal match.
+            v1.42, BEST MATCHES also now comply with XP = 2 (BETTER OR EQUAL) setting, Where XP != 2, then returns the first encountered
+        frame position where matches are equal, XP == 2 will returns the last frame position encountered where matches are equal.
+
+    ChromaWeight (Float, default 1.0/3.0, Range 0.0 -> 1.0), Argument to the FD FrameDifference Exit Condition (YUV only).
+
+    PDThresh, (Int, Default 0, Range 0 -> 255). Argument to the PD PixelsDifferent and PC PixelsDifferentCount Exit Conditions.
+        Difference between individual pixels has to be greater than this to be counted. (default=0, count all differences).
+
+    MaxDistance (Int, default SearchClip.FrameCount-1). Maximum number of frames to search, defaults SearchClip.FrameCount-1, but silently
+      limited to the maximum possible distance depending upon where SearchStart is and whether searching forwards or backwards.
+      A MaxDistance of 1 will search only the SearchStart (if Inclusive) and the frame next to it.
+
+    Inclusive, (Bool Default True). If true (default) then also tests SearchStart.
+
+    Prefix, (String Default "QWKS_"). Prefix for names of local variables returned to give status of exit conditions and Best Match.
+
+    -------------------------------------------------------------------------
+
+    RETURNS:-
+        Returns frame number of CANDIDATE (possible matching frame), or -1 meaning NOT FOUND.
+
+      LOCAL VARIABLES returned where using default Prefix of "QWKS_":
+
+         QWKS_EXIT_FLAGS,Int, bit flags, (always exists). If Exit condition occurred then there will be one of more bits set for the conditions
+           that caused exit, bit numbers same as described for Flags arg. QWKS_EXIT_FLAGS will always be 0 when flags arg == 0 (no exit
+           conditions required) OR, function returned -1, ie frame NOT FOUND.
+           If exit condition occurred and XP arg is 0, then the function return frame and QWKS_BM_xx_FRM (described below) will be the same,
+           if XP arg is non zero, then XP processing is tried on all successful exit conditions and the QWKS_BM_xx_FRM frame numbers
+           (and concerned QWKS_BM_xx differences) may all be different from the function return frame. So, when XP processing, the
+           function return frame is only the initial frame that caused exit, XP results are in QWKS_BM_xx_FRM and QWKS_BM_xx.
+
+         QWKS_EXIT_COUNT, Int (always exists), Count of set bits in QWKS_EXIT_FLAGS (ie number of exit conditions that succeeded).
+
+         QWKS_BM_FLAGS,Int, bit flags, (always exists). Returns flag bits of valid BEST MATCHES found for requested exit conditions, bit numbers
+           are as described for Flags arg. If Flags arg == 0, then QWKS_BM_FLAGS will always be 0, ie no exit conditions were tried.
+           If one or more exit conditions caused exit then QWKS_BM_FLAGS will have the same bits set as QWKS_EXIT_FLAGS, and possibly other bits
+           set giving info on best matches found for other exit conditions that did not successfully cause exit.
+           v1.42, frame numbers returned as BEST MATCHES now comply with XP Setting, see XP.
+
+         QWKS_BM_COUNT, Int (always exists), Count of set bits in QWKS_BM_FLAGS. (ie number of Best Match vars set)
+
+          Below Only exist/updated if associated QWKS_BM_FLAGS bit is set.
+            NOTE, the below frame numbers are the frames after XP processing if XP arg non zero. The associated difference is also for the
+          frame after XP processing is done. If XP arg == 0, then all frame numbers (and associated differences) are for the function result
+          frame. (The function result frame is the first frame that was encountered that had a successful exit condition and does not have
+          XP processing applied, the valid frame numbers QWKS_BM_xx_FRM can all be different from the function return frame if better or equal
+          frames were found via XP processing).
+
+             QWKS_BM_LC,(Float)   LumaCorrelation      of the BEST MATCHING frame, Only valid if QWKS_BM_FLAGS bit 0 is set.
+             QWKS_BM_LD,(Float)   LumaDifference       of the BEST MATCHING frame, Only valid if QWKS_BM_FLAGS bit 1 is set.
+             QWKS_BM_FD,(Float)   FrameDifference      of the BEST MATCHING frame, Only valid if QWKS_BM_FLAGS bit 2 is set.
+             QWKS_BM_PD,(Float)   PixelsDifferent      of the BEST MATCHING frame, Only valid if QWKS_BM_FLAGS bit 3 is set.
+             QWKS_BM_PC,(Int)     PixelsDifferentCount of the BEST MATCHING frame, Only valid if QWKS_BM_FLAGS bit 4 is set.
+
+             QWKS_BM_LC_FRM,(Int) LumaCorrelation      BEST MATCHING frame, Only valid if QWKS_BM_FLAGS bit 0 is set.
+             QWKS_BM_LD_FRM,(Int) LumaDifference       BEST MATCHING frame, Only valid if QWKS_BM_FLAGS bit 1 is set.
+             QWKS_BM_FD_FRM,(Int) FrameDifference      BEST MATCHING frame, Only valid if QWKS_BM_FLAGS bit 2 is set.
+             QWKS_BM_PD_FRM,(Int) PixelsDifferent      BEST MATCHING frame, Only valid if QWKS_BM_FLAGS bit 3 is set.
+             QWKS_BM_PC_FRM,(Int) PixelsDifferentCount BEST MATCHING frame, Only valid if QWKS_BM_FLAGS bit 4 is set.
+
+             QWKS_BM_LC_XP,Int. Number of additional frames traversed because a better or equal match was found for LumaCorrelation exit condition.
+             QWKS_BM_LD_XP,Int. Number of additional frames traversed because a better or equal match was found for LumaDifference exit condition.
+             QWKS_BM_FD_XP,Int. Number of additional frames traversed because a better or equal match was found for FrameDifference exit condition.
+             QWKS_BM_PD_XP,Int. Number of additional frames traversed because a better or equal match was found for PixelsDifferent exit condition.
+             QWKS_BM_PC_XP,Int. Number of additional frames traversed because a better or equal match was found for PixelsDifferentCount exit condition.
+                Above only exist/updated for conditions that have a bit set in QWKS_BM_FLAGS otherwise may not exist. They will exist
+                whether or not the associated exit condition succeded or whether XP arg is zero or non zero. In cases where XP arg was 0 or where
+                associated exit condition failed, or where XP processing failed to find a better or equal match, then the QWKS_BM_xx_XP
+                variables will contain 0 (will be non zero only where associated exit condition succeded and found a better/equal XP match).
+
+        If the function returns a valid frame number (greater or equal to 0) and exit conditions were set in Flags arg, then QWKS_EXIT_FLAGS
+        will be non zero and have 1 bit set for each condition that caused exit, and the best match status variables
+        will exist/be updated, the other status variables not flagged in QWKS_EXIT_FLAGS but which are flagged in QWKS_BM_FLAGS will also
+        exist and be valid, but are BEST MATCHES ONLY.
+
+        If the function returns -1 NOT FOUND, but an EXIT condition was set in Flags and QWKS_BM_FLAGS is non zero,
+        then all associated BEST MATCH status variables will exist and be set (associated to the QWKS_BM_FLAGS set bits).
+
+    -------------------------------------------------------------------------
+
+    FINGERPRINT & LUMATOL:
+      The frame FingerPrint consists of 4 floating point component values (0.0 -> 255.0), and stored in the DB FingerPrint DBase.
+    Each FingerPint component is derived from a pixel count for a portion of the possible 0 -> 255 luma pixel value range.
+    Lets say that one of the fingerprint components is derived from the 128->191 luma pixel value range, the fingerprint component
+    is computed for every frame in the SearchClip eg {luma PixelCount in range 128 to 191} * 255.0 / {SearchClip.Width*SearchClip.Height},
+    this result is in range 0.0 -> 255.0, with 255.0 being equal to 100%. [There would be another three fingerprint components computed,
+    in different ranges. We do not actually use range 128->191, and are reluctant to give any real used ranges as they may change, if you
+    want to see the real current ranges used, then see the current source code]. The 4 fingerprint components are stored in the
+    FingerPrint DB and are EXACT fingerprint component values. For the FindFrame, we use a FingerPrint component Range with LumaTol
+    tolerance. For FindClip(FindFrame), we might compute a fingerprint component range for [128->191]:
+
+      FingerPrintMin = {luma PixelCount in range [128+LumaTol] to [191-LumaTol]} * 255.0 / {SearchClip.Width*SearchClip.Height}
+      FingerPrintMax = {luma PixelCount in range [128-LumaTol] to [191+LumaTol]} * 255.0 / {SearchClip.Width*SearchClip.Height}
+
+    So using computed FingerPrintMin and FingerPrintMax for four different ranges as upper and lower limits, if any frame in the
+    SeachClip (DBase) has all four EXACT FingerPrint components within all four fingerprint component limits, then it is a candidate
+    frame and eligible for exit condition testing if exit conditions were set, or returned to the client as a result CANDIDATE frame if
+    exit conditions were not set.
+
+    v1.42, Have changed LumaTol arg from type Int to type Float, default 1.0. (Will still accept type Int so will not break script).
+    Whole number values of LumaTol will behave as previously described.
+      Where a non integer value of Lumatol is given, then LumaTol is split into integer and fractional parts, and processed as described
+    below.
+
+      PixelCountMin_INT  = PixCount[128+LumaTol.Int] to PixCount[191-LumaTol.Int]                        # Sum of
+      PixelCountMin_FRAC = Int((PixCount[128+LumaTol.Int] + PixCount[191-LumaTol.Int]) * LumaTol.Frac)   # Fractional count of extremities
+      FingerPrintMin     = (PixCountMin_INT - PixCountMin_FRAC) * 255.0 / {SearchClip.Width*SearchClip.Height}
+
+      PixelCountMax_INT  = PixelCount[128-LumaTol.Int] to PixelCount[191+LumaTol.Int]                    # Sum of
+      PixelCountMax_FRAC = Int((PixelCount[128-LumaTol.Int-1] + PixelCount[191+LumaTol.Int+1]) * LumaTol.Frac)  # Frac count expanded
+      FingerPrintMax     = (PixelCountMin_INT + PixelCountMin_FRAC) * 255.0 / {SearchClip.Width*SearchClip.Height}
+
+    Fractional LumaTol as implemented in v1.42 is a big improvement on integer only Lumatol, and intended primarily for extending
+    LumaTol=0 to have a little extra tolerance. As the fractional part of LumaTol is applied to the actual existing pixel count of a frame,
+    so it is to some degree self tuning, if eg a count for PixelCount[128-LumaTol.Int-1] is zero, then there will be no additional speed
+    overhead for that particular FindFrame FingerPrint component match, if the count is high, then more candidate frames will be searched,
+    this is contrary to v1.41 Float LumaTol where we just added the fractional part where it would incur a speed penalty on all frames.
+
+      The PNDB Frame Locator Dbase holds records with 1024 fields per record (frame). The first 256 of these fields give frame numbers
+    of the next nearest frame (previous[PrevDB] or next[NextDB]) that roughly complies with the first component FingerPrint value.
+    Eg, field 42 holds the frame number of the nearest frame whose first component FingerPrint value is greater or equal to 42.0
+    and less than 43.0. Fields 256 to 511 hold frame info for the 2nd FingerPrint component, etc. A value of -1 means that there is
+    no frame whose fingerprint component complies.
+
+    Without Exit Conditions:
+        This is roughly how the function works without Exit Conditions (Flags=0):-
+        It first establishes a range of component FingerPrint values for FindFrame, based on LumaTol.
+        If Inclusive, then checks SearchStart for a FingerPrint match and returns SearchStart if good match.
+        Next it Checks the Frame Locator Dbase (PNDB) looking for the next nearest frame that could comply with the FingerPrint
+        range. It then checks that candidate frame in the FingerPrint DBase to see if it more exactly matches the FingerPrint, if it
+        does match, the frame is returned to the client and if not then it moves the 'Cursor' in the Frame Locator DBase up to that
+        frame and repeats the searching until found or not.
+        So, without Exit conditions, the function returns a sequence of candidate frame numbers that may or may not be the exact frame
+        you are looking for, it will likely skip vast swathes of frames and then deliver a stream of frames from the same scene as
+        your FindFrame, where you would likely want to establish a more exact match using some other function.
+        Without Exit conditions, QWKS_EXIT_FLAGS and QWKS_BM_FLAGS will both be 0 and no associated exit condition nor Best Match
+        local variables will be set (may not even exist).
+
+    With Exit Conditions:
+        Exit conditions are processed if Flags bits are set, this occurs where the above paragraph description would return a candidate frame
+        to the client. If Exit condition are set, then at least one of those exit conditions also has to be satisfied, if not satisfied, then
+        the candidate frame will NOT be returned to the client, it will instead keep searching until both a FingerPrint match occurs and an Exit
+        condition is satisfied, if not, -1 NOT FOUND is returned.
+          You can set one or more Exit Conditions, if any (or all) of the exit conditions succeed then there will be a +ve frame number
+        returned by the function, QWKS_EXIT_FLAGS and QWKS_BM_FLAGS bits will be set, the returned frame number will be the first frame
+        that satisfied an exit condition, and does NOT include any XP arg processing.
+        If any exit condition is satisfied, and the XP arg is set, the function will continue scanning adjacent frames to the frame
+        where an exit condition was satisfied and step onward until a better match for the exit condition is NOT found.
+        (XP=1 is LOOSELY BETTER THAN, and XP=2 is BETTER OR EQUAL, XP=2 is STRICTLY BETTER THAN, see XP). XP Processing occurs on satisfied
+        exit conditions and the XP processed frame numbers and differences are returned via QWKS_BM_xx and QWKS_BM_xx_FRM local vars.
+        When using exit conditions, use the return frame number only as an indicator of success, use the returned local vars irrespective of
+        whether or not XP processing is done (although if XP==0, then returned frame will be same as QWKS_BM_xx_FRM).
+            v1.42, BEST MATCHES also now comply with XP = 2 (BETTER OR EQUAL) setting, Where XP != 2, then returns the first encountered
+        frame position where matches are equal, XP == 2 will returns the last frame position encountered where matches are equal.
+
+    Tuning:
+        Where there is significant difference between SearchClip and FindClip, it could be problematic to find a suitable value for LumaTol.
+        If LumaTol is set too high, then each and every search could take much longer to complete, if set too low then will skip over possible
+        matches as it will see them as not fitting the LumaTol fingerprint range (and so not even included in Best Matches).
+        Where both matching clip frames are identical (NOT processed/re-encoded) then can use LumaTol=0.0 (default is 1.0).
+          If you eg apply a ColorYUV(Off_y = 4) on exact copy of frame to find in SearchClip, then you would need at least a LumaTol of 4.0 for
+        the FingerPrint locator to include the frame as a CANDIDATE frame, (in this case, every single pixel luma value would have had 4 added
+        to it), ColorYUV(Off_y = -4) would also be detected by LumaTol = 4.0, and in both cases where using LumaDifference exit condition, you
+        would need at least a LD of 4.0 to produce a satisfied exit condition, an LD of eg 1.0 would not produce an exit condition but would
+        give a BEST match for the correct frame, if using an LC exit condition on same clip then result diff would be about 0.0.
+          We did a test search on SD PAL Jurassic Park frame 173,000, a scene at end of movie where helicopter is flying away into the distance
+        across the ocean with caption "Directed by Steven Spielberg".
+        Where find frame had Blur(1.58,1.58) applied (ie maximum Blur) it was found that a LumaTol of 5.0 was required to enable the Fingerprint
+        locator to work at all. Even though the original and blurred frame looked reasonably similar, there were obvious differences eg the the
+        blurred one looked more dull with indistinct text. Tests showed that there were 2 pixels that were different by 75 luma pixel levels
+        and there were no doubt many more that were different to a lesser degree. So, where processing akin to a maximum blur is suspected, a
+        rough guess might be about LumaTol=5.0. Results below where Flags=1, LC=0.0 and StartFrame = 0 (search from frame 0)
+        (The below FindFrm->FoundFrm lumadiff is carried out on the found frame, not returned from RT_QwikScan).
+
+                                                                              FindFrm->FoundFrm
+        LumaTol  SECONDS   EXIT_FLAGS   BM_FLAGS   RESULT_FRAME    BM_LC      RT_LumaDifference
+          0.0    0.011211      0           0           -1           ---             ---
+          1.0    0.593617      0           1          173087     46.869492       12.616102
+          2.0    0.411454      0           1          173005     19.927631        7.802255
+          3.0    2.059347      0           1          173004     17.460129        7.176220
+          4.0    3.024366      0           1          173004     17.460129        7.176220
+          5.0    5.267460      0           1          173000      2.454145        2.577775     <---
+          6.0    9.544320      0           1          173000      2.454145        2.577775
+          8.0   18.132370      0           1          173000      2.454145        2.577775
+         12.0   55.960625      0           1          173000      2.454145        2.577775
+         16.0  129.069290      0           1          173000      2.454145        2.577775
+
+          It may be possible to write a script function to tune for LumaTol, if a search fails (and you know that the frame is present),
+        it could search on LumaCorrelation LC=0.0 (LC less perturbed by brightness/contrast changes) and step through LumaTol from 0.0 upwards
+        until BM_LC no longer changes and QWKS_BM_LC is below some threshold (maybe eg 2.55 ie 1.0%). Also note above that BM_LC is smaller
+        than RT_LumaDiff(FindFrm->FoundFrm) when LumaTol is at lowest active setting (5.0).
+        When acceptable LumaTol is found then might test using eg RT_LumaDifference between FindFrame and FoundFrame and after adding
+        a little leeway get an approximate value for doing an LD LumaDifference search (if that were what was required exit condition).
+          NOTE above, even when LumaTol at maximum 16.0 with timimg about 2 Mins, it is still considerably quicker than approx 18 Mins to
+        to find Frame 173000 (1hr:55:20) doing a standard LumaDifference search (using MatchFrames.avs), although would also need to
+        create the DBase set too (only once if multiple frames).
+          NOTE, The scene chosen was a farly static scene and frame 173087 did not look too dissimilar to the frame that was being searched
+        for, (distant helicopter was probably a little displaced and ocean shimmering in not quite the same way).
+        There is much room for research into how best to use this function.
+
+    Usage:-
+
+        Eg, send to debug window if BEST MATCH for LumaDifference was established (bit 1).
+          (RT_BitTst(QWKS_BM_FLAGS,1)) ? RT_DebugF("Best Match for LumaDifference = %f @ frame Number %d",QWKS_BM_FD,QWKS_BM_FD_FRM) : NOP
+        Eg, send to debug window if LumaDifference caused exit(bit 1).
+          (RT_BitTst(QWKS_EXIT_FLAGS,1)) ? RT_DebugF("LumaDifference Caused EXIT: Diff = %f @ frame Number %d",QWKS_BM_FD,QWKS_BM_FD_FRM) : NOP
+
+        Using PAL SD Jurassic Park with 182050 frames (UT_Video Compressed YV12) it took 15:06 to create DB FingerPrint DB and PrevDB
+        Locator DB on a 2.13Ghz Core Duo, using this script. (NOTE, The time taken to create all three DataBases, is not much different
+        to the time it would take to scan the clip to find a single frame using usual methods.
+          EDIT: Test for single frame match using MatchFrames.avs took ~18:20 to locate a single frame, scanning nearly entire clip using
+        RT_FrameDifference as locator, so if searching for more than one frame it is a small price to pay, and perhaps {as in this case}
+        even quicker than a standard single frame search (it is quicker to create a DB FingerPrint for one frame than to compare two frames).
+
+        AVISource("D:\AVS\JurassicPark.avi")
+        DB  ="JPARK.DB"
+        PNDB="JPARK_PREV.DB"
+        return RT_QwikScanCreate(Last,DB,prevdb=PNDB,nextdb="",debug=true)
+
+        # And test script searching approx 175,000 frames per FindFrame:
+        AVISource("D:\AVS\JurassicPark.avi")
+        DB  ="JPARK.DB"
+        PNDB="JPARK_PREV.DB"
+        #RT_QwikScanCreate(Last,DB,prevdb=PNDB,nextdb="",debug=true)
+        GScript("""
+            LUMATOL=0.0
+            SearchStart=FrameCount-1 # Search direction from end to beginning, using PrevDB.
+            For(FindFrame=3000,13000,1000) {
+                S=RT_TimerHP()
+                j = RT_QwikScan(Last,SearchStart,Last,FindFrame,DB,PNDB,lumatol=LUMATOL,Flags=2,LD=0.0,maxdistance=SearchStart-FindFrame)
+                T=RT_TimerHP-S
+                RT_Debugf("%d] Got %d in %f secs",Findframe,j,T)
+            }
+        """)
+        return Last
+
+        Results:- LumaTol = 0.0
+        00000005    398.69018555    RT_DebugF: 3000] Got 3000 in 0.019132 secs
+        00000006    398.70736694    RT_DebugF: 4000] Got 4000 in 0.017023 secs
+        00000007    398.73089600    RT_DebugF: 5000] Got 5000 in 0.023335 secs
+        00000008    398.75195313    RT_DebugF: 6000] Got 6000 in 0.020897 secs
+        00000009    398.76660156    RT_DebugF: 7000] Got 7000 in 0.014457 secs
+        00000010    398.78686523    RT_DebugF: 8000] Got 8000 in 0.020073 secs
+        00000011    398.80563354    RT_DebugF: 9000] Got 9000 in 0.018632 secs
+        00000012    398.82150269    RT_DebugF: 10000] Got 10000 in 0.015690 secs
+        00000013    398.85241699    RT_DebugF: 11000] Got 11000 in 0.030706 secs
+        00000014    398.86682129    RT_DebugF: 12000] Got 12000 in 0.014216 secs
+        00000015    398.88012695    RT_DebugF: 13000] Got 13000 in 0.013135 secs
+
+        Results:- LumaTol = 4.0 (many more candidate frames to test)
+        00000016    444.04776001    RT_DebugF: 3000] Got 3000 in 0.059216 secs
+        00000017    444.26177979    RT_DebugF: 4000] Got 4000 in 0.213837 secs
+        00000018    446.82482910    RT_DebugF: 5000] Got 5000 in 2.562858 secs
+        00000019    454.65585327    RT_DebugF: 6000] Got 6000 in 7.830853 secs
+        00000020    456.44543457    RT_DebugF: 7000] Got 7000 in 1.789409 secs
+        00000021    465.26766968    RT_DebugF: 8000] Got 8000 in 8.822010 secs
+        00000022    465.99948120    RT_DebugF: 9000] Got 9000 in 0.731642 secs
+        00000023    466.64910889    RT_DebugF: 10000] Got 10000 in 0.649458 secs
+        00000024    471.09573364    RT_DebugF: 11000] Got 11000 in 4.446451 secs
+        00000025    471.81393433    RT_DebugF: 12000] Got 12000 in 0.718018 secs
+        00000026    475.26538086    RT_DebugF: 13000] Got 13000 in 3.451269 secs
+
+***
+***
+***
+
+RT_QwikScanEstimateLumaTol(clip SearchClip,clip FindClip,int "n"=current_frame,int "n2"=current_Frame,int "Matrix"=(Width>1100||Height>600?3:2))
+ Returns an estimate of minimum required LumaTol for use by RT_QwikScan().
+ SearchClip, clip using DBase in RT_QuickScan, ie with EXACT fingerprints in DBase.
+ FindClip, clip to estimate LumaTol for.
+ n = SearchClip frame number, default current_frame in runtime environment.
+ n2= FindClip frame number, default current_frame in runtime environment.
+ Matrix, RGB Default = (Width > 1100 OR Height>600) then 3(PC709) else 2(PC601). YUV not used. Conversion of RGB to YUV.
+ The clip/frame order IS SIGNIFICANT, make sure you have them the correct way around, FindClip(n2) is the frame for which
+ LumaTol is estimated, SearchClip(n) is the frame be be matched to.
+ Implemented for script that had many almost identical frames where purpose was to find UNDO's in a paint program capture clip
+ and remove the UNDO's from the clip. Was used to get a LumaTol estimate on frame prior to suspected UNDO frame where LumaTol
+ would be sufficiently great to also detect the start of an edit sequence as frame sort after, would be closer to the UNDO frame
+ than the frame for which the estimate was made. In this case, SearchClip(n) would be the suspect UNDO frame and FindClip(n2) would
+ be the frame we get an estimate for where goal is to find a frame that matches SearchClip(n).
+ The function returns 16.0 (maximum LumaTol) if no valid value of LumaTol is possible.  
+ Thread that this function was implemented for (probably post after linked one):
+ http://forum.doom9.org/showthread.php?p=1694208#post1694208
+
+#############################################
+
+StainlessS
+
+
+ 

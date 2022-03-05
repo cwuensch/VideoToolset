@@ -1,0 +1,274 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html dir="ltr" lang="en">
+<head>
+
+<link rel="StyleSheet" type="text/css" href="forum.css">
+
+		<div id="post_message_517102">
+
+<b>default call:</b><br />
+<br />
+iip( dest_x=     width,  dest_y=     height,<br />
+ \   ss1_x =     1.414,  ss1_y =      1.414,<br />
+ \   duststr =       2,  dustweight =   1.0,  antiflicker1= true, antiflicker2= true,<br />
+ \   detailcontr1= 104,  detailcontr2 = 208,  contr_radius =    2, PixSharp=0.4,<br />
+ \   ss2_x =       3.5,  ss2_y =        3.5,<br />
+ \   Xstren =      255,  Xlimit =       255,<br />
+ \   subpelstren= 1.58,  flatweight =    0,<br />
+ \   protect_floor = 0,  protect_bias =  16,<br />
+ \   dering =      -80,  dering_weight= 1.0, dering_floor = 8, dering_bias=12,<br />
+ \   detail_floor = 20,  EQ = 2,<br />
+ \   warp_Y = false,     warp_UV = false,   exborder = false,<br />
+ \   debug= "protect | dering | compareH|V | showall", <br />
+ \   cropx=40, cropy=20)<br />
+<br />
+<br />
+<hr>
+<br />
+
+<b>Parameter description</b> (only parameters new in iiP v.0.5)<br />
+<br />
+
+<b>dest_x, dest_y</b> [int],[int]<br />
+<br />
+Obviously, these are specifying the final output resolution.<br />
+<br />
+<br />
+<b>duststr, dustweight, antiflicker1, antiflicker2</b> [int],[float 0.0~1.0],[bool],[bool]<br />
+<br />
+duststr is the denoising level of PixieDust. default is 2, try 1~8 depending on how noisy the source is.<br />
+dustweight: instead of using the "dusted" clip, you can mix it back with the raw input image by a percentage of dustweight.<br />
+antiflicker: I had other plans for it. For now, it simply calms the picture further down by a weak temporalsoften(). See if you like it better on or off.<br />
+<br />
+<br />
+<b>ss1_x, ss1_y</b> [float],[float]<br />
+<br />
+These are the supersampling factors for the following sharpening stage. Default is 1.4, try 1.0~2.0. With 1.0 the supersampling is discarded.<br />
+<br />
+<br />
+<b>detailcontr1, detailcontr2, contrast_radius, PixSharp</b> [int],int],[int],[float]<br />
+<br />
+These are the values for detail enhancement.<br />
+detailcontr is the strength of unsharp masking. Default is 112, try 40~80~160~255~512, this depends on the source quality and your taste.<br />
+contrast_radius is the radius for unsharp masking. Default is 2, try 3 and 4 also. This correlated with the supersampling factors above.<br />
+PreSharp is simply the value for a sharpen()-command after unsharp masking. Default is 0.8, try 0.0~1.0.<br />
+NOTE: to completely disable detail enhancement, set detailcontr=0 and PreSharp=0.0<br />
+<br />
+<br />
+<b>ss2_x, ss2_y</b> [float],[float]<br />
+<br />
+These are the supersampling factors for the following Xsharpening stage. Default is 3.5 . For downsizing, go not under 4.0. For upsizing, 3.0 might be sufficient.<br />
+<br />
+<br />
+<b>Xstren, Xlimit</b> [int],[int]<br />
+<br />
+These are the strength and limit factors for Xsharpen(). Default is (255,255). If you don't have the patience for big enough supersampling, e.g. for 2* supersampling only, try something like (128,23).<br />
+<br />
+<br />
+<b>subpelstren</b> [bool]<br />
+<br />
+This envokes a sharpen(1.0) on the flat areas, and a blur(1.0) on the edges of the supersampled image, prior to XSharpen().<br />
+<br />
+<br />
+<b>flatweight</b> [int]<br />
+<br />
+At the very end, the denoised-but-not-sharpened original clip is copied back into the flat areas of the full-processed clip. Through flatweight you can control the strength of this copying process. "0" will return the calmest picture with best compressability. Try values 0~32~64~128.<br />
+<br />
+<br />
+<b>dering_floor</b> [int]<br />
+<br />
+As before, this is a value controlling at which "strength-of-detail" the deringing part will start to kick in. Default is "8", useful range is from 0 to about 32.<br />
+<br />
+<br />
+<b>dering_bias</b> [int]<br />
+<br />
+This still controls how quickly the strength of the de-ringing process will raise as the strength-of-detail raises. Higher values will apply more deringing.<br />
+Default is "16", useful range is from about 4 up to infinite (almost).<br />
+The effect gets saturated with higher values. You will see big changes in the mask when changing this in the range of 0 ~ 16; beyond of 64, the mask will stay almost the same.<br />
+<br />
+<br />
+<b>protect_floor</b> [int]<br />
+<br />
+This controls at wich level of detail-strength in the source the applied sharpening will start to get attenuated. Default is "8", useful range is from 0 to [something]. From my experiences so far, keep it in the range of 0 ~ 16.<br />
+<br />
+<br />
+<b>protect_bias</b> [int]<br />
+<br />
+Again, this controls how quickly the attenuation of the applied sharpening will raise with the strength of detail. Higher values will protect more detail from oversharpening (but reduce the effective overall amount of sharpening).<br />
+Default is "16", useful range is IMO 4 ~ 64. With high values, this will saturate similar to "dering_bias".<br />
+<br />
+<br />
+
+<b>EQ</b> [int]<br />
+<br />
+Edge &quot;quality&quot; parameter. <br />
+Specifies how many of the sharpening steps will be protected by the protection mask.<br />
+<br />
+0 = deaktivated. Don't ever choose that for encoding!! - but it's nice for visualizing why edge protection is needed at all<br />
+1 = protect only the last sharpening step. &quot;Standard&quot;, as in older versions. <br />
+2 = protect the first &amp; the last sharpening step. Recommended.<br />
+3 = protect all three sharpening steps. Minimalizes any risk of producing oversharpening, but lessens the overall contrast gain.<br />
+<br />
+<br />
+<b>warp_Y, warp_UV</b> [bool], [bool]<br />
+<br />
+These will activate additional luma warping, resp. chroma warping. (Uses MarcFD's aWarpSharp plugin.)<br />
+<br />
+Luma warping - should help in making the picture a little more 'gracile' when upsizing to bigger resolution, e.g. 1:1 PAR -&gt; anamorphic PAR, DVD -&gt; 720p, or such. For keeping same resolution or downsizing, perhaps it may help on sources with distorted detail by &quot;straightening&quot; it. Or it may not help - YMMV.<br />
+Luma warping is performed in 2nd supersampling stage, prior to XSharpening.<br />
+<br />
+Chroma warping - should help a lot on sources with bleeding colors. I put this in, since I had big problems on my  Enterprise DVB captures: on the starfleet uniforms, the red stripes are badly bleeding into the blue cloth. This looks *very* ugly, like an aquarell that's gotten wet. It looks much better with chroma warping.<br />
+On clean sources, chroma warping mostly is a waste of CPU cycles.<br />
+<br />
+Note: aWarpSharp's parameters are hard-coded. Depth is automatically scaled by the supersampling factors (Y) resp. by the [original:destination] size ratio (UV).<br />
+If someone thinks more configuration is needed, tell me. For me it works fine the way it is.<br />
+<br />
+<br />
+<b>New deringing routine</b><br />
+<br />
+Now you can choose between to routines for deringing:<br />
+<br />
+The &quot;old&quot; routine can be used as formerly. Parameters have not changed. Note that this routine is a post-processor, after the sharpening, but prior to XSharpening.<br />
+<br />
+The new routine uses another way to create the deringing mask (utilizes XSharpen to find areas-of-interest). The current processing method for the found areas is very sophisticated: &quot;Downsize(softbicubic).Upsize(verysoftbicubic)&quot;.<br />
+<br />
+It acts as a pre-processor, prior to the main sharpening steps, but already in the first supersampling stage.<br />
+<br />
+To use the new deringing routine, assigning a <b>negative value</b> to the <i>dering</i> parameter. <br />
+<br />
+The parameters <i>dering_floor</i> and <i>dering_bias</i> behave differently with this routine. It's a bit difficult to describe ... <br />
+<i>dering_floor</i> is sort of a sensitivity against edges: the bigger this parameter, the more areas around weaker edges will be considered.<br />
+<i>dering_bias</i> can be seen as some sort of multiplier, or normalizer ... how to tell? (Internally, it's the &quot;divisor&quot; parameter for MaskTool's &quot;DEdgeMask&quot; function.) The smaller <i>dering_bias</i>, the brighter the mask will get, and the more areas found by <i>dering_floor</i> will be kept. The bigger <i>dering_bias</i>, the more weaker areas will get cancelled from the mask again, and the darker the dering-mask will become.<br />
+<br />
+To get a feeling for this, please play a little with these two parameters &amp; the new routine, while having set <i>debug=&quot;showall&quot;</i>. A good starting point is floor=8, bias=12. It seems to me that bias should mostly be in the range bias = [floor, floor*2] - but who knows what different sources may require. This one is new to me, too<br />
+<br />
+<i>dering = -200 ~ -1</i> tells how strongly the affected areas will be blurred through the bicubic resizers. Recommended range is from &quot;-160&quot; for strong processing to &quot;-20&quot; for weak processing.<br />
+Attention: If you use a too big number here, you'll get artefacts near edges! Try &quot;dering = -350&quot; to see what I mean. You should not exceed -160, perhaps evev -200. Look out when artefacting starts to appear. &quot;dering = -120&quot; gives already pretty strong processing.<br />
+<br />
+The <i>dering_weight</i> parameter is not used with the new deringing routine.<br />
+<br />
+<br />
+<b>exborder</b> [bool]<br />
+<br />
+This is a switch to exclude the outmost border from sharpening.<br />
+<br />
+It is not uncommon, even for otherwise HiQ DVD sources, to have artefacts in the border areas. You now these bright and/or dark lines that often appear near the top/bottom letterboxing, and on the frame's sides as well.<br />
+But, not everyone is willing to crop these additional 2 ~ 8 pixels from the sides, to get rid of that crap. Now, if you're cropping so tight that source's border artefacts are kept, then at least they shouldn't be sharpened<br />
+Set <i>exborder=true</i> to do so. The used masking draws a &quot;sinus sweep&quot; (sort of) from 100% exclusion to ~15% exclusion, over the outmost 8 pixels on all sides of the frame.<br />
+There is nothing to configure. Tell me if you want something.<br />
+<br />
+<br />
+<b>detail_floor</b> [int]<br />
+<br />
+This is part of the controlling how weak a detail is still considered to be &quot;detail&quot;, in order to be copied to the output frame from the sharpened clip. Remember: areas considered to be &quot;no-detail&quot; are copied from the PixieDust'ed, not-sharpened clip.<br />
+Look at the &quot;Detail Mask&quot; in debug mode to get a feeling for it. Former versions had this parameter hardcoded to &quot;23&quot;. New default is &quot;20&quot;. Negative values are possible, in case you consider them needed.</div>
+
+<br>
+<hr>
+<br>
+
+<div id="post_message_517103"><b>Explanations, thoughts, tips and (speed) considerations</b><br />
+<br />
+<i>- or -</i><br />
+<br />
+Didée's usual, dreadfully boring blabla<br />
+<br />
+<br />
+<br />
+<b>Regarding the EQ parameter:</b><br />
+<br />
+iiP performs up to three chained sharpening steps: UnsharpMasking-wide + UnsharpMasking-narrow + PixelSharpen.<br />
+Generally, any unprotected sharpening endangers oversharpening of high-contrast edges. With chained sharpening, it gets even worse: the first sharpening greates artefacts, the second one sharpens also those artefacts, the third one ... you get the idea. Without any protection, you'll get those ugly halos, and you get them even with additional borders, themselves emphasized:<br />
+first sharpener gives halos, second sharpener gives those halos a hard border, the third makes everything even more annoying.<br />
+<br />
+Former iiP versions internally created exactly such an over-oversharpened image, and used only one MaskedMerge() operation after all sharpening, to exclude hard edges from getting copied from the sharpened clip into the working clip. <br />
+Although multi-protection was on my mind from the very start, I wanted to avoid the additionally needed processing time. And I thought the one-step protection would be sufficient to exclude all oversharpening artefacts. Well, it is mostly, but not always. Previous iiP versions let some artefacts sneak through, especially when strong sharpening values were used.<br />
+<br />
+With v.0.5, multiple protection may be specified through the <i>EQ</i> parameter.<br />
+<br />
+EQ=1 is exactly the same as formerly. Everything is sharpened-up without protection, and then copied to the working clip according to the protection mask.<br />
+<br />
+The most &quot;exact&quot; way to do the image sharpening is to protect *every* step by the protection mask. This is done by specifying EQ=3. The result should be close to totally free of oversharpening artefacts <i>produced by iiP itself</i>. Oversharpening already present in the source is anther story -&gt; DeRinging.<br />
+With EQ=3, the working chain is &quot; 1.sharpening -&gt; MaskedMerge -&gt; 2.sharpening -&gt; MaskedMerge -&gt; 3.sharpening -&gt; MaskedMerge &quot;.<br />
+<br />
+However, EQ=3 lessens the possible gain of detail contrast quite a bit. From my experience so far, EQ=2 is a very good compromise.<br />
+EQ=2 will protect the <i>first</i> and the <i>last</i> sharpening step - whichever those might be, in case you are using only two of the three possible sharpening steps. <font size="1">(Sounds simple, and basically it IS simple. However, to make this work correctly for all possibilities of choosing only two of the three sharpeners, required some more lines of code than I expected...)</font><br />
+EQ=2 should give the best trade-off between speed and edge quality. There should hardly be any artefacts coming through, and the contrast gain is definetly better than with EQ=3. Hence I recommend to use EQ=2 - unless you figure out that your particular source needs EQ=3, or can get away with EQ=1.<br />
+<br />
+EQ=0 is a major bad idea for encoding, of course. However, by setting EQ to zero, it gets blataneously obvious why all this protection stuff is needed at all. Isn't it?<br />
+<br />
+Needless to say: the higher EQ you use, the slower the script will run. Each EQ increment requires another instance of MaskedMerge()'ing the luma plane over - and this is on the 1st supersampling stage, so this operation is not for free.<br />
+<br />
+OTOH: the higher EQ you use, the better compressability you'll get for the output.<br />
+<br />
+<br />
+<br />
+<b>(New) Deringing Routine</b><br />
+<br />
+The biggest problem with self-made deringing is: to create a mask that &quot;fits&quot; really good onto the problematic areas.<br />
+<br />
+Firstly, we want to catch as much of the problematic areas as possible, preferebly all of them, only them, and nothing else.<br />
+<br />
+Secondly, while catching all of them, it must be avoided to mask *across* any edges in the image. We want the mask to be present in the &quot;ultimate neighborhood&quot; of hard edges, to catch halos and mosquito noise. In areas where the mask *covers* the edge, we would force the edge itself to get blurring (depending on the used processing mthod, that is). This is probably not what we want to do.<br />
+<br />
+Thirdly, there is the question of which kind of processing should be actually performed on the masked areas.<br />
+<br />
+(1) Is still unsolved. There's no distinction between &quot;ah, here are edge artefacts, we must apply deringing here&quot; and &quot;yup, this area is clean, no deringing is needed&quot;. At least for edge halos, there are ideas of how to do indeed *that*. But it's not possible to do that in a script - if you can code plugins, and have a little spare time, just ask me. Ideas is what I have PLENTY.<br />
+<br />
+(1)+(2) - The new deringing routine utilizes XSharpen to find areas-of-interest, basically by taking the clip, and subtracting an XSharpen'ed version from itself. On this difference image, a quasi-Sobel edge detector is performed. Finally, everything gets extended and feathered a little - there is the new deringing mask.<br />
+It has a definetly better respose to edge areas than the old method, which was based on an UnsharpMask - difference image. Still the new method's response to hard edges is greater than to weaker edges. The danger of masking-across-edges is magnitudes lower than with the old method. However, the &quot;tightness&quot; at which the new mask is &quot;fitting&quot; to either side of the edges is not perfectly distributed - but I consider it quite usable as it is. Further improvement might be possible.<br />
+<br />
+(3) The currently used processor for deringing is the most lame one can think of: <br />
+&quot;BicubicResize(small,soft).BicubicResize(orig,verysoft)&quot; is what actually is done to the dering'ed areas - and this works surprisingly effective, handling both halos and mosquitos pretty well, without getting all too obvious. There is danger, of course, of loosing small detail that is present in the direct neighborhood of strong edges. (How do you want to distinguish small detail from mosquito noise - to a machine it looks the very same).<br />
+The strength of dering-processing defines at what scale the image will be downsized, before upsizing again. &quot;dering=-150&quot; will scale down by a factor of ca. 2.8, &quot;-100&quot; by ca. 2.2, &quot;-50&quot; by ca. 1.6. Values numerically greater than 160 might cause artefacts. Try &quot;-350&quot; to force those artefacts. Then, knowing how they look like, you know what to look for if you're forced to use very high settings.<br />
+Values up to &quot;-150&quot; should be safe, and strong enough for almost all cases. &quot;-40&quot; to &quot;-80&quot; should be a good range for rather clean sources - but let your own eyes decide.<br />
+<br />
+<br />
+As already stated, the old routine can be used just as formerly. The new routine is invoked by specifying <b>negative</b> values to the <i>dering</i> parameter.<br />
+<br />
+It should be mentioned that the old routine acted (and still acts) as a *post* processor. That is, after the main sharpening, but before the XSharpening. Together with the fact that it partly masks *across* edges, it was used to fight against source-artefacts as well as artefacts created by iiP itself (through too little edge protection). The blurring of some edges then was (partly) restored by the following XSharpening.<br />
+<br />
+The new routine now acts as *pre* processor, i.e. before any sharpening is applied (but after the base denoising). That's the preferred way to do it, now that EQ is available.<br />
+<br />
+<br />
+<b>EQ and New Deringing</b><br />
+<br />
+The new deringing is *noticeably* slower than the old one. That's just how it is, and there's little that can be done.<br />
+You should carefully check your source, if it needs deringing at all. Since selfmade artefacts now can be avoided through higher EQ values, perhaps you simply don't need any deringing!<br />
+In particular, I would not recommend to use the new deringing with strong values, together with EQ=3. This will result in very slow processing, and will give an output that is ... smooooth. Of course there might be sources out there that require exactly this. But generally, you should not go higher than EQ=2 when using somewhat strong deringing. With low or medium deringing, I'd say EQ=2 is the one to use. With strong deringing, and/or when using some lower sharpening values or less sharpening steps, you might be well off with EQ=1 as well.<br />
+<br />
+All I can advise you to do is this:<br />
+Watch out for different problematic scenes, and then figure out which combination of features copes the best with all of them, on average.<br />
+<br />
+<br />
+<b>Luma Warping</b><br />
+<br />
+Well, not much to say here - exept that it uses MarcFD's &quot;aWarpSharp&quot; plugin, which you should have available. Try it, and see for yourself if you like it or not. Or if you can see any difference at all.<br />
+The effect should be minor, and that's how it is supposed to be. Assumingly, some people would like to hit me for the mere fact that I'm using WarpSharping on natural video soures. However, it is performed in the &quot;big&quot; 2nd supersampling stage, with a relative small depth value.<br />
+The intended effect is to get some minor thinning/straightening of image features, and it is mostly meant to be used when you actually *upscale* your clip through iiP. When you're doing the old &quot;anamorphic 720*yy --&gt; 1:1 640*yy&quot; game, then there is probably not much to gain with lume warping. But try and see yourself.<br />
+<br />
+Thanks to the fact that MarcFD managed to get his aWarpSharp pretty fast, the impact on speed is not so bad.<br />
+<br />
+<br />
+<b>Chroma Warping</b><br />
+<br />
+This one is not intended for general usage. But you might come across sources where it can do small wonders! <br />
+I implemented it for sources with bleeding colors, and there it generally achieves very noticeable improvements. One example: For the ones that know the (new) Enterprise series (Cpt. Archer, T'Pol, Dr. Phlox ...), you might have noticed that the blue uniforms with red stripes are particular difficult - the stripes are &quot;bleeding&quot; into the blue cloth like ink flows into ink paper... For me, chroma warping does a brilliant job there.<br />
+<br />
+UV warping is performed on the final output clip, on destination resolution. It use chroma mode 1 - &quot;warp chroma with luma bump map&quot;.<br />
+<br />
+This one also is not too expensive, performance-wise.<br />
+<br />
+I think it doesn't make much sense on souces with clean colors (but mf might disagree...)<br />
+<br />
+***<br />
+<br />
+Ah, I'm out of time now.<br />
+<br />
+If you have any questions, go ahead. I'm all ears.<br />
+<br />
+<br />
+- Didée</div>
+
+</body>
+</html>

@@ -1,0 +1,203 @@
+[Version]
+Signature = "$Chicago$"
+Class = MEDIA
+ClassGUID = {4d36e96c-e325-11ce-bfc1-08002be10318} 
+Provider = %CodecNameStr% 
+DriverVer = 01/01/2007
+
+
+
+[SourceDisksNames]
+1 = %CodecNameDescStr%,, 0001
+
+[SourceDisksFiles]
+cedocida.dll = 1
+cedocida.inf = 1
+
+[CodecFilesDLL]
+cedocida.dll
+
+[CodecFilesDLL_Wow64]
+cedocida.dll
+
+[CodecFilesDLL_x64]
+cedocida.dll, x64\cedocida.dll
+
+[CodecFilesIni]
+cedocida.ini
+
+[CodecFilesInf]
+cedocida.inf
+
+[DestinationDirs]
+CodecFilesDLL = 11
+CodecFilesDLL_x64 = 11
+CodecFilesDLL_Wow64 = 16425
+CodecFilesIni = 10
+CodecFilesInf = 17
+
+
+
+[Manufacturer] 
+%CompanyStr% = DVCodec
+
+[DVCodec]
+%CodecNameDescStr% = DefaultInstall, 1
+
+[DVCodec.ntx86]
+%CodecNameDescStr% = DefaultInstall.ntx86, 1
+
+[DVCodec.ntia64]
+%CodecNameDescStr% = DefaultInstall.ntia64, 1
+
+[DVCodec.ntamd64]
+%CodecNameDescStr% = DefaultInstall.ntamd64, 1
+
+
+
+[DefaultInstall]
+CopyFiles = CodecFilesDLL, CodecFilesInf
+AddReg = AddReg_all, AddReg_98
+UpdateInis = AddSysIni_98
+
+[DefaultInstall.ntx86]
+CopyFiles = CodecFilesDLL, CodecFilesInf
+AddReg = AddReg_all, AddReg_NT
+
+[DefaultInstall.ntia64]
+CopyFiles = CodecFilesDLL_Wow64, CodecFilesInf
+AddReg = AddReg_all, AddReg_Wow64
+
+[DefaultInstall.ntamd64]
+CopyFiles = CodecFilesDLL_Wow64, CodecFilesDLL_x64, CodecFilesInf
+AddReg = AddReg_all, AddReg_x64
+
+
+
+[UnInstall_98]
+DelFiles = CodecFilesDLL, CodecFilesIni, CodecFilesInf
+DelReg = DelReg_all, DelReg_98
+UpdateInis = DelSysIni_98
+
+[UnInstall_NT]
+DelFiles = CodecFilesDLL, CodecFilesIni, CodecFilesInf
+DelReg = DelReg_all, DelReg_NT
+
+[UnInstall_Wow64]
+DelFiles = CodecFilesDLL_Wow64, CodecFilesIni, CodecFilesInf
+DelReg = DelReg_all, DelReg_Wow64
+
+[UnInstall_x64]
+DelFiles = CodecFilesDLL_Wow64, CodecFilesDLL_x64, CodecFilesIni, CodecFilesInf
+DelReg = DelReg_all, DelReg_x64
+
+
+[AddReg_all]
+HKLM, SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dvsd, Driver,, %DLLFileStr%
+HKLM, SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dvsd, Description,, %CodecNameDescStr%
+HKLM, SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dvsd, FriendlyName,, %CodecNameDescStr%
+HKLM, SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dv25, Driver,, %DLLFileStr%
+HKLM, SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dv25, Description,, %CodecNameDescStr%
+HKLM, SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dv25, FriendlyName,, %CodecNameDescStr%
+HKLM, SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dv50, Driver,, %DLLFileStr%
+HKLM, SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dv50, Description,, %CodecNameDescStr%
+HKLM, SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dv50, FriendlyName,, %CodecNameDescStr%
+
+[AddReg_98]
+HKLM, Software\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%, DisplayName,, %CodecUninstallDescStr%
+HKLM, Software\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%, UninstallString,, "rundll.exe setupx.dll,InstallHinfSection Uninstall_98 132 %17%\%InfFileStr%"
+
+[AddSysIni_98] 
+system.ini, drivers32,, "vidc.dvsd = %DLLFileStr%"
+system.ini, drivers32,, "vidc.dv25 = %DLLFileStr%"
+system.ini, drivers32,, "vidc.dv50 = %DLLFileStr%"
+
+[AddReg_NT]
+HKLM, Software\Microsoft\Windows NT\CurrentVersion\drivers.desc, %DLLFileStr%,, %CodecNameDescStr%
+HKLM, Software\Microsoft\Windows NT\CurrentVersion\Drivers32, vidc.dvsd,, %DLLFileStr%
+HKLM, Software\Microsoft\Windows NT\CurrentVersion\Drivers32, vidc.dv25,, %DLLFileStr%
+HKLM, Software\Microsoft\Windows NT\CurrentVersion\Drivers32, vidc.dv50,, %DLLFileStr%
+HKLM, Software\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%, DisplayName,, %CodecUninstallDescStr%
+HKLM, Software\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%, UninstallString,, "rundll32.exe setupapi.dll,InstallHinfSection UnInstall_NT 132 %17%\%InfFileStr%"
+HKLM, Software\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%, NoModify, 0x00010001, 1
+
+[AddReg_Wow64]
+HKLM, Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\drivers.desc, %DLLFileStr%,, %CodecNameDescStr%
+HKLM, Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32, vidc.dvsd,, %DLLFileStr%
+HKLM, Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32, vidc.dv25,, %DLLFileStr%
+HKLM, Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32, vidc.dv50,, %DLLFileStr%
+HKLM, Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%, DisplayName,, %CodecUninstallDescStr_Wow64%
+HKLM, Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%, UninstallString,, "%16425%\rundll32.exe setupapi.dll,InstallHinfSection UnInstall_Wow64 132 %17%\%InfFileStr%"
+HKLM, Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%, NoModify, 0x00010001, 1
+
+[AddReg_x64]
+HKLM, Software\Microsoft\Windows NT\CurrentVersion\drivers.desc, %DLLFileStr_x64%,, %CodecNameDescStr%
+HKLM, Software\Microsoft\Windows NT\CurrentVersion\Drivers32, vidc.dvsd,, %DLLFileStr_x64%
+HKLM, Software\Microsoft\Windows NT\CurrentVersion\Drivers32, vidc.dv25,, %DLLFileStr_x64%
+HKLM, Software\Microsoft\Windows NT\CurrentVersion\Drivers32, vidc.dv50,, %DLLFileStr_x64%
+HKLM, Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\drivers.desc, %DLLFileStr%,, %CodecNameDescStr%
+HKLM, Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32, vidc.dvsd,, %DLLFileStr%
+HKLM, Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32, vidc.dv25,, %DLLFileStr%
+HKLM, Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32, vidc.dv50,, %DLLFileStr%
+HKLM, Software\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%, DisplayName,, %CodecUninstallDescStr_x64%
+HKLM, Software\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%, UninstallString,, "rundll32.exe setupapi.dll,InstallHinfSection UnInstall_x64 132 %17%\%InfFileStr%"
+HKLM, Software\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%, NoModify, 0x00010001, 1
+
+[DelReg_all]
+HKLM, SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dvsd, Driver 
+HKLM, SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dvsd, Description 
+HKLM, SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dvsd, FriendlyName 
+HKLM, SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dv25, Driver 
+HKLM, SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dv25, Description 
+HKLM, SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dv25, FriendlyName 
+HKLM, SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dv50, Driver 
+HKLM, SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dv50, Description 
+HKLM, SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dv50, FriendlyName 
+HKCU, Software\Cedocida
+
+[DelReg_98]
+HKLM, Software\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%
+
+[DelSysIni_98] 
+system.ini, drivers32, "vidc.dvsd = %DLLFileStr%"
+system.ini, drivers32, "vidc.dv25 = %DLLFileStr%"
+system.ini, drivers32, "vidc.dv50 = %DLLFileStr%"
+
+[DelReg_NT]
+HKLM, Software\Microsoft\Windows NT\CurrentVersion\drivers.desc, %DLLFileStr%
+HKLM, Software\Microsoft\Windows NT\CurrentVersion\Drivers32, vidc.dvsd
+HKLM, Software\Microsoft\Windows NT\CurrentVersion\Drivers32, vidc.dv25
+HKLM, Software\Microsoft\Windows NT\CurrentVersion\Drivers32, vidc.dv50
+HKLM, Software\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%
+
+[DelReg_Wow64]
+HKLM, Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\drivers.desc, %DLLFileStr%
+HKLM, Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32, vidc.dvsd
+HKLM, Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32, vidc.dv25
+HKLM, Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32, vidc.dv50
+HKLM, Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%
+
+[DelReg_x64]
+HKLM, Software\Microsoft\Windows NT\CurrentVersion\drivers.desc, %DLLFileStr_x64%
+HKLM, Software\Microsoft\Windows NT\CurrentVersion\Drivers32, vidc.dvsd
+HKLM, Software\Microsoft\Windows NT\CurrentVersion\Drivers32, vidc.dv25
+HKLM, Software\Microsoft\Windows NT\CurrentVersion\Drivers32, vidc.dv50
+HKLM, Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\drivers.desc, %DLLFileStr%
+HKLM, Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32, vidc.dvsd
+HKLM, Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32, vidc.dv25
+HKLM, Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32, vidc.dv50
+HKLM, Software\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%
+
+
+[Strings] 
+CompanyStr = "private"
+CodecNameStr = "Cedocida" 
+UninstallRegKeyStr = "cedocida"
+CodecNameDescStr = "Cedocida DV Codec"
+CodecUninstallDescStr = "Cedocida DV Codec"
+CodecUninstallDescStr_Wow64 = "Cedocida DV Codec (32 Bit)"
+CodecUninstallDescStr_x64 = "Cedocida DV Codec (32 Bit and 64 Bit)"
+DLLFileStr = "cedocida.dll"
+DLLFileStr_x64 = "cedocida.dll"
+IniFileStr = "cedocida.ini"
+InfFileStr = "cedocida.inf"

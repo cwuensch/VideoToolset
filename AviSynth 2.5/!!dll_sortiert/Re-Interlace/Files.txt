@@ -1,0 +1,6 @@
+Motion_12Dec05.dll		nötig für Re-Interlacer MotionProtectedFPS
+MaskTools_v1.5.8.dll		nötig für Re-Interlacer MotionProtectedFPS
+mt_MaskTools_v2.0a32.dll	nötig für Re-Interlacer MotionProtectedFPS2 (salFPS3)
+
+MVTools_v1.8.4.dll		nötig für Re-Interlacer MVFlowFPS
+mt_MaskTools_v2.0a32.dll	nötig für Re-Interlacer MVFlowFPS2_new

@@ -1,0 +1,53 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <title>Info Avisynth Filter</title>
+   <link rel="stylesheet" type="text/css" href="../../avisynth.css">
+</head>
+<body>
+<h2>
+<span class="titresmall"><a NAME="RGBAdjust"></a>Info</span>
+</h2>
+<p><code>Info </code>(<var>clip</var>)
+<p>Present in <em>v2.5</em>. It gives info of a clip printed in the left corner
+of the clip. The info consists of the colorspace, size, fps, whether it
+is field (you applied <a href="separatefields.htm"><code>SeparateFields</code></a>)
+or frame based (you didn't apply <code>SeparateFields</code>), whether AviSynth
+thinks it is bottom (the default in case of <a href="avisource.htm"><code>AviSource</code></a>)
+or top field first, whether there is audio present, the number of channels,
+sample type and the samplerate. In <em> v2.55</em> a CPU flag is added with supported optimizations.
+<p>Example:</p>
+
+<pre>AviSource(&quot;C:\filename.avi&quot;).Info</pre>
+<p>Results in a video with information in the top left corner: </p>
+<pre>Frame: 12 
+ColorSpace: YV12 
+Width: 720 pixels, Height: 432 pixels 
+Frames per second: 25.0000 
+Fieldbased (Separated) Video: NO 
+Parity: Assuming Bottom Field First 
+Video Pitch: 720 bytes. 
+Has Audio: yes 
+Audio Channels: 6 
+Sample Type: integer 16 bit 
+Samples Per Second: 44100
+CPU detected: x87 MMX ISSE SSE 3DNOW 3DNOW_EXT</pre>
+<p><b>Changelog:</b></p>
+<table border="1">
+  <tbody>
+    <tr>
+      <td>v2.50</td>
+      <td>Initial Release</td>
+    </tr>
+    <tr>
+      <td>v2.55</td>
+      <td>Added supported CPU optimizations</td>
+    </tr>
+  </tbody>
+</table>
+<p><kbd>$Date: 2004/04/09 16:58:20 $</kbd></p>
+<form><input TYPE="Button" VALUE="Back"
+onClick="history.go(-1)"></form>
+</body>
+</html>

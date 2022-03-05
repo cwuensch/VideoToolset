@@ -1,0 +1,15 @@
+
+Cedocida DV Codec can be installed to support the video codecs DV, DVCPRO25 and DVCPRO50
+or only to support DV codec:
+
+
+For installing Cedocida DV, DVCPRO25 and DVCPRO50 Codec (caution: your current installed DV/DVCPRO25/DVCPRO50 codecs will be replaced):
+
+   ==> right click on "cedocida.inf" and select install
+   
+   
+   
+For installing *only* Cecodida DV Codec and not DVCPRO25/50 (caution: your current installed DV codec will be replaced):
+
+   ==> right click on "cedocida_dv_only.inf" and select install
+

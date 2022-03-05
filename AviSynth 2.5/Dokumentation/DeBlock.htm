@@ -1,0 +1,70 @@
+<html>
+<head>
+<title>DeBlock</title>
+<link rel="stylesheet" type="text/css" href="avisynth.css">
+<!--
+Automatically generated, don't change:
+$Id: mvtools.htm,v 1.4 2005/07/21 20:32:46 fizick Exp $ 
+-->
+</head>
+<body>
+<h1>DeBlock</h1>
+<h2>Abstract</h2>
+<b>author:</b> Manao & Fizick
+<br><b>version:</b> 1.2
+<br><b>download:</b> <a href="http://bag.hotmail.ru/">http://bag.hotmail.ru/</a> <br>
+<b>category:</b>  Misc Plugins<br>
+<b>requirements:</b> YV12, YUY2 Colorspace<br>
+<b>license:</b> GPL
+<hr>
+
+<p>It does a deblocking of the picture, using the deblocking filter of h264. 
+It's useful to deblock the result of <code>MVCompensate</code> of MVTools plugin, etc.</p>
+
+<h2>Syntax and parameters</h2>
+<p><code>Deblock</code> (<var>clip, int "quant", int "aOffset", int "bOffset"</var>)</p>
+<p><var>quant</var> : the higher the quant, the stronger the deblocking. It can range from 0 to 60.</p>
+<p><var>aOffset</var> : quant modifier to the blocking detector threshold. Setting it higher means than more
+edges will deblocked.</p>
+<p><var>bOffset</var> : another quant modifier, for block detecting and for deblocking's strength.
+There again, the higher, the stronger.</p>
+<p>Defaults are <var>quant</var> = 25, <var>aOffset</var> = <var>bOffset</var> = 0. If <var>quant</var> + 
+<var>aOffset</var> is inferior to 16, the filter does nothing at all. The same goes for <var>quant</var> +
+<var>bOffset</var>.</p>
+
+<h2>Examples</h2>
+<p>To deblock the motion compensation (MVTools plugin)</p>
+<pre>vectors = source.MVAnalyse(isb = false, lambda = 1000)
+compensation = source.MVCompensate(vectors, mode = 0)
+compensation.Deblock()
+</pre>
+
+<h2> License</h2>
+<p>This plugin is released under the GPL license. You must agree to the terms of
+'Copying.txt' before using the plugin or its source code.<br>
+Please donate for support.
+</p>
+
+<h2>Revisions</h2>
+
+<p>Standalone plugin version 1.2 (14.02.2006) by Fizick</p>
+<ul>
+<li>Removed from MVTools v1.1.1 and implemented as standalone plugin.</li>
+<li>YUY2 support in addition to YV12.</li>
+</ul>
+
+<p>MVtools v0.9.11.1 (06.11.2005) by Fizick</p>
+<ul>
+<li>Increased max <var>quant</var> from 51 to 60 in DeBlock for very strong deblocking .</li>
+</ul>
+
+<p>DGDecode v1.2.1 (22.02.2005)</p>
+<li> Manao: Added Deblock() blind H.264 deblocking filter (same version as in MVTools)</li>
+
+<p>MVtools v0.9.6.2 (19.09.2004) by Manao </p>
+<ul>
+<li> New filter : <code>Deblock</code>.</li>
+</ul>
+</body>
+</html>
+  

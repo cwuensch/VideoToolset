@@ -1,0 +1,188 @@
+================
+ LimitedSharpen
+================
+===
+required plugins:
+
+LimitedSharpenFaster:
+mt_Masktools.dll -> http://manao4.free.fr
+RemoveGrain.dll from RemoveGrain 1.0 pre -> http://home.arcor.de/kassandro/RemoveGrain/RemoveGrain.rar
+warpsharp.dll -> http://www.geocities.co.jp/SiliconValley-PaloAlto/2382/
+===
+default call:
+
+LimitedSharpenFaster(	ss_x=1.5, ss_y=1.5, dest_x=Width, dest_y=Height, Smode=3,
+ \			strength=100, radius=2,  Lmode=1,  wide=false, overshoot=1, 
+ \			undershoot=1, soft=0, edgemode=0, special=false, exborder=0)
+===
+description:
+
+LimitedSharpen() can be used like a traditional sharpener, but producing much less artefacts. It can be used as a replacement for the common "resize(x4)-XSharpen-resize(x1)" combo, with very similar results (perhaps even better) - but at least 2 times faster, since it requires much less oversampling. And by chaining several instances, it can even be used for something like a "[very] poor man's deconvolution" - but only if one knows how to battle the noise
+
+
+What's the problem with "normal" sharpening?
+
+Traditional sharpeners like sharpen() or UnsharpMask() compare each pixel against the average of its neighborhood, and emphasize the difference between them. The results (something like "per-pixel contrast enhancement") are good as long as the strength is kept low enough. But artefacts will arise very soon.
+XSharpen, being a non-linear sharpener, replaces each pixel with either its darkest or brightest neighbor, depending on which is nearer in range. By the nature of the method, XSharpen produces edges with maximal possible aliasing (jaggyness). So one has either to reduce the percentage, thereby weakening the overall effect, or to work with big supersampling, which makes it both extremely slow and less effective.
+
+Let's have a look at a simple transition from dark to bright, and what our standard sharpeners will do to it:
+
+
+
+The blue line represents the original edge, the dark side on the left, the bright side on the right, and in-between the gradient that builds "the edge". Red is (basically) the result of sharpen() or UnsharpMask(), pink is the result of XSharpen().
+Obviously, both methods have their pro's, and both have their con's.
+
+Note: Discussion about "ideal sharpening" is lengthy. To make an "optimal" sharpness restauration or enhancement, one would need to know the exact process that did reduce the source's sharpness. Since we never know that, we can only search for compromises that work sufficiently good in most cases.
+
+
+Now, LimitedSharpen() doesn't re-invent the wheel. It just tries to take the best of both worlds.
+
+
+Shortly, LimitedSharpen() applies one out of three different sharpeners (two domain sharpeners or a windowed range sharpener) to the source, but will limit the oversharpening (either "hard" or "soft") IF it exceeds a defined "overshoot".
+
+In reference to the graphs above, the script's results look like that (basically) :
+
+
+
+(The proportions are not "real" - both graphs were constructed free-handed.)
+
+As you see, LimitedSharpen always takes the enhanced edge steepyness from normal sharpening, but avoids oversharpening in the same way as XSharpen, as long as overshoot is kept at zero, and limiting mode 1 is used.
+In many cases, this comes out really nice, and is sufficient.
+However, with really strong sharpening there may still occur jaggy edges and/or noticeable loss of gradients in edge neighborhoods. For these cases, limiting mode 2 can be used, as well as supersampling. (The required supersampling factors are only half of what XSharpen usually needs - therefore this script will run much faster in comparison, since only a quarter of image data has to be processed, as opposed to "4*SSXSharpen")
+
+
+
+The basic operation is like this:
+
+- make a traditional sharpening operation
+- compare each pixel's sharpened result against its brightest and darkest neighbor in the original clip:
+-- if the result is inbetween of these, then the pixel is not oversharpened, and the result is used as-is
+-- if the result exceeds either the min or max neighbor, then the pixel is oversharpened, and will get limited.
+
+"Neighborhood" of a pixel currently is either its 3x3 or its 5x5 neighborhood, depending on the "wide=true|false" parameter.
+
+Available sharpeners are: UnsharpMask(), Sharpen(), and MinMaxSharpen().
+
+UnsharpMask() and Sharpen() are common - the former sharpens each pixel against a gaussian blurred input, the latter against a 3x3 average. The third mode sharpens each pixel against the average of the brightest & the darkest neighbor. This primitive form of range filtering is less "exact" in theory, but nevertheless turns out useful. The effect is stronger than that of a normal sharpen() operation, and somehow it is less prone to enhance noise and hi-frequency DCT artefacts. The downside is that it does a less optimal job in restoration of blurred corners - but that's mostly neglectable when working with supersampling.
+
+The limiters are: hard limiting, and soft limiting.
+
+With hard limiting, each pixel that becomes either darker than [min_neighbor - overshoot] or brighter than [max_neighbor + overshoot] through sharpening, will simply get clipped to that min|max value.
+
+With soft limiting, no clipping takes place, but a reduction: the effective overshoot from sharpening will get replaced by sqrt(overshoot). This means, a little oversharpening will be present, but it'll be much weaker than it would normally be. As long as the sharpening strength is kept in reasonable range, the oversharpening will still be hardly visible, while still being less prone to loose gradient tone levels in edge neighborhoods.
+
+Lastly, there is the "special" switch. It should be considered as "experimental". Activating this one, the function will perform a simple "smart contrast sharpening": in the range of low levels, pixels will get only brighter through sharpening, not darker. In the high levels range, pixels will get only darker, not brighter. Mid level pixels may get darker/brighter as usual.
+This is done by building the comparison frame through a sliding blend of (min_neighbor) for dark pixels and (max_neighbor) for bright pixels, instead of taking the plain average over the whole range. Therefore, in dark areas all values will get sharpened against their darkest neighbor, vice versa in bright areas. Visually, especially in dimmed and dark areas more detail will raise out of the "dark swamp". Simple, not too scientific, but often effective. However, one should use relatively low strengths for this one, or the effect might become strange. But even bigger strengths might come handy for some special tasks of mask creations. Usage of "wide = true" might be a good idea too with lower strengths.
+This mode is available only together with Smode=3.
+
+
+Full function call & parameter description:
+RemoveGrain >= v0.9  IS REQUIRED!!
+
+Code:
+
+LimitedSharpen( float "ss_x", float "ss_y", int "dest_x", int "dest_y", \ int "Smode", int "strength", int "radius", \ int "Lmode", bool "wide", int "overshoot", \ bool "soft", int "edgemode", bool "special", \ int "exborder" )
+
+
+
+ss_x, ss_y
+As usual, these floats are the factors for supersampled operation. You'll hardly ever need to go higher than 2.0. For simple sharpening tasks, set these to 1.0 (no supersampling). Default is 1.5 each, however.
+
+dest_x, dest_y
+These parameters specify an arbitrary output resolution. Comes handy if supersampled operation is used in a processing chain that involves resizing anyways, to avoid an unneeded extra resizing step.
+Default is [none], i.e. same resolution as the input clip.
+
+Smode ("Sharpen mode")
+0 = : custom unsharp masking: radius & radiusV           (radiusV is used for Smode=0 only)
+1 = UnsharpMask() [from WarpSharp.dll package]
+2 = Sharpen() separate x/y sharpening for Smode=2 :  strength & strengthV  (strengthV is used for Smode=2 only)
+3 = "MinMaxSharpen()" [private routine of LimitedSharpen]
+4 =   / sometimes does the magic ;-) - a separate "undershoot" parameter, to allow for some line darkening in comic or Anime 
+  
+Default is Smode=3. Change yourself if you prefer another one.
+
+strength
+Obviously, the strength of sharpening. For Smode=1, it can be 0~127 (simple sharpening), 128~255 (simple overdrive), 255~4096 (big overdrive).
+For Smode=2, values 0~100 are handled over to Sharpen() as 0.0~1.0. Values >100 are mapped to 100.
+For Smode=3, 0~100 is common, but 100~inf. can be used if necessary.
+Default is strength=160 for Smode=1, and strength=100 for Smode=2|3.
+
+radius
+The radius for the unsharp masking of Smode=1. For Smode=2|3, it's simply ignored.
+In contrary to former versions, the radius now applies "directly". It's no more scaled along with the ss_x|y values. I like it more this way.
+Default is radius=2.
+
+Lmode ("Limiting mode")
+1 = hard limiting, together with "overshoot".
+2 = soft limiting (use square of real overshoot)
+3 =   / on edges, limited sharpening with zero OS & US. On not-edges, limited sharpening with specified OS + LS
+  - "soft" acts different now: no more boolean true/false, but instead integer 0 - 100  (or -1 -> automatic)
+Default is Lmode=1.
+
+wide
+false = use min. and max. values of a 3x3 neighborhood for limiting.
+true == use min. and max. values of a 5x5 neighborhood for limiting.
+Default is wide=false, and this should do the job most times. TRUE might come handy for very blurry sources and/or bigger supersampling factors.
+
+overshoot
+This specifies how much the sharpening result may "shoot over" the min and max limits, before either clipping or reduction will be done. 0=no overshoot allowed at all, 128="make-this-script-useless"
+Default is overshoot=1.
+
+soft
+A misleading name. If TRUE, then the clip will undergo a blur(1) command only for finding the min and max limits (in order to not acidentially use too high or too low limits, caused by noise, small artefacts, or edge-halos.) This does not blur the processed clip itself.
+But attention!! This is mostly useful for soft sources with noise. On sharp sources with little noise, you'll loose some detail nevertheless.
+Default is soft=FALSE.
+
+edgemode
+-1= now shows the edgemask. (scaling still not implemented :p )
+0 = deactivated, process the whole frame
+1 = process only edge areas
+2 = process only NOT-edge areas
+Default is edgemode=0
+
+special
+When TRUE, *and* Smode=3, this will activate the above mentioned smart contrast sharpening. When using other sharpeners, it has simply no effect.
+This feature is not fully mature. But be sure to try it out, the effect might be pleasing.
+Default is special=FALSE
+
+exborder
+If the outmost borders of the input clip are not clean, they can be excluded from the sharpening by setting exborder > 0.
+values of 1 to 4 will exclude roughly 2 to 8 pixels from each side of the frame, plus an additional soft transition to the processed area.
+This feature is thought for cases when you don't want to crop into the image area. The transition to black borders usually contains artefacts. Setting exborder to an approbriate value will prevent these artefacts from getting emphasized.
+Default is 0 (no border exclusion). Usage of borderexclusion will cause a small speed loss.
+
+The defaults are equivalent to
+Code:
+
+LimitedSharpen( ss_x=1.5, ss_y=1.5, dest_x=last.width, dest_y=last.height, \ Smode=3, strength=100, radius=2, \ Lmode=1, wide=false, overshoot=1, \ soft=false, edgemode=0, special=false, \ exborder=0 )
+
+
+
+Notes
+
+Required are MaskTools >= v1.5.1 and the WarpSharp.dll package.
+
+In case someone's going to use "edgemode": check yourself if the hardcoded values are suited. If not, please adjust them yourself. I myself use it almost never, and don't want to blow up the parameter list unnecessarily.
+
+No RGB input accepted.
+
+Parameter checkings are not water proof, and in no way fool proof.
+
+This is a sharpener. Of course the needed bitrate will grow noticeably. Be careful. Use a denoiser beforehand.
+
+
+Examples
+
+Hah, gotcha! No, I won't kill your fun of toying-around ...
+
+However, the initially mentioned "speedy version" of 4*supersampled XSharpen'ing would look as simple as
+
+LimitedSharpen( ss_x=2.0, ss_y=2.0, Smode=2)
+
+
+Apart from that, there are so many possibilities to use this script, dependant on the source quality and the effect one wants to achieve ... toy around with the parameters, I'm sure you will get a good grip to it in short time.
+
+And if something is not clear, feel free to ask.
+
+Have fun!
+

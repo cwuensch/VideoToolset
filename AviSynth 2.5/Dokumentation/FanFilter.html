@@ -1,0 +1,233 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>FanFilter AviSynth Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>FanFilter </h1></font>
+	 
+	  <BR><b>Author V. C. Mohan</b>
+	  <BR>last modified on   22 oct 2008
+	  
+	  
+	
+
+
+
+<p>This plugin with function name <b>FAN</b> operate along  row in one dimensional spatial domain.
+Complementing this are the <a href="../Quiver/FQuiver.htm">FQuiver</a> 
+and <a href="../FTQuiver/FFTQuiver.htm">FFTQuiver</a> plugins which operate in 
+frequency domain. The Fan function of this plugin attenuates regular frequency
+  noise that appears as vertical to sub vertical aligned noise. In case the input
+  has horizontal to sub horizontal interference it can be filtered by using turnleft
+  function and later turnright builtin functions of Avisynth.
+
+<p>While frequency filtering is done best in frequency domain, in some cases, it is difficult
+to differentiate between low level noise and signal. This FanFilter which works
+in time domain appears to successfully filter such noise. It is however essential
+to select optimum parameters by experimenting, so that least amount of artifacts
+are introduced and excessive smoothing of image is avoided.</p>
+ 
+<p> The parameter 'lambda' is wavelength of interfering noise along the horizontal .
+ However in many cases noise is filtered satisfactorily  even when lambda value is smaller
+than the wavelength.</p>
+<p>Plus and minus tolerances for noise filtering are to be specified.  RGB formats the filter
+works on all 3 color planes.For  Y U V images Y plane processing alone may be sufficient.
+However there are cases where  U or V values were required to be filtered. Any combination of 
+filtering these 3 planes can be specified.</p>
+ 
+<p>FAN examines the data over a span equal to lambda and for opt:
+
+<br>&nbsp;"pass"  keeps the  center point original value if it is more than mean + plus Tolerances 
+or less than mean - plus Tolerances.Otherwise, the value is replaced by mean value.
+
+<br>&nbsp;"stop" Keeps the  center point original value if it is within mean + plus or - minus tolerances.
+Otherwise, the value is replaced by mean value.
+
+<br>&nbsp;"edge" Compares with left  half mean and right  half mean of lambda and filters all
+values which are outside  left mean +plus Tolerances and  left mean-minus Tolerances
+ and right mean+ plus Tolerance and right mean -minus Tolerances, by substituting nearest mean value. For filtering 
+filtering white  streaks  specify small plus tolerance  and large minus tolerance.
+ In case of black streaks specify high plus tolerance  and small minus tolerance.</p>
+
+<p>A feedback feature which may work in some cases is an option. If opted feed back by 
+a specified proportion of already filtered values is done.</p>
+<p>Filtering can be limited to within a window position and size of which  can linearly change from start 
+to end frame. This not only saves processing time, but may not 
+introduce artifacts in noise free areas of original image.</p>
+
+
+<p>RGB32, RGB24, YUY2 and YV12 formats are supported.</p> 
+
+  
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top"><b>Details of parameters</b> </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td>Input clip</td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Starting frame number to process</td>
+       <td>sf</td>
+       <td>integer</td>
+       <td>within clip</td>
+       <td>0</td>
+</tr>
+<tr>
+       <td>End frame number to process</td>
+       <td>ef</td>
+       <td>integer</td>
+       <td>within clip and not less than sf</td>
+       <td>last frame</td>
+</tr>
+
+<tr>
+       <td>option of type of filter</td>
+       <td>opt</td>
+       <td>string</td>
+       <td>"pass" "stop" "edge" </td>
+       <td>"edge"</td>
+</tr>
+<tr>
+       <td>wavelength of noise</td>
+       <td>lambda</td>
+       <td>integer</td>
+       <td>Odd number >5 (or 7 if UV also to be filtered)  and less than window width/2</td>
+       <td>15</td>
+</tr>
+<tr>
+       <td>Y,  U and V planes  filtering for YUY2 and YV12 input formats </td>
+       <td>yUV</td>
+       <td>integer</td>
+       <td>4 for y, 2 for u and 1 for v. 1 to 7 only</td>
+       <td>4</td>
+</tr>
+
+
+<tr>
+       <td>plus tolerance </td>
+       <td>plus</td>
+       <td>integer</td>
+       <td>>0 to 250</td>
+       <td>5</td>
+</tr>
+<tr>
+       <td>minus tolerance</td>
+       <td>minus</td>
+       <td>integer</td>
+       <td>>0 to 250</td>
+       <td>5</td>
+</tr>
+
+<tr>
+       <td>feedback %age value</td>
+       <td>feedback</td>
+       <td>integer</td>
+       <td>0 to 100</td>
+       <td>0</td>
+</tr>
+
+
+<tr>
+       <td>Process window left x at start frame</td>
+       <td>slx</td>
+       <td>integer</td>
+       <td>within frame, less than rx, even number if YUY2 or YV12</td>
+       <td>0</td>
+</tr>
+<tr>
+       <td>Process window top y at start frame</td>
+       <td>sty</td>
+       <td>integer</td>
+       <td>within clip, less than by,  even number if YUY2 or YV12</td>
+       <td>0</td>
+</tr>
+<tr>
+       <td>Process window right x at start frame</td>
+       <td>srx</td>
+       <td>integer</td>
+       <td>within clip, more than lx,  odd number if YUY2 or YV12 </td>
+       <td>frame width-1</td>
+</tr>
+<tr>
+       <td>Process window bottom y at start frame</td>
+       <td>sby</td>
+       <td>integer</td>
+       <td>within frame, more than ty,  odd number if YUY2 or YV12</td>
+       <td>frame height-1</td>
+</tr>
+
+<tr>
+       <td>Process window left x at end frame</td>
+       <td>elx</td>
+       <td>integer</td>
+       <td>within frame, less than erx,  even number if YUY2 or YV12</td>
+       <td>slx</td>
+</tr>
+<tr>
+       <td>Process window top y at end frame</td>
+       <td>ety</td>
+       <td>integer</td>
+       <td>within clip, less than eby,  even number if YUY2 or YV12</td>
+       <td>sty</td>
+</tr>
+<tr>
+       <td>Process window right x at end frame</td>
+       <td>erx</td>
+       <td>integer</td>
+       <td>within clip, more than elx,  odd number if YUY2 or YV12</td>
+       <td>srx</td>
+</tr>
+<tr>
+       <td>Process window bottom y at end frame</td>
+       <td>eby</td>
+       <td>integer</td>
+       <td>within frame, more than ety,  odd number if YUY2 or YV12</td>
+       <td>sby</td>
+</tr>
+
+
+
+
+</table>
+
+
+<pre>loadPlugin ("D:\TransPlugins\bin\FanFilter\Release\FanFilter.dll")
+yv = imagesource("......jpeg").converttoYV12()
+p=Fan(yv,0,1,"pass",11,yuv = 4,plus=3,minus=0)
+s=Fan(yv,0,1,"stop",5,yuv = 4,plus=10,minus=10)
+e=Fan(yv,0,1,"edge",5,yuv = 4,plus=1,minus=200)
+
+st1=stackhorizontal(yv, p)</pre>
+
+
+<br>using "pass" option
+<br><img src="fanpasslady0.jpeg" border="0">	
+
+<BR>
+<table>
+
+<tr>
+       <td><a href="../index.html">To my index page</a></td><td></td></td><td></td>
+	   </td><td></td><td><a href="FanFilter.zip">down load plugin</a></td></td><td></td>
+       </td><td></td></td><td></td><td><a href="http://www.avisynth.nl">To Avisynth</a> </td>
+</tr>
+</table>		
+</body>
+</html>

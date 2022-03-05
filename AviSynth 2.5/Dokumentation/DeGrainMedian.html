@@ -1,0 +1,426 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+  <link rel="stylesheet" type="text/css" href="../avisynth.css">
+  <title>DeGrainMedian Plugin for AviSynth</title>
+</head>
+
+<body>
+
+<h1>DeGrainMedian</h1>
+
+<h2>Spatio-Temporal
+Limited Median filter for grain removal</h2>
+
+<p>Plugin for <a href="http://www.avisynth.org">Avisynth 2.5</a><br>
+Version 0.8.2<br>
+Copyright (C)2004-2006 Alexander G. Balakhnin (aka Fizick).<br>
+<a href="http://avisynth.org.ru">http://avisynth.org.ru</a><br>
+</p>
+
+<p>DeGrainMedian plugin is mainly for film grain removal, but may
+be used for general denoising.<br>
+It uses some spatio-temporal limited median method.<br>
+</p>
+
+<h2>Syntax</h2>
+
+<p><code>DeGrainMedian</code>(<var>clip, int
+"limitY", int "limitUV", int "mode", bool "interlaced", bool "norow" </var>)</p>
+
+<h4>Filter Parameters</h4>
+
+<p>first parameter as always is input clip or default last,</p>
+
+<p><var>limitY</var>
+(0 to 255, default=4) -limit of pixel luma correction,</p>
+
+<p>
+<var>limitUV</var>
+(0 to 255, default=6) - limit of pixel chroma correction,</p>
+
+<p>
+<var>mode</var>
+(0 to 5, default=1) - operation mode (the more, the weaker)</p>
+
+<p>
+<var>interlaced</var> 
+(true or false, default=false) - process clip as interlaced
+</p>
+
+<p>
+<var>norow</var> 
+(true or false, default=false) - do not use same row in spatial filter
+</p>
+
+<h2>Using for grain and noise removal</h2>
+
+<p>Load plugin, adjust parameters value for your clip. </p>
+
+<p>Set <var>limitY</var> to typical value about 2-8
+(compromise between denoising and bluring). </p>
+
+<p>It seems, that bigger values of <var>limitUV</var>
+for chroma (4-15) are often quite safe.</p>
+
+<p>Set <var>mode</var> parameter to bigger value if
+you found picture as oversmoothed (try!). </p>
+
+<p>The more <var>mode</var> number, the bigger <var>limit</var>
+values is safe.</p>
+
+<p>It seems, that <var>mode</var>=1 or 2 is good
+compromise, but it is dependent from source.</p>
+
+<p>With <var>mode</var>=5 the result changes are
+invisible, but some of "hot" pixels are removed.</p>
+
+<p>Option <var>norow</var>=true is useful on video with horizontal noise stripes , 
+such as analog TV or VHS captures. </p>
+
+<h2>Simple sample scripts (use correct file path)</h2>
+
+<h4>Subtle filtering but useful for hot pixels removal:</h4>
+
+<pre>Avisource("dvd-input.avi")
+loadplugin("DeGrainMedian.dll")
+DeGrainMedian(limitY=5,limitUV=5,mode=3)</pre>
+
+<h4>Two-stage filtering for more full noise removal:</h4>
+
+<pre>Avisource("input.avi")
+loadplugin("DeGrainMedian.dll")
+DeGrainMedian(limitY=2,limitUV=3,mode=1)
+DeGrainMedian(limitY=2,limitUV=3,mode=1)</pre>
+
+<h4>Strong filtering for big grain removal:</h4>
+
+<pre>Avisource("analog-input.avi")
+loadplugin("DeGrainMedian.dll")
+DeGrainMedian(limitY=5,limitUV=7,mode=0)</pre>
+
+<h4>Filtering for horizontal noise stripes removal:</h4>
+
+<pre>Avisource("analog-input.avi")
+loadplugin("DeGrainMedian.dll")
+DeGrainMedian(limitY=5,limitUV=7,mode=1, norow=true)</pre>
+
+<h2>Technical details</h2>
+
+<p>The plugin is mostly based on two ideas, used at two
+stages of processing.</p>
+
+<h4>First stage - detecting</h4>
+
+<p>The first idea is from <code>STMedianFilter</code>
+plugin by Tom Barry<br>
+
+I also use part of its great optimized code and put some part of its
+nice doc (edited a little) here:</p>
+
+<p>"STMedianFilter is a (slightly motion
+compensated) spatial/temporal median filter. It fairly very fine
+grained, using only adjacent pixels in space and
+time, so it looks at the adjacent 26 locations to filter each location.
+It filters both luma and chroma....<br>
+
+...A simple median filter is
+just a clipping step where a value is set to not extend past the high
+and low of its neighbors.<br>
+
+(<span style="font-style: italic;">probably
+more strictly: median is middle member of ranked (ordered by value)
+series - Fizick</span>).<br>
+
+For instance, if you had 3 pixels in a
+row that had the values &lt;5,8,7&gt; you could clip the center
+one to not be outside the low of 5 or the high of
+7, so you would set it to 7. <br>
+
+Now imagine you had a small 3x3 video
+screen, like one surface of a Rubiks cube. Imagine the previous frame
+was the bottom layer of the cube, the current frame was the middle
+layer, and the next frame was the top. <br>
+
+Then the current center pixel would be
+right in the center of the Rubics cube and there would be 13 ways you
+could draw a line through it and a pair of two nearest neighbors. <br>
+
+What I (<span style="font-style: italic;">and
+I - Fizick</span>) did was to compare
+each of those pairs of neighbors to see which pair was most agreeing on
+value. I (<span style="font-style: italic;">and I - Fizick</span>)
+used that pair to
+clip the value of the center pixel." (The end of Tom
+Barry citation).
+</p>
+
+<p>Very interesting <code>RemoveGrain</code> plugin
+by Kassandro in mode=9 works similar to <code>STMedianFilter</code>
+at this stage, but in spatial plane only (not in temporal). It than
+changes pixel to this value of neighbors (by minimax). But it can not
+remove middle sized grain from my bad film source. <br>
+
+<code>RemoveGrain</code> is considered by Kassandro as
+prefilter for <code>RemoveDirt</code>, he says in doc: <br>
+
+"If grain is too crude, RemoveGrain can only partially remove it or
+cannot remove it at all." <br>
+( The end of Kassandro citation)<br>
+
+It seems, that it is mostly due to lack of temporal information from
+neighbor frames.</p>
+
+<p>Since version 0.2, I add to DeGrainMedian also some other more
+safe operation
+modes 1-4(later 5) (code borrowed from RemoveGrain).<br>
+We consider the same 3x3x3 cube.<br>
+New pixel candidate value (newp) is clipped by values of neighbor
+pixels
+from pair (bound1 and bound2).<br>
+But mode1-mode5 use more safe criterion (weight) of optimal pixel pair,<br>
+We take into account also the difference of new value from central
+pixel old value (oldp) .</p>
+
+<p>Mode=0
+of DeGrainMedian (similar to mode=9 of RemoveGrain) uses weight=|bound1
+-bound2|, it is strongest.<br>
+
+Mode=1
+of DeGrainMedian (more strong than mode=8 of RemoveGrain) uses weight=|oldp -
+newp|+4* |bound1 - bound2|<br>
+
+Mode=2
+of DeGrainMedian (similar to mode=8 of RemoveGrain) uses weight=|oldp -
+newp|+2* |bound1 - bound2|<br>
+
+Mode=3
+of DeGrainMedian (similar to mode=7 of RemoveGrain) uses weight=|oldp -
+newp|+ |bound1 - bound2|<br>
+
+Mode=4
+of DeGrainMedian (similar to mode=6 of RemoveGrain) uses weight=2*|oldp
+- newp|+ |bound1 - bound2|<br>
+
+Mode=5
+of DeGrainMedian (similar to mode=5 of RemoveGrain) uses weight=|oldp -
+newp|, it is weakest.</p>
+
+<p><var>norow</var> option excludes horizontal pixels pair of same frame, 
+so filter considers 12 pairs only.</p>
+
+<h4>Second stage - filtration</h4>
+
+<p><code>STMedianFilter</code>
+at second stage don't filter pixel if it would change it more than some
+threshold.<br>
+
+(More correctly, it firstly makes temporal detecting and thresholding, <br>
+
+with following spatial detecting and thresholding)<br>
+
+</p>
+
+<p> The most denoisers also do not filter pixels with big noise
+(big luma differences).<br>
+But both such single pixels are very visible on flat smoothed regions, <br>
+and group of them forms very annoying edge artifacts. </p>
+
+<p>Moreover, pure temporal denoisers often produce ghosting even
+for not very big thresholds.</p>
+
+<p>DeGrainMedian at this second stage uses other (different)
+method of pixel processing.
+</p>
+
+<p>Here I use second idea, borrowed from <code>Dust</code>
+plugin by Steady. See part of <code>Dust</code> doc here:</p>
+
+<p>"Limit=5<br>
+
+Sets the strength of the temporal filtering. (How much it can change
+the
+original pixel)." (The end of Steady citation).</p>
+
+<p>So, if filtered pixel would be changed
+more than some threshold (limit),<br>
+it will NOT be restored to original in DeGrainMedian,<br>
+but will be changed by LIMITED value.<br>
+<code>DeGrainMedian</code> plugin
+filters ALL pixels, but with limited strength.<br>
+Therefore, all grain and strikes are (fully or partially) smoothed. </p>
+
+<p>Filter almost don't produce edge artifacts.<br>
+Ghosting is also minimal, since it is automatically switched to spatial
+smoothing as more nearest pair by values.<br>
+
+You may select one of 6 modes of operation, from strong (but smoothed) to
+weak (but sharp).</p>
+
+<p>So, DeGrainMedian have a speed of STMedianFilter (true) and
+strength of Dust (true by limit value :-)!<br>
+
+It is almost not joke :-).<br>
+
+<p>It can greatly increase the compession degree.</p>
+
+What is bad, really?</p>
+
+<p>1. Some blurring (you want denoising without it ? :-) .<br>
+
+2. It can not produce flat fully smooth picture, some noise always
+remains
+(you like oversmoothed and blocked clips ?).<br>
+
+3. Motion compensation is limited to 1 pixel value (of course, it is
+NOT as
+<code>Dust</code>, but what about external motion compensation ?).</p>
+
+<p>Seriously,
+it is not super filter and still experimental, but for my noisy grainy
+films, it makes quite good results.<br>
+
+Firstly I developed it as prefilter (to Vaguedenoiser etc), but it
+seems now, that sometimes it can be used alone...<br>
+
+Probably, it can help somebody else. That is why I release it.</p>
+
+<p> Some note. With limitY=255,
+DeGrainMedian must have the same (or similar) output <br>
+
+as STMedianFilter with thresholds=255 (and with the same artifacts),
+but it is not true now, <br>
+probably due to some bug or bugs :-( <br>
+
+</p>
+
+<p>Edit: It is true now - it was a bug in <code>STMedianFilter</code>,
+I fixed it in v 1.0.3.</p>
+
+<h3>Combining usage</h3>
+
+<p>It must be applied before other denoising filters.<br>
+ 
+Sometimes I use two DeGrainMidian filters in script with lower limits for better noise removal.<br>
+ 
+The better results for films restoration within Avisynth can be
+achieved with my global motion compensation plugin <code>DePan</code>.<br>
+
+</p>
+
+<h2>Features and limitations of current version </h2>
+
+<ol>
+
+  <li>Works only in YV12 and YUY2 color format.</li>
+
+  <li>Requires a P-III, Athlon, or higher. Needs SSEMMX (Integer
+SSE) support.</li>
+
+  <li>No scenechange detector in current version. 
+  But I do not see any ghosting - filter is switched to spatial pixel pairs.</li>
+
+  <li>First and last line (line pair for interlaced) of every
+frame are not filtered.</li>
+
+  <li>First and last 8 (YV12) or 4 (YUY2) pixels in every row
+are filtered with more simple (same columns) method.</li>
+
+  <li>Chroma filtering in YUY2 mode is also in same columns only.</li>
+
+  <li>First and last frames are not filtered</li>
+
+  <li>Tested with Avisynth 2.5.5.  </li>
+
+  <li>It is very fast filter.  </li>
+
+</ol>
+
+<h2>More info</h2>
+
+<p>See doom9 forum special thread:
+<a href="http://forum.doom9.org/showthread.php?s=&amp;threadid=80834">http://forum.doom9.org/showthread.php?s=&amp;threadid=80834</a></p>
+
+<h2>Compiling</h2>
+
+<p>I use free MS VC++ Toolkit 2003 with MS Platform SDK.<br>
+
+Use make file "makefile" with command:</p>
+
+<p>nmake</p>
+
+<p>(note:
+copy lost nmake.exe and cvtres.exe from Platform SDK directory
+Bin\win64 to Bin ).</p>
+
+<h2>License</h2>
+
+<p>This program is free software; you can redistribute it and/or
+modify<br>
+it under the terms of the GNU General Public License as published by<br>
+the Free Software Foundation; either version 2 of the License, or<br>
+(at your option) any later version.<br>
+<br>
+This program is distributed in the hope that it will be useful,<br>
+but WITHOUT ANY WARRANTY; without even the implied warranty of<br>
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the<br>
+GNU General Public License for more details.<br>
+<br>
+You should have received a copy of the GNU General Public License<br>
+along with this program; if not, write to the Free Software<br>
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. <br>
+</p>
+
+<p>If you like my plugins, please consider to make some donation.</p>
+<h2>Version changes:</h2>
+
+<ul>
+
+  <li>Version 0.1,August 13, 2004 - first public (beta!).</li>
+
+  <li>Version 0.1.1, August 18, 2004 - Bug fixed with spatial
+part of YV12 (distance was 2 pixels)<br>
+  </li>
+
+  <li>Version 0.2, August 21, 2004 - Added more safe modes=1-4 , doc updated </li>
+
+  <li>Version 0.3, August 28, 2004 - Added interlaced mode, code
+reorganization </li>
+
+  <li>Version 0.4, September 10, 2004 - Fixed possible bug with
+different frame pitches</li>
+
+  <li>Version 0.5, March 23, 2005 - Use more correct cache settings. Thank to
+Turyst04 for stability problem report.</li>
+
+  <li>Version 0.6, April 2, 2005 - 
+  fixed some bugs with YUY2. Thanks to AVIL for report.</li>
+
+  <li>Version 0.7, April 21, 2005 - 
+  fixed bug with mode=2 for YV12 interlaced; first frame pitch
+fixed</li>
+
+  <li>Version 0.7.0 July 27, 2005 - reformated documentation only</li>
+
+  <li>Version 0.8 October 9, 2005 - changed frame cache range to 3;<br>
+                - added option <var>norow</var> to disable  using same row (horizontal) spatial pair;<br>
+		- fixed documentation error about <var>mode</var>=1; <br>
+		- renamed old mode 4 to 5, 3 to 4, 2 to 3, added new mode 2.
+  </li>
+
+  <li>Version 0.8.1 July 28, 2006 - Fixed a bug for mode>0, interlaced=true, norow=false, YV12. 
+  Thanks to squid_80 for report.</li>
+
+  <li>Version 0.8.2 October 7, 2006 - Fixed a green right border bug for non-mod 8 width. 
+  Thanks to akapuma for report.</li>
+</ul>
+
+<h3><a href="degrainmedian082.zip">Download
+DeGrainMedian version 0.8.2</a></h3>
+
+<p><a href="../">Return to main page</a></p>
+
+</body>
+</html>

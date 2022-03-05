@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html dir="ltr" lang="en">
+
+<head>
+<link rel="StyleSheet" type="text/css" href="forum.css">
+</head>
+
+<body>
+
+		<div id="post_message_622289">To my own surprise, I had some free time yesterday evening. So here is BDH's third incarnation:<br />
+<br />
+<font color="blue"><b>BlindDeHalo3</b></font><br />
+<br />
+Basically, it does the same as the 2nd version did. New are some tweaking possibilities (partly backported from BDH's initial version), an optional &quot;postprocessing&quot; mode, and ... better performance.<br />
+<br />
+Feeding a cropped 720*432 DVD source, my Athlon XP1800 renders like this:<br />
+<br />
+BDH2: ~10 fps<br />
+BDH3: ~25 fps (without PP)<br />
+<br />
+I hope there are no objections against this minor performance increase<br />
+<br />
+With PP activated, the performance gain is smaller: ~13 fps in above example. Also, I'm not yet really satisfied with the PP mode. But it may come handy in its current state already, and I don't want to keep that speedy version back from you, just because of that.<br />
+<br />
+Let's start with parameters and explanations. The function comes at the end, as usual.<br />
+<br />
+<b>Full function call with default values:</b><br />
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code:</div>
+	<pre class="alt2" dir="ltr" style="
+		margin: 0px;
+		padding: 6px;
+		border: 1px inset;
+		width: auto;
+		height: 66px;
+		text-align: left;
+		overflow: auto">BlindDeHalo3( rx=3.0, ry=3.0, strength=125, 
+ \            lodamp=0.0, hidamp=0.0, sharpness=0.0, tweaker=0.0,
+ \            PPmode=0, PPlimit=0, interlaced=false)</pre>
+</div><b><u>Parameter description</u></b><br />
+<br />
+<b>rx, ry</b> [float] <br />
+The radii to use for the [quasi-] gaussian blur, on which the halo removal is based..<br />
+<br />
+<b>strength</b> [int]<br />
+The overall strength of the halo removal effect.<br />
+<br />
+<b>lodamp, hidamp</b> [float]   (range: 0.0 ~ ??? / try 4.0 as a start)<br />
+With these two values, one can reduce the basic effect on areas that would change only little anyway (lodamp), and/or on areas that would change very much (hidamp).<br />
+lodamp does a reasonable job in keeping more detail in affected areas.<br />
+hidamp is intended to keep rather small areas that are very bright or very dark from getting processed too strong. Works OK on sources that contain only weak haloing - for sources with strong oversharpening, it should not be used, mostly.<br />
+(Usage has zero impact on speed.)<br />
+<br />
+<b>sharpness</b> [float] (range: 0.0 ~ 1.58)<br />
+By setting this bigger than 0.0, the affected areas will come out with better sharpness. However, strength must be chosen somewhat bigger as well, then, to get the same effect than without.<br />
+(This is the same as initial version's &quot;maskblur&quot; option.)<br />
+<br />
+<b>tweaker</b> [float] (range: 0.0 ~ 1.0)<br />
+May be used to get a stronger effect, seperately from altering &quot;strenght&quot;.<br />
+(Also in accordance to initial version's working methodology. I had no better idea for naming this parameter.)<br />
+<br />
+<b>interlaced</b> [bool]<br />
+As formerly, this is intended for sources that were originally interlaced, but then made progressive by deinterlacing. It aims in particular at clips that made their way through Restore24.<br />
+<br />
+<b>PPmode</b> [int]<br />
+When set to &quot;1&quot; or &quot;2&quot;, a second cleaning operation after the basic halo removal is done. This deals for<br />
+a) removing/reducing those corona lines that sometimes are left over by BlindDeHalo<br />
+b) improving on mosquito noise, if some is present.<br />
+<br />
+PPmode=1 uses a simple gaussian blur for post-cleaning. PPmode=2 uses a 3*3 average, with zero weigthing of the center pixel.<br />
+<br />
+Also, PPmode can be &quot;-1&quot; or &quot;-2&quot;. In this case, the main dehaloing step is completely discarded, and *only* the PP cleaning is done. This has less effect on halos, but can deal for sources containing more mosquito noise than halos. <br />
+<br />
+<b>PPlimit</b> [int] <br />
+Can be used to make the PP routine change no pixel by more than [PPlimit].<br />
+I'm not sure if this makes much sense in this context. However the option is there - you never know what it might be good for.<br />
+<br />
+<br />
+<b><u>Comments &amp; tips</u></b><br />
+<br />
+Well, I just fiddled it together and checked that everything is working ... there's not very much practical experience yet I can share with you, about the new stuff. However:<br />
+<br />
+- All that PP stuff isn't yet optimized. But it's difficult to make that part noticeably smarter without an aching slowdown, I fear. Try it, share your opinions. Make suggestions.<br />
+<br />
+- Regarding &quot;strength&quot; &amp; &quot;sharpness&quot; &amp; &quot;tweaker&quot;<br />
+These three behave somewhat <i>similar</i>, but not the same.<br />
+A bigger value for &quot;sharpness&quot; is similar to reducing &quot;strength&quot;. A bigger value for &quot;tweaker&quot; is similar to increasing &quot;strength&quot; value -- and vice versa for both.<br />
+Also the other way round: when increasing &quot;sharpness&quot;, you probably have to increase &quot;strength&quot; a little as well, to get the same removal effect.<br />
+Usage of &quot;sharpness&quot; works in particular good when bigger radii (say, &gt;2.5) are used for dehaloing. Usage of &quot;tweaker&quot; is more useful when working with sources containing thin, weak halos.<br />
+In the end, it comes down again to try&amp;error<br />
+<br />
+- lodamp and hidamp<br />
+Technically, these two are the &quot;n&quot; constants in two scaling factors of the form &quot;x/(x+n)&quot;, which are used when creating a LUT from the difference between input clip and its gaussian blurred version.<br />
+<br />
+As described above, &quot;lodamp&quot; deals for better protection of areas where this difference is alredy small. Effectively, it preserves some more of weak detail in areas of high contrast. A value of 4.0 seems a good starting point. One can also try to use bigger values like 16.0 or so, along with a bigger &quot;strength&quot; value. By this, one can somewhat change the characteristics of &quot;what-is-processed-how-strongly&quot; (if I can say so).<br />
+<br />
+&quot;hidamp&quot; tries to do the opposite: protect small detail that is very bright or very dark from being toned down too much. But its usability is much more restricted: it seems to work OK when the actual halos of the source are rather weak, and/or when not too small radii are used - in this case, the protection of very prominent detail works out, mostly.<br />
+In case the source contains strong haloing, is's better to not use &quot;hidamp&quot; at all: in this case, the halos itself would be considerd to be &quot;prominent detail&quot; and be protected ... no go.<br />
+<br />
+<br />
+I think this is close to a &quot;final&quot; version of BlindDeHalo (without a number in the name)<br />
+<br />
+<br />
+The function script is attached to this post, and will show up upon approval. For reference, the script is posted below.<br />
+<br />
+Have fun!</div>
+</body>
+
+</html>

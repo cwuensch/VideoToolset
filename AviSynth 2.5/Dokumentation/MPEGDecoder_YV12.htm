@@ -1,0 +1,109 @@
+<HTML>
+<HEAD>
+<TITLE>MPEGDecoder.dll for AviSynth</TITLE>
+<BODY>
+<center><h1>MPEGDecoder.dll YV12 Version for AviSynth 2.5 Only!<br>(Version 2.03 Alpha)</h1>
+<h3>By Nic</h3></center>
+<h4>Introduction</h4>
+<P>
+<P>
+This DLL lets you load VOB/MPEG-2 ES,PS,TS/MPEG-1 files to be loaded directly into Avisynth.<br>
+<br>
+A Sample AVISynth Script looks like this:<br>
+<br>
+LoadPlugin("MPEGDecoder.dll")<br>
+MPEGSource("d:\kiss\kiss.vob")<br>
+<br>
+This avs file can now be loaded into VDub/etc.<br>
+<p>
+<HR>
+<h4>The Way it works</h4>
+Unlike the previous version, this MPEGDecoder.dll is primarily based on the DVD2AVI d2v file format.<BR>
+However, if no D2V file is supplied, it creates one itself<BR><BR>
+
+<HR>
+<h4>Main Parameters</h4>
+
+The parameters for 'MPEGSource' are as follows:<br>
+
+<u>For normal use:</u><br><br> 
+<B>MPEGSource("e:\rip\spiderman.d2v")</b><BR>
+Which will load a d2v as normal<br>
+<br>
+<u>or:</u><br><br>
+<b>MPEGSource("e:\rip\VTs_01_1.vob+e:\rip\VTs_01_2.vob+e:\rip\VTs_01_3.vob)</b><BR>
+Here the first thing that MPEGDecoder.dll will do is to check for a e:\rip\VTs_01_1.d2v file.<BR>
+if a file with that name exists it will load that and assume that the d2v is for the three files.<BR><BR>
+if e:\rip\VTs_01_1.d2v does not exist, it will be created and then loaded automatically.<br>
+
+<BR>For D2V files created automatically by MPEGDecoder.dll it does not know if force film should be turned on. 
+<BR>If it should then put "ff" as the third parameter<BR>
+i.e.<BR>
+MPEGSource("e:\rip\big.vob", 0, "ff") 
+<BR>
+<HR>
+<h4>Detailed Parameter Description</h4>
+Usage:<BR>
+<B>MPEGSource(<I>file names</i>, <i>number of frames</i>, <i>commands</i>)<BR><BR></b>
+
+<i><b>file names</i></b><BR>
+This can be a sequence of MPEG files combined with a '+' <U>or</U> a d2v file. <BR><BR>
+
+<b><i>number of frames</i></b><BR>
+This should always be 0 as a default. But can be used to force the decoder to return a certain number of frames. MPEGSource can not correctly create d2v files for MPEG-1 yet, so use this to input the correct number of frames.<BR>
+A value of -2 can also be written here. This means no d2v can be used and therefore only files can be inputed in the first parameter. From the files specified Directshow is asked to get the correct number of frames.<BR><BR>
+
+<b><i>commands</i></b><BR>
+The only two commands at present are "ff" which forces film. (as described above) and "nod2v".<BR>
+"nod2v" is similar to the -2 command in that you can only specify files and nod2v is used or created. But it 
+allows you to specify a number of frames in the "number of frames" parameter.
+<HR>
+<h4>Misc/Notes</h4>
+
+
+<li>Pro's/Con's</li><br><br>
+BUG: The MPEG2 Repeat Field flag is not taken into consideration. So when decoding NTSC films its like Force Film is already
+turned on.<BR>
+<BR>
+PRO: Its fast, faster decoding than normal MPEG2DEC.DLL(MPEG2Source). This speeds up encoding :)<BR><BR>
+<LI> Info </li><br><br>
+Read this document carefully!<BR>
+Transport streams can be used the same as Program Streams, the MPEGDecoder should detect that they are transport streams and determine the PIDs automatically.<BR><BR>
+<LI> Bugs </li><br><br>
+When creating d2v files for MPEG-1 files the, number of frames determined is wrong. either use -2, or enter the
+correct number of frames. (if you want to find to find the correct number of frames exactly, load the mpeg-1
+into VirtualDub and it will tell you the number of frames through File->File Information)<br><BR>
+When seeking, sometimes the video looks corrupt, ignore this as it will not look corrupt when encoding<BR>
+
+<BR>
+<HR><h4>
+Credits</h4>
+The MPEG2 decoding library is based on libmpeg2.sf.net (Michel Lespinasse <walken@zoy.org>, Aaron Holtzman <aholtzma@ess.engr.uvic.ca>)<br><br>
+ColorSpace code comes from the XviD MPEG-4 project (www.xvid.org) (Michael Militzer, Peter Ross, edgomez, skal)<br><br>
+Ive pinched the way this doc looks from Decomb 3.8's documentation (by Donald Graft - http://shelob.mordor.net/dgraft/ )
+<BR>
+<HR><h4>
+Changelog as of 2.0 alpha</h4>
+
+<b>2.03 alpha</b><br>
+<i>Added automatic Transport Stream support</i><BR>
+<i>-2 dshow framecount guess support and frame count overiding</i><BR>
+<BR>
+
+<b>2.02 alpha</b><br>
+<i>Fixed frame counting bug (did not take into consideration trf 0)</i><BR>
+<BR>
+
+<b>2.01 alpha</b><br>
+<i>Fixed a bug in ForceFilm mode</i><BR>
+<BR>
+
+<b>2.0 alpha</b><br>
+<i>Due to lack of time, Im releasing a test version. As I dont have time to test myself :(</i><BR>
+<BR>
+
+<BR>
+<B><U>All code is GPL!</U></B>
+<BR><BR>
+<i>email: nic@nic.dnsalias.com</i>
+

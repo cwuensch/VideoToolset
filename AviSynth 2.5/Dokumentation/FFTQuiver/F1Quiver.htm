@@ -1,0 +1,195 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>F1Quiver Function Frequency Domain filter for AviSynth </title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>F1Quiver, F1QuiverUV </h1></font>
+	 
+	  <BR><b>Author V. C. Mohan</b>
+	  <BR>Date  Aug 2014
+	  <BR>EMail: <a href="mailto:mohanvc@gmail.com">mohanvc</a>
+	  
+
+<p>This plugin function filters the image row by row, in 1d frequency domain. 
+Filters can be either Gaussian, 
+or Butterworth or custom designed in frequency domain. Noise that appears
+vertically or sub vertically aligned (noise really is  row wise) is filtered.</p>
+
+<P> Standard filters included are low cut (high pass), highcut (low pass), band stop
+and notch reject filters either Gaussian or Butterworth. These standard filters 
+can be cascaded. Filter can be custom (user) designed. Cascading custom designed
+ filters with standard filters is not  allowed.  The custom designed filter 
+ is smoothed (degree times). </P>
+
+<P>Standard filters are specified using two letter names  as given below:
+<BR> First letter be either b  for butterworth, or g for gaussian.
+<BR>Second letter be either h (high cut) or l (low cut), or b (band stop) 
+or n( notch reject).
+<BR>The first value after filter name is  the frequency , 50% or 67% amplitude cut off 
+(for gl gh and bl, bh filters), or center
+frequency of notch or  bandstop (for gn,bn, gb, bb filters). 
+The second value is %age of center freq value to be used
+as notch width or bandwidth and must be specified even if not relevant.</P>
+
+<P> In case of Butterworth filters 'degree' value is used to design the degree or sharpness
+of filter. The higher the degree the sharper will be the filter, but produces
+more ringing. Degree of 1 is equivalent to Gaussian filters which are gentler
+and do not produce ringing. Only one value of degree is used for all the 
+butterworth filters in the cascade. </P>
+
+<P>Custom filter is specified by the first entry being "custom". A sereis of 
+frequency and amplitude pairs are to be given. the first amplitude value is back ward propogated 
+upto zero freq, and the last pair amplitude is propogated up to the nyquist 
+frequency. The frequency values must increase monotonically. The custom filter is smoothed
+with 3 point average 'degree' times.</P>
+
+<p>A test facility is included. In this option, in one half of frame, the power spectrum of specified 
+row(s) is shown in two panels one with gamma scale and filter profile, and other unscaled. 
+In the other half of frame top quarter  the image filtered with 
+specified filter is displayed. In the lower quarter the unfiltered image
+is displayed. Atleast one filter set, even a dummy need to be specified. The
+horizontal ruler graduations (100s, 50s and 10s) assist in specifying frequency values. </p>
+
+<P>The spectral display will be averaged spectrum of starting row to end row.
+This smmothes out a lot of noise and brings out persistant frequencies.</P>
+ 
+<p>Presence of sharp high amplitude objects (such as logos) can create severe
+ringing due to filtering. A sharp discontinuity requires all frequencies of 
+spectrum to be present. Any filtering that affects the balance can create
+undesirable ringing. If possible cropping and re joining after processing may
+be useful in those cases.</p>
+
+<P>With the option 'morph'  set to true, homomorphic filtering can be done.</P>
+<p>Only YUY2 and Planar (YV12 only by version 2.5) formats are acceptable. Y values only are processed
+by F1Quiver while U and V values only are processed with F1QuverUV.
+Frame width and height must be multiples of 4.</p>
+<P> Most of the parameters for these two functions are same. Wherever there is
+a difference it is mentioned in the table below</P>
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top"><b>Details of parameters</b> </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td>Input clip</td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Array of values</td>
+       <td></td>
+       <td>sets of string and integers. If first entry is "custom" then 
+	   pairs of frequency and percentage amplitude must follow. 
+	   If first entry is any standard filter abbrevation specified, then
+	   each filter name to be followed by a frequency and bandwidth % age
+	   value pair. (Bandwidth is not used for low cut and high cut.but a 
+	   value must be specified. The acceptable filter names are :
+	   bl, bh, bb, bn, gl, gh, gb, gn. </td>
+       <td></td>
+       <td>none</td>
+</tr>
+<tr>
+       <td>Degree of Butterworth or smoothing of custom filter</td>
+       <td>degree</td>
+       <td>integer</td>
+       <td>0 for custom and 1 for butterworth to 32</td>
+       <td>2</td>
+</tr>
+
+<tr>
+       <td>Is this a test run?</td>
+       <td>test</td>
+       <td>boolean</td>
+       <td>true for yes</td>
+       <td>false</td>
+</tr>
+<tr>
+       <td>Starting Row number of frame to use for test </td>
+       <td>row</td>
+       <td>integer</td>
+       <td>within frame height</td>
+       <td>middle row</td>
+</tr>
+
+<tr>
+       <td>Ending Row number of frame to use for test </td>
+       <td>erow</td>
+       <td>integer</td>
+       <td>not less than 'row' and within frame height</td>
+       <td>row</td>
+</tr>
+
+<tr>
+       <td>gamma value to be used for scaling spectrum</td>
+       <td>gamma</td>
+       <td>float</td>
+       <td>1.0 is no scaling</td>
+       <td>0.1</td>
+</tr>
+
+<tr>
+       <td>whether homomorphic filtering is to be done? <b>Not avalable for F1QuiverUV</b></td>
+       <td>morph</td>
+       <td>boolean</td>
+       <td>true or false</td>
+       <td>false</td>
+</tr>
+<tr>
+       <td>whether spectral display to be in left half of frame? <b>Not avalable for F1QuiverUV</b></td>
+       <td>left</td>
+       <td>boolean</td>
+       <td>true or false for right half display</td>
+       <td>true</td>
+</tr>
+
+<tr>
+       <td>whether U values need to be processed? <b>Not avalable for F1Quiver</b></td>
+       <td>uu</td>
+       <td>boolean</td>
+       <td>true or false, both uu and vv should not be false</td>
+       <td>true</td>
+</tr>
+
+<tr>
+       <td>whether V values need to be processed?<b> Not avalable for F1Quiver</b></td>
+       <td>vv</td>
+       <td>boolean</td>
+       <td>true or false, both uu and vv should not be false</td>
+       <td>true</td>
+</tr>
+</table>
+
+
+<BR>Usage examples:-
+#regular processing
+<BR>F1Quiver(last, "bh",100,50,"gn",40,5, "bb", 150, 20)
+# test process and see designed filter, smoothed 8 times 
+<BR>F1Quiver(last,"custom", 25, 100, 50, 35, 70,0, 80,90, 120,30,test =true,row = 155, erow=300,degree = 8,gamma =0.2 )
+<BR># If OK then regular process 
+F1Quiver (last,"custom", 25, 100, 50, 35, 70,0, 80,90, 120,30, degree = 8 )
+
+<br> example of  Application:
+
+<br>F1Quiver(last,"gb",130,30,test=true,degree=2,row=150,gamma=0.1)
+<br><img src="MSintro_FQ1Row0.jpg" width="600" height="400" border="0">
+<BR># because of averaging over row 50 to row 300, the noise frequency of 58 was seen. With single
+row this could not be seen.The filter used is seen above the noise spike.
+<BR>F1Quiver(last,"gb",58,2,test=true,degree=2,gamma=0.1, row=50,erow=300,left= false)
+<BR><img src="SG1_Fq1Row0.jpg" width="720" height="576" border="0">
+	
+</body>
+</html>
+

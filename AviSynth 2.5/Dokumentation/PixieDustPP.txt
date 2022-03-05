@@ -1,0 +1,54 @@
+siehe: http://forum.doom9.org/showthread.php?p=727667#post727667
+
+
+Description:
+============
+
+A wrapper & postprocessing function for PixieDust. The aim is to reduce the blocking artefacts that PixieDust may produce on image areas it can't motion-compensate correctly. Moreover, PixieDust has a tendency to make the overall output a tad too soft, caused by its spatial processing [SpaceDust]. Then, the additional Deblocking doesn't exactly help on that matter ... so there is also the possibility to apply some very slight sharpening, in order to compensate for this softening.
+
+It's not the ultimate solution. But it helps very noticeably.
+
+Fiddled together by Didée, for your pleasure.
+
+
+Default call:
+=============
+
+PixieDustPP(limit=3, q=24, s=1, smode=4, smode2=20, fulldb=51, reduce=false)
+
+
+Parameter:
+==========
+
+limit  = default( limit,  3 )   # limiter value for PixieDust
+q      = default( q,     24 )   # quant to use for Deblocking (h.264 deblocking routine provided by recent DGDecode)
+s      = default( s,      1 )   # subliminal sharpening to combat dulling due to PixieDust and Deblocking:
+                                # 0->no sharpening  1-> before PixieDust  2-> after Deblocking  3->both
+smode  = default( smode,  4 )   # RemoveGrain blurring mode to use for sharpening before PixieDust
+smode2 = default( smode2,20 )   # same for 2nd sharpening
+fullDB = default( fullDB,51 )   # 0 -> reduce only PixieDust's blocking  100 -> reduce Source & PixieDust blocking
+reduce = default( reduce,false) # when true: at the very end, for every pixel reduce the achieved effect by 1
+
+
+
+Some notes for testing:
+=======================
+
+s=1 should be always good, against "PixieDust softness" (minor enhancement before PD, max. change is +/- 2).
+
+s=2 (and 3, which is 1 + 2) is meant to combat "Deblocking softness" (small enhancement after deblocking, max. change is +/- 2). Seems not always that good, probably better to use it only when fullPP >= 51.
+
+fullPP = 0 --> Only those pixel changes achieved by Deblock() are used that have different "sign" than the pixel changes achieved by PixieDust. Consequently, this will (should) do nothing to a frame except for reversing changes PixieDust has made. (Assuming that PixieDust has not left any noise that Deblock could reduce any further, it should only be blocking created by PixieDust that will be reverted, while the achieved noise reduction should be kept.)
+
+when fullPP>0 then: all changes from Deblock() that would not be used with fullPP=0 (i.e. those changes having the same "sign" as PixieDust's changes) are applied with a percentage of [fullPP].
+
+Since most changes of (reasonable) Deblocking will be very small (numerically), the rule of thumb is: (simple matter of rounding)
+
+fullPP=100 -> full deblocking of PixieDust & Source (propably too blurry)
+
+fullPP=49 -> full deblocking of PixieDust. Source deblocking results will be applied as 1->0, 2->1, 3->1, 4->2
+
+fullPP=51 -> full deblocking of PixieDust. Source deblocking results will be applied as 1->1, 2->1, 3->2, 4->2
+
+
+"reduce" parameter: probably not worth to use. (Perhaps on strong grained sources with fullPP=100.)

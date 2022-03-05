@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Yadif deinterlace</title>
+<link rel="stylesheet" type="text/css" href="..\avisynth.css">
+<!--
+Automatically generated, don't change:
+$Id$ 
+-->
+</head>
+<body>
+<h1>Yadif</h1>
+<h2>Abstract</h2>
+<b>author:</b> Fizick (Alexander Balakhnin)
+<br><b>version:</b> 0.9
+<br><b>download:</b> <a href="http:/avisynth.org.ru/">http://avisynth.org.ru/</a> <br>
+<b>category:</b>  Deinterlacing & Pulldown Removal<br>
+<b>requirements:</b> YUY2, Planar YV12 color format<br>
+<b>license:</b> GPL
+<hr>
+
+<p> 
+Port of YADIF (Yet Another DeInterlacing Filter) from MPlayer by Michael Niedermayer (http://www.mplayerhq.hu).
+It check pixels of previous, current and next frames to re-create the missed field 
+by some local adaptive method (edge-directed interpolation) and uses
+spatial check to prevent most artifactes. 
+</p>
+
+<h2>Syntax and parameters</h2>
+<p><code>Yadif</code> (<var>clip, int "mode", int "order")</var></p>
+<p><var>mode</var> = 0 : temporal and spatial interlacing check (default).</p>
+<p> = 1 : double framerate (bob), temporal and spatial interlacing check.</p>
+<p> = 2 : skips spatial interlacing check.</p>
+<p> = 3 : double framerate (bob), skips spatial interlacing check.
+</p>
+<p><var>order</var> = -1 : field order as Avisynth assumes (default).</p>
+<p> = 0 : Bottom field first.</p>
+<p> = 1 : Top field first.</p>
+
+<h2>Features and limitations</h2>
+<p>Implemented as Avisynth C-plugin (not regular Avisynth plugin).<br> 
+Must be loaded with Load_Stdcall_plugin("yadif.dll") or LoadCplugin("yadif.dll") (not LoadPlugin !).
+Do not use autoloading.
+(Note: in Avisynth v2.5.7 there is no need in explicit loading of Avisynth_c.dll by user for such plugins.)
+</p>
+<p>Tested in Avisynth v2.5.7 (probaly works with v2.5.6 and above).</p>
+<p>Field parity of source clip must be properly set (use AssumeTFF, AssumeBFF).</p>
+<p>Very fast. Assembler SSEMMX optimization from mplayer (compiled with MinGW GCC).</p>
+<p>YUY2, Planar YV12 color format only.</p>
+
+<h2>Discussion</h2>
+<p><a href="http://forum.doom9.org/showthread.php?t=124284">http://forum.doom9.org/showthread.php?t=124284</a></p>
+
+<h2> License</h2>
+<p>This plugin is free software released under the GNU GPL license. See file gnu.txt.
+</p>
+
+<h2>Revisions</h2>
+
+<p>Version 0.1 (03.04.2007)</p>
+<ul>
+<li>First version</li>
+</ul>
+
+<p>Version 0.2 (04.04.2007)</p>
+<ul>
+<li>Fixed bug with wrong used parity.</li>
+<li>Added Bob mode=1,3.</li>
+<li>Added order parameter.</li>
+</ul>
+
+<p>Version 0.3 (06.04.2007)</p>
+<ul>
+<li>Finally (?) fixed bug with wrong used parity.</li>
+<li>Set correct FPS for Bob modes.</li>
+</ul>
+
+<p>Version 0.4 (11.04.2007)</p>
+<ul>
+<li>Finally (!) fixed bug with wrong used parity for TFF without AssumeTFF.</li>
+<li>Removed limitation on frames pitches equality.</li>
+</ul>
+
+<p>Version 0.5 (17.04.2007)</p>
+<ul>
+<li>Fixed bug with very first and very last frames.</li>
+</ul>
+
+<p>Version 0.6 (07.05.2007)</p>
+<ul>
+<li>Added YUY2 color format.</li>
+</ul>
+
+<p>Version 0.7 (31.05.2007)</p>
+<ul>
+<li>Processing of first and last lines by spatial average or duplicate (requested by puddy).</li>
+</ul>
+
+<p>Version 0.8 (17.06.2007)</p>
+<ul>
+<li>Probably fixed memory access bug (report by akapuma).</li>
+</ul>
+
+<p>Version 0.9 (22.07.2007)</p>
+<ul>
+<li>Fixed memory access bug some width and height and YUY2 (report by ronnylov).</li>
+</ul>
+
+<h3><a href="yadif09.zip">Download Yadif version 0.9</a></h3>
+
+</body>
+</html>
+  

@@ -1,0 +1,13 @@
+These are plugins for Avisynth versions 2.57, 2.58, 2.6, and their MT equivalents
+DO NOT use these plugins for the 64-bit version of Avisynth: x64-2.58
+
+- Find and go into your AviSynth folder. Where this is depends on how you installed AviSynth, usually it's in "Program Files (x86)"
+- Go into the "plugins" sub-folder:
+    - Remove any other versions of RemoveGrain, Repair, VerticalCleaner and SSETools from that folder
+    - Copy all the plugins that are with this text file into the Avisynth "plugins" folder
+
+- You should also put the QTGMC script itself into the same folder and remove any previous versions of QTGMC
+
+- Finally copy the masktools plugin from *either* the "2.5x Plugins" or "2.6x Plugins" folder (match your Avisynth version)
+    - Copy it to the Avisynth "plugins" folder directly, DO NOT create a sub-folder for it
+    - ***Remove any other versions of masktools that you have***

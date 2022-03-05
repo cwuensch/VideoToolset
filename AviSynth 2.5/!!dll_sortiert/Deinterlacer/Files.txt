@@ -1,0 +1,36 @@
+TDeint.dll		Deinterlacer TDeint
+
+LeakKernelDeint.dll	Deinterlacer LeakKernelDeint
+
+SmoothDeinterlace.dll	Deinterlacer SmoothDeinterlace
+
+Decomb.dll		Deinterlacer Decomb
+
+Yadif.dll		Deinterlacer Yadif (Yet Another DeInterlacing Filter, MPlayer)
+
+TomsMoComp.dll		nötig für Deinterlacer TMCBob
+
+Vinverse.dll		nötig für Deinterlacer MCBob (von Didée)
+ReduceFlicker		nötig für Deinterlacer MCBob (von Didée)
+			(benötigt AvsRecursion.dll)
+
+LeakKernelDeint.dll	nötig für Deinterlacer MVBob_opt
+MaskTools_v1.5.8.dll	nötig für Deinterlacer MVBob_opt
+MVTools_v1.8.4.dll	nötig für Deinterlacer MVBob_opt (selbst hinzugefügt)
+DeBlock.dll		nötig für Deinterlacer MVBob_opt (selbst hinzugefügt)
+Corrector.dll		nötig für Deinterlacer MVBob_opt (selbst hinzugefügt)
+RemoveGrain_v10.dll	nötig für Deinterlacer MVBob_opt
+TDeint.dll		nötig für Deinterlacer MVBob_opt (V1.1)
+-RemoveGrain_v10pre1.dll Original von Deinterlacer MVBob_opt
+-TDeint_v1b4.dll	Original von Deinterlacer MVBob_opt (V1.0b4)
+
+Corrector.dll		nötig für Deinterlacer MVBob
+EEDI2.dll		nötig für Deinterlacer MVBob (V0.9.2)
+LeakKernelDeint.dll	nötig für Deinterlacer MVBob
+MaskTools_v1.5.8.dll	nötig für Deinterlacer MVBob
+Medianblur.dll		nötig für Deinterlacer MVBob
+MVTools_v1.8.4.dll	nötig für Deinterlacer MVBob
+SangNom.dll		nötig für Deinterlacer MVBob
+TomsMoComp.dll		nötig für Deinterlacer MVBob
+-EEDI2.dll		Original von Deinterlacer MVBob (V0.9.1)
+-MVTools_v1.3.0.dll	Original von Deinterlacer MVBob

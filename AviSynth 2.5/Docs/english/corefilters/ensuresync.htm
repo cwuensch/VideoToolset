@@ -1,0 +1,24 @@
+<!doctype html public "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>EnsureVBRMP3Sync Avisynth Filter</title>
+<link rel="stylesheet" type="text/css" href="../../avisynth.css">
+</head>
+<body >
+<h2><a name="EnsureVBRMP3Sync"></a>EnsureVBRMP3Sync</h2>
+<P><code>EnsureVBRMP3Sync </code>(<var>clip</var>)
+<p>Corrects out-of-sync mp3-AVI's, when seeking ot trimming.
+<p><code>EnsureVBRMP3Sync</code> is useful to avoid desync of VBR-compressed mp3-soundtracks. This will slow seeking down considerably, but is very useful when using
+<code><a href="trim.htm">Trim</a></code> for instance. Always use before <code>Trim</code>.
+<pre># Ensures that soundtrack is in sync after trimming
+AviSource(&quot;movie.avi&quot;)
+EnsureVBRMP3Sync()
+Trim(250,2500)
+</pre>
+<p><kbd>$Date: 2004/03/07 22:44:06 $</kbd></p>
+<FORM>
+<INPUT TYPE="Button" VALUE="Back"
+onClick="history.go(-1)">
+</form>
+</body>
+</html>

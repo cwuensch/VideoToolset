@@ -1,0 +1,172 @@
+MPEG-Import
+===========
+DGDecode.dll			MPEG2-Import, Variante 1 (benötigt mit DGIndex erstellten Index)
+				- vormals MPEG2Dec3
+MPEGDecoder.dll			MPEG2-Import, Variante 2 (erstellt Index selbst)
+UnDot.dll			nötig für den MPEG-Import mit DGDecode (?)
+MPASource.dll			MPEG-Audio-Import
+DGAvcDecode.dll			MPEG4/AVC-Import (benötigt mit DGAvcIndex erstellten Index)
+
+
+Deinterlacer
+============
+TDeint.dll			Deinterlacer TDeint
+
+LeakKernelDeint.dll		Deinterlacer LeakKernelDeint.dll
+
+SmoothDeinterlace.dll		Deinterlacer SmoothDeinterlace
+
+Decomb.dll			Deinterlacer Decomb
+
+Yadif.dll			Deinterlacer Yadif (Yet Another DeInterlacing Filter, MPlayer)
+
+TomsMoComp.dll			nötig für Deinterlacer TMCBob
+
+Vinverse.dll			nötig für Deinterlacer MCBob (von Didée)
+ReduceFlicker			nötig für Deinterlacer MCBob (von Didée)
+
+LeakKernelDeint.dll		nötig für Deinterlacer MVBob_opt
+MaskTools_v1.5.8.dll		nötig für Deinterlacer MVBob_opt
+MVTools_v1.8.4.dll		nötig für Deinterlacer MVBob_opt (selbst hinzugefügt)
+DeBlock.dll			nötig für Deinterlacer MVBob_opt (selbst hinzugefügt)
+Corrector.dll			nötig für Deinterlacer MVBob_opt (selbst hinzugefügt)
+RemoveGrain_v10.dll		nötig für Deinterlacer MVBob_opt
+TDeint.dll			nötig für Deinterlacer MVBob_opt (V1.1)
+-RemoveGrain_v10pre1.dll	Original von Deinterlacer MVBob_opt
+-TDeint_v1b4.dll		Original von Deinterlacer MVBob_opt (V1.0b4)
+
+Corrector.dll			nötig für Deinterlacer MVBob
+EEDI2.dll			nötig für Deinterlacer MVBob (V0.9.2)
+LeakKernelDeint.dll		nötig für Deinterlacer MVBob
+MaskTools_v1.5.8.dll		nötig für Deinterlacer MVBob
+Medianblur.dll			nötig für Deinterlacer MVBob
+MVTools_v1.8.4.dll		nötig für Deinterlacer MVBob
+SangNom.dll			nötig für Deinterlacer MVBob
+TomsMoComp.dll			nötig für Deinterlacer MVBob
+-EEDI2.dll			Original von Deinterlacer MVBob (V0.9.1)
+-MVTools_v1.3.0.dll		Original von Deinterlacer MVBob
+
+
+Re-Interlacer
+=============
+
+Motion_12Dec05.dll		nötig für Re-Interlacer MotionProtectedFPS
+MaskTools_v1.5.8.dll		nötig für Re-Interlacer MotionProtectedFPS
+mt_MaskTools_v2.0a32.dll	nötig für Re-Interlacer MotionProtectedFPS2 (salFPS3)
+
+MVTools_v1.8.4.dll		nötig für Re-Interlacer MVFlowFPS
+mt_MaskTools_v2.0a32.dll	nötig für Re-Interlacer MVFlowFPS2_new
+
+
+Entrauscher
+===========
+DeSpot.dll			DeSpot - entfernt Kratzer und Unreinheiten
+
+DeGrainMedian.dll		Entrauscher DeGrainMedian (spatio-temporal, Median)
+
+UnDot.dll			Entrauscher UnDot (spatio-temporal, Median)
+
+PeachSmoother.dll		Entrauscher PeachSmoother (temporal)
+
+VagueDenoiser.dll		Entrauscher VagueDenoiser (spatial)
+
+DustV5.dll			Entrauscher FaeryDust, PixieDust, GoldDust, SpaceDust
+				(AviSynth 2.0 Plugin -> benötigt LoadPluginEx.dll und msvcp71.dll)
+
+FFT3DFilter.dll			Entrauscher und Schärfer (spatio-temporal, gut)
+
+TNLMeans.dll			Entrauscher TNLMeans (spatial)
+
+FluxSmooth.dll			Entrauscher FluxSmoothST (spatio-temporal) und FluxSmoothT (temporal)
+
+NoMoSmooth.dll			Entrauscher NoMoSmooth (spatio-temporal)
+
+MipSmooth.dll			Entrauscher MipSmooth (spatio-temporal)
+
+TTempSmooth			Entrauscher TTempSmooth (temporal)
+				nötig für MCNR_simple2 (von Didée)
+
+Convolution3DYV12.dll		Entrauscher Convolution3D (alt, schlecht)
+
+RemoveDirt_v0.6.1.dll		Entrauscher RemoveDirt V0.6.1
+
+RemoveDirt_v0.9.dll		Entrauscher RemoveDirt V0.9
+RemoveDirt_v1.0pre.dll		Entrauscher RemoveDirt V1.0 pre
+RemoveGrain_v10.dll		nötig für RemoveDirt & RemoveDirtMC
+				(benötigt msvcr71.dll im Systemverzeichnis)
+Repair_v09.dll			nötig für RemoveDirt & RemoveDirtMC
+MVTools_v1.8.4.dll		nötig für RemoveDirtMC
+
+RemoveGrain_v10.dll		nötig für LRemoveDust
+Repair_v09.dll			nötig für LRemoveDust
+SSE2Tools.dll			nötig für LRemoveDust
+
+RemoveGrain_v10.dll		nötig für RemoveDust & RemoveDust2 (von Didée)
+Repair_v09.dll			nötig für RemoveDust & RemoveDust2 (von Didée)
+SSE2Tools.dll			nötig für RemoveDust2
+RemoveDirt_v0.6.1.dll		nötig für ImproveSceneSwitch (zur Behebung von Farbschlieren in RemoveDust)
+				(benötigt msvcr70.dll im Systemverzeichnis)
+
+DePan.dll			Bewegungskompensierung DePan
+DePanEstimate.dll		Bewegungserkennung DePanEstimate
+				(DePan benötigt fftw3.dll, ftp://ftp.fftw.org/pub/fftw/fftw3win32mingw.zip)
+
+Cnr2.dll			Chroma Noise Reducer v2.6.1
+
+
+DeRinger
+========
+
+Deen				nötig für Deringer HQDering
+
+aWarpSharp(Pruned).dll		nötig für Deringer aWarpSharpDering
+
+
+DeBlocker
+=========
+
+DeBlock.dll			H.264 Deblocking-Algorithmus aus alten MVTools
+				(=Deblock aus DGDecode)
+
+MDeblock.dll			DeBlocker MDeblock
+				(bearbeitet nur Blockgrenzen -> schlecht laut Didée)
+
+DctFilter.dll			nötig für Deblocker Deblock_QED
+
+
+Schärfer
+========
+LimitedSupport_09Jan06B.dll	nötig für Schärfer LimitedSharpenFaster
+mt_MaskTools_v2.0a32.dll	nötig für Schärfer LimitedSharpenFaster
+RemoveGrain_v10.dll		nötig für Schärfer LimitedSharpenFaster
+
+MaskTools_v1.5.8.dll		nötig für Bildverbesserer iip
+MaskTools_v1.4.16.dll		nötig für Original-Version Bildverbesserer iip (falls nicht funktioniert, dann v1.4.15)
+Undot.dll			nötig für Original-Version Bildverbesserer iip
+RemoveGrain_v10.dll		nötig für modifizierten  Bildverbesserer iip
+WarpSharp.dll			nötig für Bildverbesserer iip
+aWarpSharp.dll			nötig für Bildverbesserer iip
+DustV5.dll			nötig für Bildverbesserer iip
+LoadPluginEx.dll		nötig für Bildverbesserer iip
+
+MaskTools_v1.5.8.dll		nötig für Schärfeanpassung Soothe (evtl. geht auch V2.0)
+
+FixVHSOversharp.dll		sehr guter Halo-Entferner (ohne Bluring)
+
+mt_MaskTools_v2.0a32.dll	nötig für BlindDeHalo3 (eigentlich V1.5.8)
+RemoveGrain_v10.dll		nötig für BlindDeHalo3
+
+mt_MaskTools_v2.0a32.dll	nötig für BlindDeHalo3_mt2
+RemoveGrain_v10.dll		nötig für BlindDeHalo3_mt2
+
+MaskTools_v1.5.8.dll		nötig für DeHalo_alpha
+Repair_v09.dll			nötig für DeHalo_alpha
+
+WarpSharp.dll			Schärfer WarpSharp
+
+
+Debug
+=====
+VScope.dll			VideoScope 1.2
+
+AudGraph.dll			AudioGraph

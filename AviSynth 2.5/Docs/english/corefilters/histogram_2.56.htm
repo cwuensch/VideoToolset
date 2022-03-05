@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <TITLE>Histogram Avisynth Filter</TITLE>
+   <link rel="stylesheet" type="text/css" href="../../avisynth.css">
+</HEAD>
+<BODY>
+<h2>
+<A NAME="Greyscale"></A>Histogram
+</h2>
+<P><code>Histogram </code>(<var>clip, string ''mode''</var>)
+<P>Adds a luminance histogram to the right side of the clip.<br>
+  <br>
+Starting from AviSynth 2.5 this filter will also show valid and invalid colors in YV12/YUY2
+mode. Invalid values (below 16 and above 235) will be colored brown/yellow-ish.<br>
+  <br>
+Starting in <em>v2.53</em>:<br>
+An optional <var>mode</var> parameter has been added to show additional information of a clip.
+<var>Mode</var> can be "classic" (default old mode), "levels", "color"<br>
+   and from <em>v2.54</em> "luma", "stereo", "stereooverlay".
+<h3>Classic mode</h3>
+<P><img border="0" src="../pictures/corefilters/histogram_modeclassic.gif" width="256" height="304">
+<P>This will add a per-line luminance graph on the right side of the video. the left side of the graph represents luma = 0 and the right side represents luma = 255. The valid CCIR601 ranges are shown
+in a slightly different color, and a greenish line represents Y = 128.<br>
+<br>
+Available in YUY2 and YV12 mode.<h3>Levels mode</h3>
+<P><img border="0" src="../pictures/corefilters/histogram_modelevels.jpg" width="256" height="256">
+<P>This mode will display three level-graphs on the left side of the video frame. This will show the distribution of the Y, U and V components in the current frame.<br>
+<br>
+The topmost graph displays the luma (Y) distribution of the frame, where the left side represents Y = 0 and the right side represents Y = 255. The valid CCIR601 range has been indicated by a slightly different color and Y = 128 has been marked with a dotted line.<br>
+<br>
+The middle graph displays the U (chroma) component, and the bottom graph displays the V component.<br>
+<br>
+Only available in YV12 mode.<h3>Color mode</h3>
+<P><img border="0" src="../pictures/corefilters/histogram_modecolor.jpg" width="256" height="256">
+<P>This mode will display the U/V color placement in a 2 dimentional graph on the left side of the video frame.&nbsp;<br>
+<br>
+The U component is displayed on the horizontal (X) axis, with the leftmost side being U = 0 and the rightmost side being U = 255.<br>
+<br>
+The V component is displayed on the vertical (Y) axis , with the top representing V = 0 and the bottom representing V = 255.<br>
+<br>
+Only available in YV12 mode.
+<h3>Luma mode</h3>
+<P><img border="0" src="../pictures/corefilters/histogram_modeluma.jpg" width="416" height="256">
+<P>This mode will amplify luminance, and display very small luminance variations. This is good for detecting blocking and noise, and can be helpful at adjusting filter parameters. In this mode a 1 pixel luminance difference will show as a 16 pixel luminance pixel, thus seriously enhancing small flaws.&nbsp;<br>
+<br>
+Available in YUY2 and YV12 mode.
+<h3>Stereo and StereoOverlay mode</h3>
+<P><img border="0" src="../pictures/corefilters/histogram_modestereo.gif" width="512" height="512">
+<P>This mode shows a clasic stereo graph, from the audio in the clip. Some may know these from recording studios. This can be used to see the left-right and phase distribution of the input signal. !StereoOverlay will overlay the graph on top of the original. Each frame will contain only information from the current frame to the beginning of the next frame. The signal is linearly upsampled 8x, to provide clearer visuals.<br>
+  <br>
+This mode requires a stereo signal input and StereoOverlay input is YV12 only.
+<p><b>Changes:</b></p>
+<table border="1">
+  <tbody>
+    <tr>
+      <td>v2.53</td>
+      <td>Added different modes.</td>
+    </tr>
+    <tr>
+      <td>v2.55</td>
+      <td>Added dots to mode = &quot;stereo&quot; to show bias/offsets.</td>
+    </tr>
+    <tr>
+      <td>v2.56</td>
+      <td>Added invalid colors in YUY2 mode.</td>
+    </tr>
+  </tbody>
+</table>
+<p><kbd>$Date: 2005/03/24 22:07:09 $</kbd></p>
+<FORM><INPUT TYPE="Button" VALUE="Back"
+onClick="history.go(-1)"></FORM>
+</BODY>
+</HTML>

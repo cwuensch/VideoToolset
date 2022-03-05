@@ -1,0 +1,27 @@
+=============
+ Deblock_QED
+=============
+required plugins:
+
+DctFilter.dll -> www.trbarry.com/DctFilter.zip
+mt_masktools.dll -> http://manao4.free.fr
+===
+default call:
+
+Deblock_QED(quant1=24, quant2=22, aOff1=2, bOff1=4, aOff2=4, bOff2=8, uv=1)
+===
+description:
+
+not available
+===
+parameters:
+
+#quant1 = 24
+#quant2 = 22
+#aOff1  = 2
+#bOff1  = 4
+#aOff2  = 4
+#bOff2  = 8
+#uv     = 1  #  uv=3 -> use proposed method for chroma deblocking
+             #  uv=2 -> no chroma deblocking at all (fastest method)
+             #  uv=1|-1 -> directly use chroma debl. from the normal|strong deblock()

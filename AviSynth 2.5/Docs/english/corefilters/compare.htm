@@ -1,0 +1,34 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <title>Compare Avisynth Filter</title>
+   <link rel="stylesheet" type="text/css" href="../../avisynth.css">
+</head>
+<body >
+<h2>
+<a NAME="Compare"></a>Compare
+</h2>
+<p><code>Compare </code>(<var>clip_filtered, clip_original, string "channels",
+string "logfile", bool "show_graph"</var>)
+<p><code>Compare</code> outputs the filtered clip (first arg) with text (Mean Absolute
+Difference, Mean Difference &amp; PSNR) and Marc's PSNR graph (if show_graph
+is true). Starting from <em>v2.53</em> also the 'Overal PSNR' is shown on the screen,
+but not yet in the logfile. The channels string is a combination of R,G,B
+[,A] or Y,U,V, depending on the source clips. The empty string (default)
+means either "YUV" or "RGB". If logfile is not null, the results will be
+written to a file by this name and not drawn on the clip. It is much faster
+if you need to compare a lot of frames.
+<p>&nbsp;
+<pre># Displays differences on screen
+Compare(clip1, clip2)
+# for creating a log file:
+Compare(clip1, clip2, &quot;&quot;, &quot;compare.log&quot;)
+# will only compare chroma channels of YUY2 clips.
+Compare(clip1, clip2, &quot;UV&quot;)</pre>
+
+<p><kbd>$Date: 2004/03/03 22:14:22 $</kbd></p>
+<form><input TYPE="Button" VALUE="Back"
+onClick="history.go(-1)"></form>
+</body>
+</html>

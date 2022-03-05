@@ -1,0 +1,19 @@
+REGEDIT4
+
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\MediaResources\icm]
+
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.I420]
+"Description"="Helix I420 YUV Codec"
+"Driver"="i420vfw.dll"
+"FriendlyName"="Helix I420 YUV Codec"
+
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.IYUV]
+"Description"="Helix IYUV 420 Codec"
+"Driver"="iyuvvfw.dll"
+"FriendlyName"="Helix IYUV 420 Codec"
+
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.YV12]
+"Description"="Helix YV12 YUV Codec"
+"Driver"="yv12vfw.dll"
+"FriendlyName"="Helix YV12 YUV Codec"
+

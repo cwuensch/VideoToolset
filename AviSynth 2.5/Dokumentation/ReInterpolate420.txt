@@ -1,0 +1,27 @@
+	ReInterpolate420 plugin for AviSynth -- Corrects point sampling of DV MainConcept codec
+
+	Copyright (C) 2004 Wilbert Dijkhof
+  
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation.
+	 
+	The author can be contacted at:
+	Wilbert Dijkhof
+	wilbertdijkhof@yahoo.com
+
+	v3, 22 July 2006 (by Fizick: fizick@avisynth.org.ru) - 
+			color tint decreasing in progressive mode; 
+			speed increasing in both modes by integer processing 
+	v1.1 24rd September 2004 - interlaced support
+	v1.0 23rd September 2004 - 1st release
+
+	Usage (YUY2, PAL source):
+
+	avisource("dv.avi")
+	reinterpolate420(interlaced=true)
+
+	Based on idea by scharfis_brain
+	See more info at 	http://forum.doom9.org/showthread.php?t=82787 
+	(reinterpolate420 - eliminate chroma jaggyness of PAL-DV)
+

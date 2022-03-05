@@ -1,0 +1,51 @@
+<html>
+<head><title>MSU FieldShiftFixer</title>
+</head><body>
+<h1> MSU FieldShiftFixer version 0.5 </h1>
+ Check for new version <a href="http://compression.ru/video/old_film_recover/field_shift_en.html">http://compression.ru/video/old_film_recover/field_shift_en.html</a>
+<br>
+<pre>
+MSU_FieldShiftFixer_2_0\msu_fieldshiftfixer.dll - version for AviSynth 2.0
+MSU_FieldShiftFixer_2_5\msu_fieldshiftfixer.dll - version for AviSynth 2.5
+</pre>
+Installation:<br>
+Create a script (text file with .avs extenshion):
+<pre>
+Avisource("video.avi")
+ConvertToYUY2()
+LoadPlugin("msu_fieldshiftfixer.dll")
+MSU_FieldShiftFixer(16,1,1)
+ConvertToRGB24()
+</pre>
+<p></p>
+Each line description:<br>
+<ol>
+<li> Avisource("4msu2_27.avi") - path to movie file</li>
+<li> ConvertToYUY2()  - convertion to YUY2</li>
+<li>LoadPlugin("msu_fieldshiftfixer.dll") - loading filter. It could be
+placed anywhere, but if the location of the filter differs from the location
+of .avs script, you should specify absolute or relative (to .avs file) path.</li>
+<li>MSU_FieldShiftFixer(16,1,1) - processing video with MSU FieldShiftFixer
+filter. The first parameter is the step between even lines, which are used
+in calculation (from 1 till 16).
+By decreasing this parameter, you will decrease processing speed, but you
+will also decrease
+error propability in the detection of the optimal field. Sometimes there is
+no optimal
+field for border frames, and if the second parameter is set to 1, the odd
+field in border
+frames will be interpolated. And if this parameter is set to 0, there will
+be no modifications
+in border frames. By setting the third parameter to 1 you prevent situation
+when one frame
+is duplicated in two neighbour frames.</li>
+<li>ConvertToRGB24() - convertion to RGB</li>
+</ol>
+<p></p>
+After these steps open .avs in
+VirtualDub or another video editor or viewer. 
+<p>
+ <a href="http://compression.ru/video/old_film_recover/field_shift_en.html">http://compression.ru/video/old_film_recover/field_shift_en.html</a>
+
+
+</body>

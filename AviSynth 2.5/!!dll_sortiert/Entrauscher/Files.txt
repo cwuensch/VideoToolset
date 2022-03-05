@@ -1,0 +1,54 @@
+DeSpot.dll			DeSpot - entfernt Kratzer und Unreinheiten
+
+DeGrainMedian.dll		Entrauscher DeGrainMedian (spatio-temporal, Median)
+
+UnDot.dll			Entrauscher UnDot (spatio-temporal, Median)
+
+PeachSmoother.dll		Entrauscher PeachSmoother (temporal)
+
+VagueDenoiser.dll		Entrauscher VagueDenoiser (spatial)
+
+DustV5.dll			Entrauscher FaeryDust, PixieDust, GoldDust, SpaceDust
+				(AviSynth 2.0 Plugin -> benötigt LoadPluginEx.dll und msvcp71.dll)
+
+FFT3DFilter.dll			Entrauscher und Schärfer (spatio-temporal, gut)
+
+GrainOpt.dll			Entrauscher GrainOptimizer (temporale Grain-Verlangsamung)
+
+TNLMeans.dll			Entrauscher TNLMeans (spatial)
+
+FluxSmooth.dll			Entrauscher FluxSmoothST (spatio-temporal) und FluxSmoothT (temporal)
+
+NoMoSmooth.dll			Entrauscher NoMoSmooth (spatio-temporal)
+
+MipSmooth.dll			Entrauscher MipSmooth (spatio-temporal)
+
+TTempSmooth			Entrauscher TTempSmooth (temporal)
+				nötig für MCNR_simple2 (von Didée)
+
+Convolution3DYV12.dll		Entrauscher Convolution3D (alt, schlecht)
+
+RemoveDirt_v0.6.1.dll		Entrauscher RemoveDirt V0.6.1
+
+RemoveDirt_v0.9.dll		Entrauscher RemoveDirt V0.9
+RemoveDirt_v1.0pre.dll		Entrauscher RemoveDirt V1.0 pre
+RemoveGrain_v10.dll		nötig für RemoveDirt & RemoveDirtMC
+				(benötigt msvcr71.dll im Systemverzeichnis)
+Repair_v09.dll			nötig für RemoveDirt & RemoveDirtMC
+MVTools_v1.8.4.dll		nötig für RemoveDirtMC
+
+RemoveGrain_v10.dll		nötig für LRemoveDust
+Repair_v09.dll			nötig für LRemoveDust
+SSE2Tools.dll			nötig für LRemoveDust
+
+RemoveGrain_v10.dll		nötig für RemoveDust & RemoveDust2 (von Didée)
+Repair_v09.dll			nötig für RemoveDust & RemoveDust2 (von Didée)
+SSE2Tools.dll			nötig für RemoveDust2
+RemoveDirt_v0.6.1.dll		nötig für ImproveSceneSwitch (zur Behebung von Farbschlieren in RemoveDust)
+				(benötigt msvcr70.dll im Systemverzeichnis)
+
+DePan.dll			Bewegungskompensierung DePan
+DePanEstimate.dll		Bewegungserkennung DePanEstimate
+				(DePan benötigt fftw3.dll, ftp://ftp.fftw.org/pub/fftw/fftw3win32mingw.zip)
+
+Cnr2.dll			Chroma Noise Reducer v2.6.1

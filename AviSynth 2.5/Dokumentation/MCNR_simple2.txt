@@ -1,0 +1,94 @@
+
+============================
+ ReadMe  zu  MCNR_simple2()  
+============================
+
+
+Ein Beispiel für bewegungskompensierte Rauschfilterung. 
+Relativ einfach, nicht sehr ausgereift, aber es scheint halbwegs zu funktionieren. ;-)
+
+
+Benötigte Plugins:
+
+MVTools :  http://www.avisynth.org/fizick/mvtools/
+TTempSmooth  :  http://www.missouri.edu/~kes25c/
+RemoveDirt   :  http://home.pages.at/kassandro/RemoveDirt/index.htm  (der "alte" DLL-Filter!)
+Repair.dll von RemoveGrain 0.9 (!) -> www.RemoveGrain.de.tf
+
+
+
+Volle Syntax (mit Default-Werten) :
+-----------------------------------
+
+MCNR_simple2( frames=2, thY=8, thC=6, thY2=-1, thC2=-1,
+ \            blocksize=16, chroME=false, repairME=true, removdirt=false,
+ \            LPrad=0.0, LPlosens=1, LPhisens=5 )
+
+
+
+frames: (1..4)
+-------
+Anzahl der Nachbarframes, die zur Entrauschung herangezogen werden.
+
+
+thY, thC: (1..255)
+---------
+Maximaler Unterschied in Luma (thY) bzw. Chroma (thC) eines kompensierten Pixels zum aktuellen Pixel, damit es noch für's Entrauschen verwendet wird.
+
+
+thY2, thC2: (1..255) (muss kleiner als thY bzw. thC sein!)
+-----------
+Unterer Threshold für TTempSmooth: Pixel mit maximal diesen Differenzen werden mit voller Wichtung verrechnet. Ist die Differenz größer (bis maximal thY / thC), wird das Pixel mit proportional geringerer Wichtung verrechnet.
+
+Wenn thY2 oder thC2 = -1 gesetzt werden, wird NICHT TTempSmooth verwendet, sondern einfaches TemporalSoften (schneller).
+
+
+blocksize: (4, 8, 16)
+----------
+Die Blockgröße für die Bewegungssuche. 16 ist gut bei starkem Rauschen. 8 ist gut bei schwachem Rauschen. Mit 4 kann ich mich (noch) nicht so richtig anfreunden.
+
+
+chroME: (true, false)
+-------
+Wenn true, werden auch die Chroma-Ebenen zur Bewegungssuche herangezogen.
+
+
+repairME: (true, false)
+---------
+Bewegungskompensation macht IMMER Fehler. Mit repairME=true wird vor dem Entrauschen eine (primitive) Reparatur des Ergebnisses der Bewegungskompensation durchgeführt. 
+Kostet Zeit, verringert aber Artefakte. (Vor allem bei größeren Thresholds thY & thC.)
+
+
+removdirt: (true, false)
+----------
+Wenn true, wird RemoveDirt() dem temporalen Smoother vorangeschaltet. Scheint gut bei starkem Rauschen der Quelle. Bei wenig Rauschen wohl eher auf false setzen.
+
+
+LPrad     (0.0, 1.1~4.0)
+LPlosens  (0..~2)
+LPhisens  (1..~8)
+--------
+Selbst bei Verwendung von Motion Compensation entstehen desöfteren Fehler im kleinen Wertebereich, wenn die Motion Compensation in bestimmten Bereichen mal wieder daneben gegriffen hat: Verlust von Schattierungen im Gesicht, wenn der Kopf bewegt wird ... Bewegungen im Hintergrund bei sehr dunklen Szenen ... solche Sachen.
+Lowpass Protection versucht, die in diesen Bereichen entstandenen Fehler wieder zu korrigieren. Es wird ein Gaussian Blur auf "den Effekt" des vorrausgegangenen Denoisings angewendet, und dieser "durchschnittliche Effekt" wird dann in Bereichen mit Bewegung wieder herausgerechnet.
+
+LPrad: Radius für Gaussian Blur. (1.0 oder kleiner deaktiviert die Lowpass Protection.) 
+LPlosens, LPhisens: unterer & oberer Wert zur Bewegungserkennung im entrauschten Clip.
+
+
+Zwei mögliche Beispiele ...
+-----------------------
+
+... für schwaches Rauschen ("saubere" DVD-Quelle) , schnell : 
+
+MCNR_simple2( frames=1, thY=5, thC=4, blocksize=8, chroME=true, repairME=true)
+
+
+... bei sehr starkem Grain, langsam: 
+
+MCNR_simple2( frames=3, thY2=20, thC2=12, thY=3, thC=2,
+ \            blocksize=16, chroME=false, repairME=true, removdirt=true,
+ \            LPrad=2.5, LPlosens=2, LPhisens=6 )
+
+
+
+... oder auch ganz anders. Einfach probieren, was am besten funktioniert.

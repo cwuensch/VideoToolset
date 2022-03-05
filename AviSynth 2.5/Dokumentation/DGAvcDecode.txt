@@ -1,0 +1,40 @@
+DGAVCDec Preliminary Help Information
+-------------------------------------
+
+***Alpha 6***
+
+DGAVCDec works like DGMPGDec. First you index your raw AVC/H.264
+stream using DGAVCIndex and then you make an Avisynth script to frame serve
+the video.
+
+DGAVCIndex produces an index file named *.dga. The Avisynth script
+looks like this:
+
+loadplugin("DGAVCDecode.dll")
+AVCSource("file.dga")
+
+You can also disable deblocking:
+
+AVCSource("file.dga",deblock=false)
+
+Note that the included decoder DLL (libavcodec.dll) must be
+in the same directory as the DGAVCIndex executable.
+
+WARNING: You have to update the DLL mentioned above for each new release! DO NOT ASSUME
+THAT IT IS NOT CHANGED EVEN IF HAS THE SAME FILENAME. I am working on a
+better solution for this.
+
+Current Limitations
+-------------------
+
+1. Raw AVC/H.264 elementary streams, i.e., "file.264". Only one file can be opened at a time.
+
+2. Due to an ffmpeg bug, the last frame may be lost.
+
+3. Pulldown and frame repeats are not yet supported.
+
+4. Fast random access requires frequent IDR frames or recovery point SEIs.
+
+5. No PAFF interlacing.
+
+[Donald Graft, June 2007]

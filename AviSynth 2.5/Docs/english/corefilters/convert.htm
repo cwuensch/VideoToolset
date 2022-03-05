@@ -1,0 +1,112 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <title> Avisynth Colorspace Conversion Filter</title>
+   <link rel="stylesheet" type="text/css" href="../../avisynth.css">
+</head>
+<body>
+<h2>
+<a NAME="ConvertTo"></a>ConvertToRGB / ConvertToRGB24 / ConvertToRGB32<br>
+  ConvertToYUY2 / ConvertBackToYUY2 / ConvertToYV12</h2>
+<p><code>ConvertToRGB </code>(<var>clip [, string &quot;matrix&quot;] [, bool "interlaced"]</var>)<br>
+  <code>ConvertToRGB24 </code>(<var>clip [, string &quot;matrix&quot;] [, bool "interlaced"]</var>)<br>
+  <code>ConvertToRGB32 </code>(<var>clip [, string &quot;matrix&quot;] [, bool "interlaced"]</var>)<br>
+  <code>ConvertToYUY2 </code>(<var>clip [, string &quot;matrix&quot;] [, bool "interlaced"]</var>)<br>
+<code>ConvertToYV12 </code>(<var>clip [, string &quot;matrix&quot;] [, bool "interlaced"]</var>)<br>
+  <code>ConvertBackToYUY2 </code>(<var>clip [, string &quot;matrix&quot;]</var>)
+
+<p>
+  <var>matrix</var>: Default unspecified. Controls the colour coefficients and scaling factors
+  used in RGB - YUV conversions.
+  <ul>
+  <li>unspecified : Use Rec.601 coefficients, scaled to TV range [16,235].
+  <li>&quot;PC.601&quot; : Use Rec.601 coefficients, keep full range [0,255].
+  <li>&quot;Rec709&quot; : Use Rec.709 coefficients, scaled to TV range.
+  <li>&quot;PC.709&quot; : Use Rec.709 coefficients, keep full range.
+  </ul>
+<p>
+  <var>interlaced</var>: Default false. Use interlaced layout for YV12 - YUY2/RGB chroma conversions.
+</p>
+<p>AviSynth prior to v2.50 can deal internally with two color formats,
+RGB and YUY2. Starting from v2.50 AviSynth can also deal with a third color
+format, YV12. These filters convert between them. If the video is already
+in the specified format, it will be passed through unchanged. RGB is assumed
+throughout this doc to mean RGBA = RGB32. <code>ConvertToRGB</code> converts to RGB32
+unless your clip is RGB24. If you need 24-bit RGB for some reason, use <code>ConvertToRGB24</code>
+explicitly and <code>ConvertToRGB32</code> to do the reverse.
+<p>Syntax and operation of
+  <code>ConvertToRGB24</code> is identical to <code>ConvertToRGB</code>, except that the output format is 24-bit; if the source is RGB32, the alpha channel will be stripped.
+<p>Since v2.51/v2.52 an optional <var>interlaced</var> parameter is added (<var>interlaced</var><i>=</i>false
+is the default operation). When set to false it is assumed that <var>clip</var>
+is progressive, when set to true it is assumed that <var>clip</var> is interlaced.
+This option is added because for example (assuming clip is interlaced YV12):
+<pre>SeparateFields(clip)
+ConvertToYV12
+Weave</pre>
+is upsampled incorrectly. Instead it is better to use:
+<pre>ConvertToYV12(clip, interlaced=true)</pre>
+Note, the <var>interlaced</var>=true setting only does something if the
+conversion YV12 &lt;-&gt; YUY2/RGB is requested, otherwise it's simply ignored.
+More about it can be found here &quot;<a href="http://www.avisynth.org/FieldbasedVideo"><cite>Color conversions and interlaced / field-based video</cite></a>&quot;.
+<p>Contrary to what one might expect, there is no unique way of converting YUV
+to RGB. In AviSynth the two most common ones are implemented: Rec.601 and
+Rec.709 (named after their official specifications). Although it will not be
+correct in all cases, the following shoud be correct in most cases:
+<p>The first one (Rec.601) should be used when your source is DivX/XviD or
+some analogue capture:<pre>ConvertToRGB(clip)</pre>
+<p>The second one (Rec.709) should be used when your source is DVD or HDTV:<pre>ConvertToRGB(clip, matrix=&quot;rec709&quot;)</pre>
+<p>
+In <em>v2.56</em>, the reverse is also available, that is</p>
+<pre>ConvertToYUY2(clip, matrix="rec709") or ConvertToYV12(clip, matrix="rec709")</pre>
+<p>
+In <em>v2.56</em>, <var>matrix</var>=&quot;pc.601&quot; (and <var>matrix</var>=&quot;pc.709&quot;) enables you to do the RGB &lt;-> YUV conversion while keeping the luma range, thus RGB [0,255] &lt;-> YUV [0,255] (instead of the usual/default RGB [0,255] &lt;-> YUV [16,235]).</p>
+<p>
+All VirtualDub filters (loaded with <code>LoadVirtualdubPlugin</code>, see
+<a href="../syntax.htm#Plugins">Plugins</a>)
+support only RGB32 input.</p>
+<p><b>RGB24, RGB32:</b> The colors are stored as values of red, green and
+blue. In RGB32 there is an extra Alpha channel for opacity. The image dimensions
+can have any values.
+<p><b>YUY2:</b> The picture is stored as a luma value Y and two color values
+U, V. For two horizontal pixels there is only one chroma value and two
+luma values (two Y's, one U, one V). Therefore the width has to be a multiple
+of two.
+<p><b>YV12:</b> The same as YUY2 but there is only one chroma value for
+4 pixels (a 2x2 square). Both image dimensions have to be a multiple of
+two, if the video is interlaced the height has to be a multiple of four
+because the 2x2 square is taken from a field, not from a frame.
+<p>Some functions check for the dimension rules, some round the parameters,
+there still can be some where an picture distortion or an error occurs.
+<p>Working in YUY2 is faster than in RGB. YV12 is even faster and is the
+native MPEG format, so there are fewer colorspace conversions.
+<p>Conversion back and forth is not lossless, so use as few conversions
+as possible. If multiple conversions are necessary, use <code>ConvertBackToYUY2</code>
+to convert to YUY2, if your source already has already once been YUY2.
+This will reduce colorblurring, but there is still some precision lost.
+<p>In most cases, the <code>ConvertToRGB</code> filter should not be necessary.
+If Avisynth's output is in YUY2 format and an application expects RGB,
+the system will use the installed YUY2 codec to make the conversion. However,
+if there's no installed YUY2 codec, or if (as is the case with ATI's and
+some other YUY2 codec) the codec converts from YUY2 to RGB incorrectly,
+you can use AviSynth's built-in filter to convert instead.
+<p><a href="http://www.math.berkeley.edu/~benrg/huffyuv.html" target="_parent">Huffyuv</a>
+will act as the system YUY2 codec if there's no other codec installed,
+so if you install Huffyuv <i>and uninstall all other YUY2 codecs</i>, then
+you'll never need <code>ConvertToRGB</code>.
+<p><code>ConvertToRGB24</code> and <code>ConvertToRGB32</code> can be used to force
+AviSynth to use a specific store method for RGB data. RGB24 data is often
+much slower to process than RGB32 data, so if your source is RGB24, you
+may get a speed gain by converting to RGB32. There are no known advantages
+of using RGB24 except that TMPGEnc and VFApi requires RGB24 input).
+<pre> # There is a slight distortion caused by the conversion between YUV and RGB.
+# Let's see if we can see it.
+control = ConvertToYUY2()
+test = ConvertToYUY2(ConvertToRGB(ConvertToYUY2(ConvertToRGB(control))))
+test = ConvertToYUY2(ConvertToRGB(test))
+return Subtract(test,control)</pre>
+<p><kbd>$Date: 2004/12/05 22:31:44 $</kbd></p>
+<form><input TYPE="Button" VALUE="Back"
+onClick="history.go(-1)"></form>
+</body>
+</html>

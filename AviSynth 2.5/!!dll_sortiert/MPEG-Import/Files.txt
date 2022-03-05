@@ -1,0 +1,7 @@
+DGDecode.dll		MPEG2-Import, Variante 1 (benötigt mit DGIndex erstellten Index)
+			- vormals MPEG2Dec3
+MPEGDecoder.dll		MPEG2-Import, Variante 2 (erstellt Index selbst)
+-DI_TomsMoComp.dll	nötig für den MPEG-Import mit DGDecode (?)
+UnDot.dll		nötig für den MPEG-Import mit DGDecode (?)
+MPASource.dll		MPEG-Audio-Import
+DGAvcDecode.dll		MPEG4/AVC-Import (benötigt mit DGAvcIndex erstellten Index)

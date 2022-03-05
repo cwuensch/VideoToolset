@@ -1,0 +1,295 @@
+; Helix RealMedia YUV Codecs by Karl Lillevold (Update)
+; Helix I420 Codec 1.2 with Alpha Channel Support
+; Helix IYUV Codec 1.2 with Alpha Channel Support (New)
+; Helix YV12 Codec 1.2 with Alpha Channel Support
+; Inf-Script for Windows 9x to 10 (32/64 Bit)
+; Original Codec Release: 25th January 2004
+; INF-Script: Mickey Lee Jones
+; Copyright: Karl Lillevold
+; Last Update: December 2016
+; Installation: Right-click on this INF-File and select "Install".
+; WARNING ! DO NOT MODIFY THIS FILE !
+
+[Version]
+Signature = "$CHICAGO$"
+Class = MEDIA
+ClassGUID = {4d36e96c-e325-11ce-bfc1-08002be10318}
+Provider = %MfgName%
+DriverVer = %DisplayVersion%
+
+[SourceDisksNames]
+1= %DisplayNameWin%, , ,
+; 0001
+
+[SourceDisksFiles]
+helix12.inf = 1
+helix12.PNF = 1
+i420vfw.dll = 1
+iyuvvfw.dll = 1
+yv12vfw.dll = 1
+
+[Installable.Drivers]
+VIDC.I420 = 1:%DriverI420%, "VIDC.I420", %DeviceI420%, , ,
+VIDC.IYUV = 1:%DriverIYUV%, "VIDC.IYUV", %DeviceIYUV%, , ,
+VIDC.YV12 = 1:%DriverYV12%, "VIDC.YV12", %DeviceYV12%, , ,
+
+[Helix.Files.Inf]
+helix12.inf
+
+[Helix.Files.Pnf]
+helix12.PNF
+
+[Helix.Files.Dll]
+i420vfw.dll
+iyuvvfw.dll
+yv12vfw.dll
+
+[Helix.Files.Wow64]
+i420vfw.dll
+iyuvvfw.dll
+yv12vfw.dll
+
+[DestinationDirs]
+DefaultDestDir = 11	; LDID_SYS
+Helix.Files.Inf = 17
+Helix.Files.Pnf = 17
+Helix.Files.Dll = 11
+Helix.Files.Wow64 = 16425
+
+[DefaultInstall]
+CopyFiles = Helix.Files.Inf, Helix.Files.Pnf, Helix.Files.Dll
+DelReg = Helix.DelAcm, Helix.DelIcm
+UpdateInis = DelOrg.ini, Helix.ini
+AddReg = Helix.Reg9x, Helix.RegICM
+MediaType = SOFTWARE
+
+[DefaultInstall.NTx86]
+CopyFiles = Helix.Files.Inf, Helix.Files.Pnf, Helix.Files.Dll
+DelReg = Helix.DelAcm, Helix.DelOrg, Helix.DelDrv, Helix.DelIcm
+AddReg = Helix.RegDrv, Helix.RegNTx86, Helix.RegICM
+MediaType = SOFTWARE
+
+[DefaultInstall.NTamd64]
+CopyFiles = Helix.Files.Inf, Helix.Files.Pnf, Helix.Files.Wow64
+DelReg = Helix.DelAcm, Helix.DelDrv64, Helix.DelIcm
+AddReg = Helix.RegDrv64, Helix.RegNTamd64, Helix.RegICM
+MediaType = SOFTWARE
+
+[Helix.DelAcm]
+HKCU,"Software\Microsoft\ActiveMovie\devenum\{33D9A760-90C8-11D0-BD43-00A0C911CE86}\i420"
+HKCU,"Software\Microsoft\ActiveMovie\devenum\{33D9A760-90C8-11D0-BD43-00A0C911CE86}\iyuv"
+HKCU,"Software\Microsoft\ActiveMovie\devenum\{33D9A760-90C8-11D0-BD43-00A0C911CE86}\yv12"
+
+[Helix.DelOrg]
+HKCU,"Software\Microsoft\Windows NT\CurrentVersion\Drivers32","VIDC.I420"
+HKCU,"Software\Microsoft\Windows NT\CurrentVersion\Drivers32","VIDC.IYUV"
+HKCU,"Software\Microsoft\Windows NT\CurrentVersion\Drivers32","VIDC.YV12"
+HKCU,"Software\Microsoft\Windows NT\CurrentVersion\related.desc","vidc.I420"
+HKCU,"Software\Microsoft\Windows NT\CurrentVersion\related.desc","vidc.IYUV"
+HKCU,"Software\Microsoft\Windows NT\CurrentVersion\related.desc","vidc.YV12"
+HKCU,"Software\Microsoft\Windows NT\CurrentVersion\Userinstallable.drivers","VIDC.I420"
+HKCU,"Software\Microsoft\Windows NT\CurrentVersion\Userinstallable.drivers","VIDC.IYUV"
+HKCU,"Software\Microsoft\Windows NT\CurrentVersion\Userinstallable.drivers","VIDC.YV12"
+
+[Helix.DelDrv]
+;HKLM,"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Drivers32","VIDC.I420"
+;HKLM,"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Drivers32","VIDC.IYUV"
+HKLM,"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Drivers32","VIDC.YV12"
+
+[Helix.DelDrv64]
+;HKLM,"SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32","vidc.i420"
+;HKLM,"SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32","vidc.iyuv"
+HKLM,"SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32","vidc.yv12"
+
+[Helix.DelIcm]
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.I420"
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.IYUV"
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.YV12"
+
+[DelOrg.ini]
+system.ini, drivers,"VIDC.YV12",,0
+;system.ini, drivers32,"VIDC.I420",,0
+;system.ini, drivers32,"VIDC.IYUV",,0
+system.ini, drivers32,"VIDC.YV12",,0
+
+[Helix.ini]
+system.ini, drivers32,, "VIDC.I420=i420vfw.dll",0
+system.ini, drivers32,, "VIDC.IYUV=iyuvvfw.dll",0
+system.ini, drivers32,, "VIDC.YV12=yv12vfw.dll",0
+system.ini, drivers,desc,,"Helix YUV Codecs",0
+
+[Helix.RegDrv]
+HKLM,"SOFTWARE\Microsoft\Windows NT\CurrentVersion\drivers.desc",%DriverI420%,,%DeviceI420%
+HKLM,"SOFTWARE\Microsoft\Windows NT\CurrentVersion\drivers.desc",%DriverIYUV%,,%DeviceIYUV%
+HKLM,"SOFTWARE\Microsoft\Windows NT\CurrentVersion\drivers.desc",%DriverYV12%,,%DeviceYV12%
+HKLM,"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Drivers32","VIDC.I420",,%DriverI420%
+HKLM,"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Drivers32","VIDC.IYUV",,%DriverIYUV%
+HKLM,"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Drivers32","VIDC.YV12",,%DriverYV12%
+
+[Helix.RegDrv64]
+HKLM,"SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\drivers.desc",%DriverI420%,,%DeviceI420%
+HKLM,"SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\drivers.desc",%DriverIYUV%,,%DeviceIYUV%
+HKLM,"SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\drivers.desc",%DriverYV12%,,%DeviceYV12%
+HKLM,"SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32","vidc.i420",,%DriverI420%
+HKLM,"SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32","vidc.iyuv",,%DriverIYUV%
+HKLM,"SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32","vidc.yv12",,%DriverYV12%
+
+[Helix.Reg9x]
+HKLM,%UninstallPath%,DisplayName,,%UninstallW9xName%
+HKLM,%UninstallPath%,UninstallString,,"%11%\rundll.exe setupx.dll,InstallHinfSection Uninstall_9x 132 %17%\%InfFile%"
+
+[Helix.RegNTx86]
+HKLM,%UninstallPath%,Comments,,%CompanyStr%
+HKLM,%UninstallPath%,DisplayName,,%UninstallDispName%
+HKLM,%UninstallPath%,DisplayVersion,,%DisplayVersion%
+HKLM,%UninstallPath%,NoModify,0x00010001,1
+HKLM,%UninstallPath%,NoRepair,0x00010001,1
+HKLM,%UninstallPath%,Publisher,,%MfgName%
+HKLM,%UninstallPath%,URLInfoAbout,,%InfoAbout%
+HKLM,%UninstallPath%,URLUpdateInfo,,%UpdateURL%
+HKLM,%UninstallPath%,UninstallString,,"%11%\rundll32.exe setupapi.dll,InstallHinfSection Uninstall_NTx86 132 %17%\%InfFile%"
+;HKLM,%UninstallPath%,UninstallString,,"%11%\rundll32.exe advpack.dll,LaunchINFSection %17%\%InfFile%, Uninstall_NTx86"
+HKLM,%UninstallPath%,VersionMajor,0x00010001,1
+HKLM,%UninstallPath%,VersionMinor,0x00010001,2
+
+[Helix.RegNTamd64]
+HKLM,%UninstallKey%,Comments,,%CompanyStr%
+HKLM,%UninstallKey%,DisplayName,,%UninstallWow64%
+HKLM,%UninstallKey%,DisplayVersion,,%DisplayVersion%
+HKLM,%UninstallKey%,NoModify,0x00010001,1
+HKLM,%UninstallKey%,NoRepair,0x00010001,1
+HKLM,%UninstallKey%,Publisher,,%MfgName%
+HKLM,%UninstallKey%,URLInfoAbout,,%InfoAbout%
+HKLM,%UninstallKey%,URLUpdateInfo,,%UpdateURL%
+HKLM,%UninstallKey%,UninstallString,,"%16425%\rundll32.exe setupapi.dll,InstallHinfSection Uninstall_NTamd64 132 %17%\%InfFile%"
+HKLM,%UninstallKey%,VersionMajor,0x00010001,1
+HKLM,%UninstallKey%,VersionMinor,0x00010001,2
+
+[Helix.RegICM]
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.I420","Description",,%DeviceI420%
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.I420","Driver",,%DriverI420%
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.I420","FriendlyName",,%DeviceI420%
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.IYUV","Description",,%DeviceIYUV%
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.IYUV","Driver",,%DriverIYUV%
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.IYUV","FriendlyName",,%DeviceIYUV%
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.YV12","Description",,%DeviceYV12%
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.YV12","Driver",,%DriverYV12%
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.YV12","FriendlyName",,%DeviceYV12%
+
+[Uninstall_9x]
+DelFiles = Helix.Files.Dll, Helix.Files.Inf, Helix.Files.Pnf
+DelReg = Helix.CleanACM, Helix.CleanAll, Helix.CleanICM
+UpdateInis = Helix.ini.Del, Restore.ini
+AddReg = Restore.ICM, Restore.Sys
+
+[Uninstall_NTx86]
+DelFiles = Helix.Files.Dll, Helix.Files.Inf, Helix.Files.Pnf
+DelReg = Helix.CleanACM, Helix.CleanNT, Helix.CleanAll, Helix.CleanICM
+AddReg = Restore.Reg, Restore.ICM, Restore.Sys
+
+[Uninstall_NTamd64]
+DelFiles = Helix.Files.Wow64, Helix.Files.Inf, Helix.Files.Pnf
+DelReg = Helix.CleanACM, Helix.CleanWow64, Helix.CleanICM
+AddReg = Restore.Wow64, Restore.ICM64, Restore.Sys64
+
+[Helix.CleanACM]
+HKCU,"Software\Microsoft\ActiveMovie\devenum\{33D9A760-90C8-11D0-BD43-00A0C911CE86}\i420"
+HKCU,"Software\Microsoft\ActiveMovie\devenum\{33D9A760-90C8-11D0-BD43-00A0C911CE86}\iyuv"
+HKCU,"Software\Microsoft\ActiveMovie\devenum\{33D9A760-90C8-11D0-BD43-00A0C911CE86}\yv12"
+
+[Helix.CleanNT]
+HKLM,"SOFTWARE\Microsoft\Windows NT\CurrentVersion\drivers.desc",%DriverI420%
+HKLM,"SOFTWARE\Microsoft\Windows NT\CurrentVersion\drivers.desc",%DriverIYUV%
+HKLM,"SOFTWARE\Microsoft\Windows NT\CurrentVersion\drivers.desc",%DriverYV12%
+;HKLM,"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Drivers32","VIDC.I420"
+;HKLM,"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Drivers32","VIDC.IYUV"
+HKLM,"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Drivers32","VIDC.YV12"
+
+[Helix.CleanWow64]
+HKLM,"SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\drivers.desc",%DriverI420%
+HKLM,"SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\drivers.desc",%DriverIYUV%
+HKLM,"SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\drivers.desc",%DriverYV12%
+;HKLM,"SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32","vidc.i420"
+;HKLM,"SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32","vidc.iyuv"
+HKLM,"SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32","vidc.yv12"
+HKLM,%UninstallKey%
+
+[Helix.CleanAll]
+HKLM,%UninstallPath%
+
+[Helix.CleanICM]
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.I420"
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.IYUV"
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.YV12"
+
+[Helix.ini.Del]
+;system.ini, drivers32, "VIDC.I420=i420vfw.dll",,0
+;system.ini, drivers32, "VIDC.IYUV=iyuvvfw.dll",,0
+system.ini, drivers32, "VIDC.YV12=yv12vfw.dll",,0
+system.ini, drivers,desc,"Helix YUV Codecs",,0
+
+[Restore.ini]
+system.ini, drivers32,, "VIDC.I420=msh263.drv",0
+system.ini, drivers32,, "VIDC.IYUV=iyuv_32.dll",0
+
+[Restore.Reg]
+HKLM,"SOFTWARE\Microsoft\Windows NT\CurrentVersion\drivers.desc","msh263.drv",,"Microsoft H.263 Video Codec"
+HKLM,"SOFTWARE\Microsoft\Windows NT\CurrentVersion\drivers.desc","iyuv_32.dll",,"Intel IYUV Codec"
+HKLM,"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Drivers32","VIDC.I420",,"msh263.drv"
+HKLM,"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Drivers32","VIDC.IYUV",,"iyuv_32.dll"
+
+[Restore.ICM]
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.I420","Description",,"Intel 4:2:0 Video V2.50"
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.I420","Driver",,"msh263.drv"
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.I420","FriendlyName",,"Intel 4:2:0 Video V2.50"
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.IYUV","Description",,"Intel IYUV Codec"
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.IYUV","Driver",,"iyuv_32.dll"
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.IYUV","FriendlyName",,"Intel IYUV Codec"
+
+[Restore.Reg64]
+HKLM,"SOFTWARE\Microsoft\Windows NT\CurrentVersion\drivers.desc","iyuv_32.dll",,"Intel IYUV Codec"
+HKLM,"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Drivers32","VIDC.I420",,"iyuv_32.dll"
+HKLM,"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Drivers32","VIDC.IYUV",,"iyuv_32.dll"
+
+[Restore.Wow64]
+HKLM,"SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\drivers.desc","iyuv_32.dll",,"Intel IYUV Codec"
+HKLM,"SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32","vidc.i420",,"iyuv_32.dll"
+HKLM,"SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32","vidc.iyuv",,"iyuv_32.dll"
+
+[Restore.ICM64]
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.I420","Description",,"Intel IYUV Codec (I420)"
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.I420","Driver",,"iyuv_32.dll"
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.I420","FriendlyName",,"Intel IYUV Codec"
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.IYUV","Description",,"Intel IYUV Codec (IYUV)"
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.IYUV","Driver",,"iyuv_32.dll"
+HKLM,"SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.IYUV","FriendlyName",,"Intel IYUV Codec"
+
+[Restore.Sys]
+HKLM,SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce\Setup,"Enumerating DirectX Codecs",,"%11%\regsvr32.exe /s %11%\qcap.dll"
+HKLM,SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce\Setup,"Registering DirectX Engine",,"%11%\regsvr32.exe /s %11%\quartz.dll"
+
+[Restore.Sys64]
+HKLM,SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce\Setup,"Enumerating DirectX Codecs",,"%16425%\regsvr32.exe /s %16425%\qcap.dll"
+HKLM,SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce\Setup,"Registering DirectX Engine",,"%16425%\regsvr32.exe /s %16425%\quartz.dll"
+
+[Strings]
+DriverI420="i420vfw.dll"
+DriverIYUV="iyuvvfw.dll"
+DriverYV12="yv12vfw.dll"
+DeviceI420="Helix I420 YUV Codec"
+DeviceIYUV="Helix IYUV 420 Codec"
+DeviceYV12="Helix YV12 YUV Codec"
+InfFile="helix12.inf"
+DisplayNameWin="Helix YUV Codecs 1.2 (RC3)"
+DisplayVersion="1.2"
+UninstallW9xName="Helix YUV Codecs 1.2 RC3 (Remove only)"
+UninstallDispName="Helix YUV Codecs 1.2 RC3 (x86) "
+UninstallPath="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\HelixOrg"
+UninstallKey="SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\HelixOrg"
+UninstallWow64="Helix YUV Codecs 1.2 RC3 (x64) "
+MediaClassName="Media Devices"
+CompanyStr="RealNetworks Inc."
+MfgName="Karl Lillevold"
+InfoAbout="http://www.lillevold.com"
+UpdateURL="http://www.helixcommunity.org"
+

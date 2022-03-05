@@ -1,0 +1,95 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<link rel="stylesheet" type="text/css" href="../../avisynth.css">
+   <title>ImageReader / ImageSource Filter</title>
+<!--
+Automatically generated, don't change:
+$Id: imagesource.htm,v 1.7 2005/07/09 13:04:12 ianb1957 Exp $
+-->
+</head>
+<body>
+<h2><a NAME="ImageSource"></a>ImageReader / ImageSource
+</h2>
+<p>
+  <code>ImageReader </code>(<var>string &quot;file&quot;, int &quot;start&quot;,
+  int &quot;end&quot;, float &quot;fps&quot;, bool
+  &quot;use_DevIL&quot;, bool &quot;info&quot;, string &quot;pixel_type&quot;</var>)<br>
+  <code>ImageSource </code>(<var>string &quot;file&quot;, int &quot;start&quot;,
+  int &quot;end&quot;, float &quot;fps&quot;, bool
+  &quot;use_DevIL&quot;, bool &quot;info&quot;, string &quot;pixel_type&quot;</var>)
+
+<p><code>ImageReader</code> is present in v2.52, it replaces WarpEnterprises'
+  plugin, with some minor functionality changes. As of v2.55
+  <code>ImageSource </code> is equivalent, with some minor functionality changes.
+<code>ImageSource </code> is faster than <code>ImageReader</code>  when importing one picture.
+
+<p><var>file</var>: template for the image file(s), where frame number
+  substitution can be specified using
+  <cite><a href="http://www.cplusplus.com/ref/cstdio/sprintf.html">sprintf syntax</a></cite>.
+  For example, the files written by <code><a href="imagewriter.htm">ImageWriter</a></code>'s
+  default parameters can be referenced with <tt>"c:\%06d.ebmp"</tt>. As of v2.56 if the
+  template points to a single file then that file is read once and subsequently
+  returned for all requested frames.
+
+<p><var>start</var> = 0, <var> end</var> = 1000: Specifies the starting and ending 
+  numbers used for filename generation. The file corresponding to <var>start</var>
+  is always frame 0 in the clip, the file corresponding to <var>end</var> is
+  frame (end-start). The resulting clip has (end-start+1) frames. '<i>end</i>=0' does
+  NOT mean 'no upper bound' as with <tt><code><a href="imagewriter.htm">ImageWriter</a></code></tt>.
+  The first file in the sequence, i.e., corresponding to 'start', MUST exist in order
+  for clip parameters to be computed. Any missing files in the sequence are replaced
+  with a blank frame.
+
+<p><var>fps</var> = 24: frames per second of returned clip. An integer value prior to v2.55
+
+<p><var>use_DevIL</var> = false: When false, an attempt is made to parse BMP files
+  with the internal parser, upon failure DevIL processing is invoked.  When true,
+  execution skips directly to DevIL processing. You should only need to use this if
+  you have BMP files you don't want read by <tt><code>ImageReader</code></tt>'s
+  internal parser.
+
+<p><u>NOTE</u> : DevIL version 1.6.6 as shipped with Avisynth does not correctly
+  support DIB/BMP type files that use a pallette, these include 8 bit RGB,
+  Monochrome, RLE8 and RLE4.  Because the failure is usually catastrophic,
+  from revision 2.56, internal BMP processing does not automatically fail
+  over to DevIL processing. Forcing DevIL processing for these file types
+  is currently not recommended.
+
+<p><var>info</var> = false: when true, the source filename text is overlayed on
+  each video frame (added in <em>v2.55</em>).
+
+<p><var>pixel_type</var> = rgb24: Allow the output pixel format to be specified,
+  both rgb24 and rgb32 are supported. The alpha channel is loaded only for rgb32
+  and only if DevIL supports it for the loaded image format. (added in <em>v2.56</em>).
+
+<p>The resulting video clip colorspace is RGB if DevIL is used, otherwise it
+  is whatever colorspace an EBMP sequence was written from (all AviSynth
+  formats are supported).
+
+<pre># Default parameters: read a 1000-frame native
+# AviSynth EBMP sequence (at 24 fps)
+ImageSource()
+
+# Read files &quot;100.jpeg&quot; through &quot;199.jpeg&quot;
+# into an NTSC clip.
+ImageSource(&quot;D:\%d.jpeg&quot;, 100, 199, 29.97)
+# Note: floating point fps is available from v2.56
+
+# Read files &quot;00.bmp&quot; through &quot;50.bmp&quot; bypassing
+# AviSynth's internal BMP reader.
+ImageSource(&quot;D:\%01d.bmp&quot;, end=50, use_DevIL=true)
+
+# Read a single image, repeat 300 times
+ImageSource(&quot;D:\static.png&quot;, end=300)
+# Much, much faster from v2.56
+</pre>
+<p>* &quot;EBMP&quot; is an AviSynth extension of the standard Microsoft RIFF
+image format that allows you to save raw YUY2 and YV12 image data. See <a href="imagewriter.htm">ImageWriter</a>
+for more details.</p>
+<p><kbd>$Date: 2005/07/09 13:04:12 $</kbd></p>
+<form><input TYPE="Button" VALUE="Back"
+onClick="history.go(-1)"></form>
+</body>
+</html>

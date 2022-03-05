@@ -1,0 +1,600 @@
+Table of contents
+-----------------
+
+I) Disclaimer (don't skip that part, but I don't force you to learn it either)
+II) What it is
+   1) Simple version
+   2) Description
+III) Revisions
+IV) Developer's walkthrough
+V) Functions description
+VI) Some practical uses
+   1) MSharpen
+   2) MSoften
+   3) Rainbow reduction
+   4) Supersampled fxtoon
+   5) Warpsharp for dark luma
+   6) pseudo-deinterlacer (chroma will still be problematic)
+   7) Non-rectangular overlays
+   8) Replace backgrounds
+   9) Kmf-Toon ;-)
+VII) TODO
+
+I) Disclaimer
+-------------
+
+This plugin is released under the GPL license. You must agree to the terms of
+'Copying.txt' before using the plugin or its source code.
+
+You are also advised to use it in a philanthropic state-of-mind, i.e. not
+"I'll keep this secret for myself"
+
+Last but not least, a very little part of all possible uses of each filter was
+tested (maybe 5% - still a couple of hours spent to debug ;-). Therefore,
+feedback is _very_ welcome (the opposite - lack of feedback - is also true...)
+
+II) What it is
+--------------
+
+1) Simple version
+After a processing, you may need to keep only a part of the output. Say, you have
+a clip named smooth that is the result of a smoothing (blur() for instance) on a
+clip named source.
+Most of the noise from source have disappeared in smooth, but so have details.
+You could therefore want to only keep filtered pixels and discard those where
+there are big difference of color or brightness. That's what does MSmooth by D.
+Graft for instance. Now consider that you write on an image pixels from smooth
+that you want to keep as white pixels, and the other ones from source as black
+pixels. You get what is called a mask. MaskTools deals with the creation, the
+enhancement and the manipulating of such mask for each component of the YV12
+colorspace.
+
+2) Description
+This Avisynth 2.5 YV12-only plugin offers several functions manipulating clips
+as masks:
+- EdgeMask will build a mask of the edges of a clip, applying thresholdings
+  (proper values will enable or disable them)
+- Inflate will 'inflate' the high values in a plane, by putting in the output
+  plane either the average of the 8 neighbours if it's higher than the
+  original value, otherwise the original value. The opposite function is
+  called Deflate (dedicated to Phil Katz).
+- Expand will 'expand' the high values in a plane, by putting in the output
+  the maximum value in the 3x3 neighbourhood around the input pixel. The
+  opposite function is called Inpand.
+- Invert will invert the pixel (i.e. out = 255 - in); this can be also used to
+  apply a 'solarize' effect to the picture
+- Binarize will binarize the input picture depending on a threshold and a
+  command.
+- YV12Substract is the same as Subtract, also works in YV12, but *should* be
+  a bit faster (because MMX optimised).
+- YV12Layer is the equivalent of most of original Layer's operations, but in
+  YV12; alpha channel isn't exploited, so it might or might not fill the same
+  purpose.
+- Logic will perform most typical logical operations (in fact, the ones
+  provided by MMX mnemonics, though C functions are still available, mainly
+  because of the picture dimensions limits).
+- FitY2UV/FitY2U/FitY2V resizes Y plane and replace UV/U/V plane(s) by the
+  result of the resize (you can specify your resizer filter, even one that
+  isn't built-in AviSynth); the opposite  functions are FitU2Y and FitV2Y
+  Fast<Function> is the "fast" version (ie home-made) resizing only one
+  plane
+- OverlayMask will compare 2 clips based on luminance and chrominance
+  thresholds, and output whether pixels are close or not (close to what
+  ColorKeyMask does)
+- MaskedMerge will take 3 clips and apply a weighed merge between first and
+  second clips depending on the mask represented by clip3.
+- MotionMask will create a mask of the motion on the picture
+- YV12Convolution will allow you to convole the picture by the matrix of your choice
+- LUT is a look-up table, allowing to apply fastly a function to each pixels of the picture
+- CombMask outputs a mask which gives aeres that presents combing
+
+In addition, all functions take 3 parameters: Y, U and V (except the FitPlane
+functions, where obviously the name tells what is processed). Depending on
+their value, different operations are applied to each plane:
+- value=3 will do the actual process of the filter,
+- value=2 will copy the 2nd video plane (if appliable) to the output
+  corresponding plane
+- value=1 will not process it (i.e., most often, left it with 1st clip plane
+  or garbage - check by yourself)
+- value=[-255...0] will fill the output plane with -value (i.e. to have grey
+  levels, use U=128,V=128)
+
+A last point is the ability of some functions to process only a part of
+the frame:
+- this behaviour is set by the parameters (offX, offY) (position of the start
+  point) and (w,h) (width and height of the processed area); filters should
+  modify those parameters so that the processed area is inside the 2 pictures
+- in case of a filter (except YV12Layer) using 2 clips, the 2 clips must have
+  the same dimensions
+- in all cases, the picture must be at least MOD8 (MOD16 sometimes) in order
+  to enable the filter to use MMX functions (ie work at full speed)
+
+This was intended for modularity and atomic operations (or as useful as
+possible), not really speed. It became both bloated and slow. I let you
+decide whether this statement is totally true, or a bit less... The examples
+of VI) are most probably much faster applied with the original filters.
+
+III) Revisions
+--------------
+1.4.16
+- Bugfixes : Logic "min" & "max" modes weren't properly working, it's corrected.
+- Bugfixes : Logic & Subtract weren't using MMX & iSSE optimizations, due to a very silly bug.
+It's Corrected.
+1.4.15.3
+- RGBLUT added : works the same as YV12LUT ( except R, G and B replace Y, U and V ).
+In addition, you can specify an AMP file ( arbitrary color mapping file format from photoshop ).
+1.4.15.2
+- Bug finally solved on YV12LUT. Silly programming bug, as always...
+- In YV12LUT, logical and relationnal operators added ( <, <=, >, >=, ==, !=, &, !&, |, ° ( xor ) )
+- In YV12LUT, a ternary operator added : ? ( works as in C )
+1.4.15.1
+- In YV12LUT, another bug which was still preventing it from working fine. Hopefully, it should
+really work now.
+1.4.15
+- New Filter : HysteresyMask. It will allow you to build a new edge mask from two edge masks,
+one only having a few edges ( but we're sure they indeed are edges ), the other having two
+ much edges ( due to a too low thresholding for example ). Look in the documentation to have
+ further explanations.
+1.4.14.2
+- Several bugfixes concerning the behavior of negative values for Y, U and V ( edgemask,
+dedgemask, motionmask, combmask, logic )
+- Several bugfixes concerning the use of offX / offY / w and h ( filters than can use it are :
+maskedmerge, binarize, expand, YV12subtract, yv12lut )
+- In YV12LUT, a bug prevented to use it with some filter. It should work now.
+- In YV12Convolution, float coefficients can be used now. If none is used, all the processing
+will take place with integer, so it will be faster than if you use a float. Moreover, if
+there is the possibility of overflow ( giving a result over 255 or under 0 ) during computation,
+a slower but safe function will be used to saturate computation to 0 and 255.
+1.4.14.1
+- Bugfix in YV12LUT to allow the use of negative numbers
+1.4.14
+- Bugfix : In YV12Layer, a useless test could prevent the filter to work. The test has been 
+removed
+- Bugfix : In DEdgeMask, threshold weren't taken into account. They are now
+- Bugfix : Logic filter is now fully functionnal, in C and MMX
+- Added : documentation to Logic filter
+- Added : two modes for Logic : "Min" and "Max" ( C, MMX, iSSE )
+- Added : In DEdgeMask, the possibility to set the normalization factor
+- Corrected : documentation.
+1.4.13
+- Bugfix : One more, in the MotionMask ( the last row was not correctly computed )
+- Optimizations : MaskedMerge gives now the same output in MMX and C, so MMX optimizations
+for it are back by default.
+- Added : In EdgeMask, you now can use the laplace kernel. See the documentation on that
+filter
+- Added : 'New' filter, DEdgeMask, which allows you to choose your kernel ( at a cost : 
+speed )
+1.4.12
+- Behavior modifications : MotionMask and EdgeMask now also computes pixels on the borders
+mainly by extending the mask to these pixels.
+- Bugfix : Inflate / Inpand / Expand / Deflate, when using negative parameters for y,u and v, 
+some weird problems could occur.
+- Added functionnality : In YV12LUT, the function abs is now defined.
+1.4.11
+- Bugfix : EdgeMask, MMX optimizations give different results. They are disabled by default.
+ To activate them, use usemmx = true. They'll be used only with mod 16 resolution
+- Bugfix : EdgeMask : first and last lines weren't always computed. 
+- Bugfix : MaskedMerge : MMX optimizations darken slightly the picture. They are disabled by
+default. To activate them, use usemmx = true. They'll be used only with mod 16 resolution.
+1.4.10
+- Bugfix : first and last lines were not correctly computed with inflate / deflate
+- Invert is no longer a filter of the Masktools, it has been moved inside AviSynth.
+1.4.9
+- New filter : CombMask. As usual, read further for more documentation
+1.4.8
+- YV12Convolution now supports negative coefficients in the matrix. It allows to use the
+filter has an edge detecter.
+- YV12Convolution has now a new parameter : bool saturate, which, if set to true, 
+or if there is a possibility of getting out of the range [0..255] during calculation,
+clips each pixel into that range ( which means it's slightly slower )
+- A new filter : LUT. Read further for more information on how to use it.
+1.4.7
+- Rename MotionDetection to MotionMask. I know it's kind of silly, but it's a lot
+more logical that way.
+- Add the check of the width for the use MMX in MotionMask
+- Slightly modify MMX optimizations in Binarize.
+- Add a new filter : YV12Convolution. It allows you to convole the picture by
+a matrix of (almost) any size. Look further in the readme to learn how to use it
+1.4.6
+- Made the scenechange detection in MotionDetection iSSE optimized ( meaning you
+need an Athlon XP / Pentium IV ). It works with an Athlon XP, it is not tested with
+an Pentium IV, it is possible to disable it by using usemmx = false in the paremeters
+of the filter.
+- Optimized the calculation of the motion, without using MMX ( just by avoiding to do 
+3 times the same calculations... ). So the filter should be more or less three times
+faster.
+1.4.5
+- Added MotionDetection filter, no MMX / assembler optimizations for it yet. Look
+further in the Readme to learn how to use it. It takes the idea of Sansgrip's filter
+(NoMoSmooth) and outputs the motion mask directly in the correct colorspace for the
+MaskTools.
+1.4.4
+- Reactivated MMX optimizations for MaskedMerge
+- Came back to Kurosu's optimizations for Invert
+1.4.3
+- Made some MMX optimizations ( binarize, invert )
+- Corrected some MMX optimizations ( which means mostly 'disabled some MMX
+optimizations' ). It should now work with P4.
+1.4.2
+- Fixed bugs concerning the inpand / expand / inflate / deflate functions
+1.4.1
+- Fixed the dreadly bug "multiple instances of a filter with different
+  functions needed"
+1.4.0
+- Added an experimental LUT filter. Not tested, debug later.
+1.3.0 (private version)
+- Made usable the FitPlane function (still an overload of work when only
+  one plane has to be resized) which was previously undocumented;
+  therefore, added FastFitPlane functions (corresponding FitPlane ones
+  should be useless now, except for the resizers settings)
+- Allowed the specification of a processing area for many filters;
+  however, this should not produce any noticable speed increase.
+- Cleaned YV12Layer (in particular the unusable "Darken"/"Lighten" modes)
+- Added OverlayMask, a function that compares 2 clips, and outputs a
+  mask of the parts that are identical (slow and far from perfect).
+
+1.2.0 (private version)
+- YV12Layer: no more useless RGB32 conversion! Approximately the same as
+  Arithmetic (except a third clip is not used), so that one is gone...
+- YV12Substract: hey, why only a C version? Masks are really an underused
+  feature of AviSynth |-[
+
+1.1.0 (private version)
+- Older inflate/deflate are renamed expand/inpand while newer functions
+  replace them
+- Logic and Arithmetic functions added (shouldn't produce the expected
+  results because of no debugging)
+- Edgemask now takes 4 thresholds (2 for luma and 2 for chroma). They are
+  used for:
+  . setting to 0 or leaving as is a value depending on first threshold,
+  . setting to 255 or leaving as is a value depending on the second one.
+
+1.0.2 (last version - public project dropped):
+- Fix the shift for edgemask using sobel and roberts (misplaced MMX
+  instruction)
+- MaskMerge now works (mask cleared before being used... check with
+  MaskMerge(clip3,clip3) for instance)
+
+1.0.1: Initial release
+
+IV) Developer's walkthrough
+-------------------------
+Skip to V) if you're not interested in developing the tools available.
+
+
+The project is a VC++ 6 basic project. Each filter has its own folder
+which stores the header used by the interface, the source for the function
+members, the source for processing functions and its header. Let's look at
+EdgeMask:
+- EdgeMask.h is included by the interface to know what the filter
+  'looks like' (but interface.cpp still holds the definition of the
+  calling conventions and exported functions)
+- EM_func.h describes the different processing functions (they should all
+  have the same prototype/parameters):
+  . Line_MMX and Line_C
+  . Roberts_MMX and Roberts_C
+  . Sobel_MMX and Sobel_C
+- EM_func.cpp, as all <filter's initials>_func.cpp, stores the
+  implementation of the processing functions, and sometimes their MMX
+  equivalents.
+- EdgeMask.cpp implements the class; the constructor select the
+  appropriate processing function (MMX? C? Roberts? Line? Sobel?) and uses
+  it to fill the generic protected function pointer used in GetFrame
+
+Interface.cpp stores the export function and all of the calling functions
+(AVSValue ... Create_<filter>).
+
+ChannelMode.cpp defines the Channel operating modes. There could be added
+the equivalent of a debugprintf.
+
+This quick walkthrough won't probably help most developers, as the examples
+of V) for users, but that's the best I've come with so far. It will improve
+of course over time depending on the success of the idea, which main
+drawback, speed, will probably make it scarcely used, if ever. <g>
+
+V) Functions description (Y,U,V parameters described above)
+------------------------
+1) EdgeMask(int thY1, int thY2, int thC1, int thC2,string type, bool usemmx):
+Component is either Y, U or V; derivative is the result of the convolution
+by the differential kernel. MMX code is only used with MOD16 width (might
+not be necessary), and if usemmx is set to true ( false by default )
+- string: which differential convolution to use:
+  . "line" will try to spot darker thin (1 pixel-wide) lines in the
+    picture (it has an incorporated anti-noise floor which makes it ignore
+    any variation lower than 3)
+  . "roberts" will apply a pseudo-Roberts 2x2 kernel:
+    2 -1
+    -1 0
+  . "sobel" will apply a pseudo-Sobel 3x3 kernel:
+     0 -1 0
+    -1  0 1
+     0  1 0
+  . "laplace" uses a Laplacian kernel:
+    -1 -1 -1
+    -1  8 -1
+    -1 -1 -1
+  . "special" uses this kernel:
+    -1/4 0 -1/4
+      0  1  0
+    -1/4 0 -1/4
+  . "cartoon" uses the pseudo-Sobel kernel but only keeps components with
+    lower value than their neighbours (i.e. negative values of the
+    derivative)
+- thY1, thC1: threshold under which component value is set to 0. Default : 0
+- thY2, thC2: threshold under which component value is set to the derivative
+       value, and above which it's set to 255. Default : 20
+       
+1.5) DEdgeMask(int thY1, int thY2, int thC1, int thC2, string matrix, bool setdivisor, int divisor):
+Same as above, except that, with matrix = "a b c d e f g h i", the kernel will
+be :
+	a b c
+	d e f
+	g h i
+	
+With proper normalization ( meaning, divided by the sum of the positive coefficients ). If you want
+to set yourself the normalisation, you have to specify setdivisor = true ( false by default ),
+and set the divisor to your chosen value.
+Default matrix : "-1 -1 -1 -1 8 -1 -1 -1 -1"
+
+2) Expand/Inpand(int offX, int offX, int w, int h)
+(works in-place, so unprocessed planes contain the original data of the
+first clip)
+Replace the component value by the maximum (respectively minimum) in the
+9 pixels of a 3x3 neighbourhood.
+The 4 parameters specify the area to process, as for all other plugins
+with such options. By default, the whole pciture is processed.
+
+3) Inflate/Deflate(int offX, int offX, int w, int h) (works in-place)
+Replace the component value by the average of the values of its 8
+neighbours if it is respectively lower or higher than the original value.
+
+//4) Invert(int offX, int offX, int w, int h) (works in-place)
+//Replace pixel's value by 255-pixel's value
+//Binarize(upper=false) could be seen (but isn't processed as) as 
+//Invert().Binarize(upper=true)
+
+5) Binarize(int threshold, bool upper,int offX, int offX,
+   int w, int h)) (works in-place)
+- threshold is the limit to tell when to put 0 or 255. Default 20
+- upper = true will replace values higher than threshold by 0 and lower or
+  equal by 255 upper = false simply does the opposite. Default true.
+- Nota: in YV12, the luma range is 16-235 (yay! I like limitations due
+  to some analogical crap - doesn't matter much, but still a pain to care
+  for), so don't be surprised, and set some of your levels to 17...
+
+5) input.MaskedMerge(clip clip2, clip clip3, int offX, int offX, int w,
+   int h, bool usemmx)) (works in-place, mode=2 will copy the plane of clip2 to clip1)
+   output = [(256-clip3)*input + clip3*clip2 + 128]/256
+   Therefore, it isn't perfectly weighed/normalized, but will still do the
+   job. One could see as a simple (no alpha considered) layer("add"). usemmx, set
+   to true by default, allow you to deactivate MMX optimizations.
+
+6) YV12Subtract(clip clip1, clip clip2, int tolerance, int offX, int offX,
+   int w, int h) (works in-place, mode=2 will copy the plane of clip2 to clip1)
+   Performs exactly the same as Subtract, but uses MMX.
+   - if mode<0:
+     if clip1 < clip2, output = 255 + clip1 - clip2
+     else output = clip1 - clip2
+   - otherwise
+     output' = |clip2 - clip1| - tol
+     if output'<0, output = output'
+     else output = output'
+   The last mode can be used in many cases to only process pixels that are
+   different from an image (MaskOverlay would be nicer, though)
+
+7) YV12Layer(clip clip1, clip clip2, string operator, int level, bool chroma,
+   int offX, int offX, int w, int h)
+   Same as Layer, except "Lighten" and "Darken" were removed (the luma of
+   the 2nd clip gaves the weighing for each luminance, but should be reused
+   for chrominance, not practical in current architecture).
+
+8) FitPlane(string resizer) has the following incarnations:
+   - luma to chroma: FitY2U, FitY2V, FitY2UV
+   - chroma to luma: FitU2Y, FitV2Y
+   - chroma to chroma: FitU2V, FitV2U
+   You can by this mean propagate a mask created on a particular plane to
+   another plane.
+
+9) FastFitPlane: it has the same incarnations as FitPlane, but use its own
+   resizer (could replace AviSynth's C ReduceBy2 ;-)
+
+10) MaskOverlayclip clip1, clip clip2, luma threshold tY, chroma threshold tC,
+   int strictness)
+   If: U and V values of a group of 4 pixels of clip1 (due to the YV12's
+       4:2:0 sampling) is different by less than tC from clip2's
+       corresponding pixel's chroma
+   Then: if more than strictness pixels out of those 4 pixels have a luma
+         different from the corresponding pixels' luma by less than tY
+         then: mark the pixel satisfying to the 2 above conditions as
+               (255,255,255) (process mask = full for maskedmerge)
+
+11) MotionMask(clip clip, int thY1, int thY2, int thC1, int thC2, int thSD)
+	- If the frame isn't detected as a scenechange, it calculates for each pixel 
+a basic 'motion', ranging from 0 ( no motion ) to 255 ( full motion ). If this
+motion is under th1, the pixel is set to 0, if it is over th2, pixel is set to 255, 
+if in between, it is set to the value of motion. ( so threshold work like EdgeMask )
+	- If the frame is detected as a scenechange, the pixels of the frame are set to 0
+	The scene change detection is basic : the filter calculates on the luma plane the
+mean of absolute differences between each corresponding pixels of the current frame and the
+previous one. It test this value against thSD. Under the threshold, the scene isn't a
+scenechange, over it is.
+	Defaults are : thY1 = 20, thY2 = 20, thC1 = 10, thC2 = 10, thSD = 10. So, defaults 
+create a binary mask.
+	This filter calculates motion as NomoSmooth ( so thanks a lot Sansgrip), and allows you
+to use whatever smoothing filter you want in zones were motion has been detected. Only
+spatial smoothers should be used on this mask, theorically speaking, but you're free to
+do as you want ;)
+
+12) YV12Convolution(clip clip, string horizontal, string vertical, 
+					int total, bool automatic, bool saturate )
+	- horizontal and vertical are lines of integer or float coefficients spaced by one space.
+These lines represents vectors. Their length must be odd ( in order to be
+centred on a pixel ). The matrix of convolution will be equal to vertical' * horizontal
+/ total ( matlab notation, for those who know matlab, else, the matrix' coefficient
+ a(col,row) = horizontal(col) * vertical(row) / total )
+	- If automatic is set to 'true', total is the sum of the coefficients of the matrix. It
+means that, that way, overall brightness of the picture isn't touched. 
+	- Saturate will check for each pixel if it is really inside the range 0..255. Not that
+this behavior may also be activated if there is a negative coefficient in the matrix,
+or if automatic = false and the total given is lower than the automatic calculated total.
+So there should be no need for this parameter to be set to true.
+	- Default values are horizontal = "1 1 1", vertical = "1 1 1", total = 9, automatic = true
+saturate = false.
+		
+
+13) YV12LUT(clip clip, string Yexpr, string Uexpr, string Vexpr)
+	- Yexpr is a string containing a serie of numbers / function's names / operators / 'x', all separated
+by spaces. It represents the expression, in reverse polonese notation. It means that, for example,
+"(sin(x) * 3 + x^4) / 2" will become "x sin 3 * x 4 ^ + 2 /".
+	- One of its use can be a level filter like the one of avisynth : noting input_low : il, input_high ih,
+output_low ol, output_high oh, the formula given in the avisynth's documentation becomes :
+		"x il - ih il - / 1 gamma / ^ oh ol - * ol +"
+	- There is only one variable, which has to be 'x'.
+	- There are for the moment 9 functions implemented : sin, cos, tan, exp, log, acos, asin, atan, abs.
+Say the ones you need, they'll be implemented
+	- There are 6 arithmetical operators : +, -, *, /, ^, %
+	- There are 4 logical operators : & ( and ), !& ( and not ), | ( or ), ° ( xor, ^ was already taken )
+	- There are 6 relational operators : <, >, <=, >=, ==, !=
+	- There is one ternary operator : ? ( works like '? :' operator in C / C++ ). For example : a binary mask
+can be created with the expression "x 128 < 255 0 ?"
+	- When evaluating an expression, only numbers are used. A negative number means false, a
+positive one means true. Relationnal and logical operators return -1 or 1.
+	- Default are Yexpr = Uexpr = Vexpr = "x" ( meaning, it does nothing )
+	
+13.5) RGBLUT(clip clip, string Rexpr, string Gexpr, string Bexpr, string AMPFile)
+	- Works exactly the same way as the previous filter. AMPFile allows you to load a
+photoshop color profile. 
+	
+14) CombMask(clip clip, int thY1, int thY2)
+	- Produces a mask showing areas that are combed. The thresholds work as for the other
+filters : after calculating the combing value, if this one is under thY1, the pixel is
+set to 0, over thY2, it is set to 255, and inbetween, it is set to the combing value divided
+by 256.
+	- The combing value is (upper_pixel - pixel)*(lower_pixel - pixel). Thus, it is not normalized
+to the range 0..255, because if it was do, value would be close to 1 or 2, no more. That means
+you can use threshold higher than 255, even they should not be useful.
+	- Defaults are 10 and 10 ( thus making a binary mask )
+	
+14) Logic(clip clip1, clip clip2, string mode)
+	- Apply the boolean / binary operator described in "mode" to both clip. There are 4 
+boolean operators ( And, Or, Xor, Andn ), which sould be used only on binary masks, and
+2 other operators that could be proved useful for mask merging : Min and Max
+
+15) HysteresyMask(clip clip1, clip clip2)
+	- clip1 will be a binary edge mask, build with a higher thresholding than clip2. In that
+case, HysteresyMask will expand the connex set of the clip1 into those of the second clip. It's
+easier to understand with an example, which you'll get here : 
+http://www.geocities.com/manao47/Filters/Documentation/hysteresy.html
+
+					
+
+VI) Some practical uses (not tested extensively)
+-----------------------
+Those won't produce the exact same results as the original filters they try
+to mimic, in addition to be far more slower. Despite the numerous additional
+functions, no newer idea.
+
+Notes: 
+- I'm too lazy to update the syntax, especially regarding how mode=2 works,
+  and how EdgeMask was updated (now longer needs of a Binarize for instance)
+- Some filters I describe as 'to create' already exist (imagereader,
+  levels for clamping, ...).
+
+1) MSharpen
+. Build EdgeMask of clip1, Binarize it and store the result into clip3
+. Apply any sharpening filter to clip1 and store it into clip2
+. return MaskMerge(clip1,clip2,clip3):
+The sharpened edges of clip2 higher than the threshold given to Binarize
+will be sharpened and used to replace their original value in clip1.
+You could also write a filter with a particular Look-up table (best would
+look like a bell), replace Binarize by it, and have a weighed sharpening
+depending on the edge value: that's the HiQ part in SmartSmoothHiQ
+
+clip2 = clip1.<EdgeEnhancer>(<parameters>)
+#U and V planes don't need filtering, Y needs it
+#EdgeMask(<...>,"roberts",Y=3,U=-128,V=-128) for greyscale map
+clip3 = clip1.EdgeMask(15,60,"roberts",Y=3,U=1,V=1)
+return MaskedMerge(clip1,clip2,clip3)
+
+2) MSoften
+Replace EdgeEnhancer by a spatial softener (cascaded blurs?
+spatialsoftenMMX?) and use upper=true to select near-flat pixels.
+
+3) Rainbow reduction (as described here:
+   http://forum.doom9.org/showthread.php?s=&threadid=48167)
+Warning, this isn't a miracle solution either
+clip2 = clip1 soften at maximum (using deen("m2d") or edeen for instance)
+#Get luma edgemap and increase edges by inflating
+# -> wider areas to be processed
+clip3 = clip1.EdgeMask(6,"roberts",Y=3,U=1,V=1).Inflate(Y=3,U=1,V=1)
+#Now, use the luma edgemask as a chroma mask
+clip3 = YtoUV(clip3,clip3).reduceby2().Binarize(15,upper=false,Y=1,U=3,V=3)
+#We have to process pixels' chroma near edges, but keep intact Y plane
+return MaskedMerge(clip1,clip2,clip3,Y=1,U=3,V=3)
+
+4) Supersampled fxtoon
+Not tested
+. Use tweak to darken picture or make a plugin that scales down Y values
+  -> clip2
+. Build edge mask, Supersample this mask, Binarize it with a high
+  threshold (clamping sounds better), Inflate it -> clip3
+. Apply the darker pixels of clip2 depending on the values of clip3
+
+5) Warpsharp for dark luma
+Not tested
+. Apply warpsharp -> clip2 (replacement pixels)
+. Create a clamping filter or a low-luma bypass filter -> clip3 (mask)
+
+6) pseudo-deinterlacer (chroma will still be problematic)
+Not tested
+. clip2 = clip1.SeparateFields().SelectEven().<Method>Resize(<parameters>)
+. clip3 = clip1.<CombingDetector>(<parameters>)
+. return MaskedMerge(clip1,clip2,clip3,Y=3,U=3,V=3)
+ (chroma even more problematic)
+
+7) Non-rectangular overlays
+In fact, this is handled more nicely by layer and mask...
+#Simple hack because ImageReader needs an integer fps...
+#Most sources are natively in YUY2/YV12
+clip = avisource("test.avi").ConvertToYV12().assumefps(fps)
+#Load the picture to be overlayed
+image = ImageReader("mask.bmp",0,clip.framecount()-1,24,use_DevIl=false)
+#Simple way: assume black is transparent 
+#Any other colour would be quite more complicated*
+masktemp=imageYV12.Binarize(17,upper=false,Y=3)
+#We set the luma mask to fit the chroma planes
+mask=mask.FitY2UV()
+#Now that we have the mask that tells us what we want to keep...
+#Replace by image the parts of clip masked by mask!
+maskedmerge(clip,image,mask,Y=3,U=3,V=3)
+#*solution: mask=OverlayMask(image,image.BlankClip("$xxxxxx"),1,1)
+
+
+8) Replace backgrounds
+This example clearly would look better in RGB. To avoid typical problems due
+to noise or compression, you would better use blurred versions of the clip
+and picture.
+source=avisource("overlay.avi").assumefps(24)
+#blur the source
+clip=source.blur(1.58).blur(1.58).blur(1.58)
+#load the background to replace, captured from the blurred sequence
+bgnd=ImageReader("bgnd.ebmp",0,clip.framecount()-1,24,use_DevIl=false)
+#load new background
+new=ImageReader("new.ebmp",0,clip.framecount()-1,24,use_DevIl=false)
+#integrated filter to output the mask = (clip~overlay?)
+mask=OverlayMask(clip,overlay.ConvertToYV12(),10,10)
+MaskedMerge(source,new.ConvertToYV12()s,mask,Y=3,U=3,V=3)
+
+9) K-mfToon
+I need to include more info (original urls/posts) but for now I think
+mfToon's original author, mf (mf@onthanet.net) will not react too
+violently to it, while it's still not addressed.
+The output of the function inside K-mfToon.avs should be identical to the
+output of the original mftoon.avs (also included), with twice the speed.
+The requirements are:
+- For mfToon:
+  . load the plugins called "MaskTools", "warsharp", "awarsharp" 
+
+VII) TODO
+---------
+Nothing, it all depends in feeback

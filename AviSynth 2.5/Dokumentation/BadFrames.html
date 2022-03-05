@@ -1,0 +1,59 @@
+<html>
+<head>
+<title>BadFrames</title>
+<link rel="stylesheet" type="text/css" href="avisynth.css">
+<!--
+Automatically generated, don't change:
+$Id$ 
+-->
+</head>
+<body>
+<h1>BadFrames</h1>
+<h2>Abstract</h2>
+<b>author:</b> Fizick
+<br><b>version:</b> 1.0
+<br><b>download:</b> <a href="http://avisynth.org.ru/">http://avisynth.org.ru/</a> <br>
+<b>category:</b>  Misc Plugins<br>
+<b>requirements:</b> <br>
+<b>license:</b> GPL
+<hr>
+
+<p>Replaces given bad frames by neighbors or blend (interpolation).
+Useful for frames with very large defects.
+</p>
+
+<h2>Syntax and parameters</h2>
+<p><code>BadFrames</code> (<var>clip, int frame1, int frame2[, ...], bool "blend"</var>)</p>
+<p><var>frame1, frame2, ...</var> is the given bad frames list to replace. 
+Negative number designates that this bad frame is at scene change, frame number is absolute value of parameter 
+(to prevent interpolation across the scene).</p>
+<p><var>blend</var> = false : frames are replaced by nearest good neighbors (mainly previous).
+</p>
+<p><var>blend</var> = true : frames are replaced by interpolation of nearest good neighbors (previous and next).</p>
+<p>Default <var>blend</var> = true.</p>
+
+<h2> Example</h2>
+<pre>
+AviSource("test.avi")
+# Assume bad frames 5, 30, 51, 52. Frame 51 is at scene change.
+BadFrames(5, 30, -51, 52, blend=true)
+</pre>
+
+
+<h2> License</h2>
+<p>This plugin is released under the GNU GPL license v2.<br>
+Please donate for support.
+</p>
+
+<h2>Revisions</h2>
+
+<p>v1.0 (13.08.2006) - first release</p>
+
+<h2>Download</h2>
+
+<p><a href="badframes10.zip">Download BadFrames version 1.0</a></p>
+
+
+</body>
+</html>
+  

@@ -1,0 +1,88 @@
+FrameSelect() v1.01, Plugin for Avisynth v2.5+ by StainlessS.
+
+FrameSelect() is a simple plugin to select individual frames from a clip.
+
+Can select frames numbers by direct arguments to filter, or in a string, or in a command file.
+
+
+Video:- Planar, YUY2, RGB32, RGB24.
+
+Audio:- Returns NO AUDIO (Does not really make sense for individual frames).
+
+
+FrameSelect(Clip, int F1, ... , int Fn, string 'SCmd',string 'Cmd', bool 'Show', bool 'Ver',bool "Reject")
+
+Compulsory args:
+
+        Clip,   No Default, source clip.
+                
+
+Optional args:	(at least one of the frame select options must be supplied).
+
+	F1...Fn	Un-named. Zero or more frame numbers.
+
+        SCmd,   string, Default= "", Not set.
+                Command String, frame numbers supplied in a string.
+
+        Cmd,    string, Default= "", Not set.
+                Command file, frame numbers supplied in a file. Use eg "Select.txt" for command file in your script directory.
+
+        Show    bool, Default= false.
+                true = Show info.
+
+        ver     bool, Default=false.
+                true = Show version.
+
+		Reject  bool, Default False. If true then selects frames NOT selected rather than selected frames. New, v1.03.
+
+
+Either the direct frame numbers, Command string (SCmd), or command file (Cmd) must be supplied.
+*** NOTE ***,  if more than one supplied, the commands in the Command File are processed
+first followed by those in the SCmd String, and finally the directly supplied frame numbers.
+
+
+NOTE, v1.01 Adds frame ranges to both command file and command string (not possible for directly supplied frame number args).
+
+
+The 'Cmd' Command file allows one command per line and can contain comments eg:
+
+#------------- # below contents of a text file.
+100       # This is a comment
+200       # and so is this
+300,400   # This is a frame range, specifies all 101 frames between 300 and 400 inclusive.
+500,-2    # Specifies 2 frames starting at frame 500, ie 500 and 501.
+600,0     # Specifies ALL frames from frame 600 to the end of the source clip.
+
+#-------------
+
+The "SCmd" string accepts more than 1 command per line, but MUST be separated by a semi colon (;).
+The Semi colon is processed as a sort of soft newline and will terminate a comment, so you CANNOT
+have a semi colon in a comment. eg
+
+SCMD = "
+       1000  # This is a comment ; 2000 # the 2nd arg is 2000; 3000 # the third arg on a single line.
+       4000 ; 5000 ; 6000
+       7000,8000 ; 9000,-2 ; 10000,0  # Frames 7000-8000, 2 frames starting at 9000, and frame 10000 to end of clip.
+"
+
+example commands:
+
+FrameSelect(clip, 1,2,3,4,5)
+FrameSelect(clip,"100,110;200,-2;300,0")
+FrameSelect(clip, 1,2,3,4,5,"100;200;300","Select.txt")
+FrameSelect(clip, 1,2,3,4,5,"100;200;300")
+FrameSelect(clip, 1,2,3,4,5,"","Select.txt")
+FrameSelect(clip,"100;200;300","Select.txt")
+FrameSelect(clip,"","Select.txt")
+
+--------------------------------------
+v1.02, added:
+
+FrameReplace(Clip,clip, int F1, ... , int Fn, string 'SCmd',string 'Cmd', bool 'Show', bool 'Ver')
+
+Args identical to FrameSelect, with exception of the 2nd clip arg which is a clip of frames to replace into the 1st clip arg.
+The other args must be identical to the script that originally extracted the frames.
+-------------------------------------- 
+StainlessS.
+
+

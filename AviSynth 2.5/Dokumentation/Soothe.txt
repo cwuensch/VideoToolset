@@ -1,0 +1,62 @@
+========
+ Soothe
+========
+===
+Benötigte Plugins:
+
+Soothe_mt2.avs:
+mt_Masktools.dll -> http://manao4.free.fr
+
+=====
+Standardaufruf:
+
+dull = last
+sharp = dull.irgendein_Schärfer() #(z. B.: LimitedSharpenFaster(), XSharpen()...)
+
+Soothe(sharp, dull, keep=24)
+
+=====
+Beschreibung:
+
+Soothe() ist eine kleine Nachbearbeitungs-Funktion für Schärfungsfilter. Das Ziel ist eine temporale Stabilisierung von Videos die zuvor geschärft wurden. Die Funktion arbeitet recht schnell (enthält 3 verschiedene LutXY-Operationen und ein Temporalsoften - so ziemlich die minimalste Konfiguration, um diese Idee umzusetzen. Plugin-Programmierer sind herzlich eingeladen.) und scheint ganz gut zu funktionieren.
+
+Die Entstehung von Jitter auf der Zeitachse ist ein generelles Problem beim Schärfen, weil beim Schärfen üblicherweise nur spatiale Aspekte berücksichtigt werden. Deshalb macht Soothe einfach folgendes: Nimm den Unterschied zwischen dem ungeschärften und dem geschärften Clip, wende auf diesen Unterschied TemporalSoften() an, ABER erlaube nur Änderungen in Richtung 128 ("neutral"), und wende diesen temporal stabilisierten Unterschied auf den ungeschärften Clip an.
+Im Endeffekt wird das die Wirkung des Schärfens verringern - weniger in unbewegten Bereichen und mehr in bewegten Bereichen.
+
+Vorteile:
+- ruhigeres Erscheinungsbild (weniger "nervös")
+- weniger Bitrate benötigt
+- ein gewisser positiver Effekt auf Detail das aufgrund der Schärfung zu Aliasing neigt
+- weichere Bewegungen verglichen mit reinem Schärfen, weil Kanten mit Bewegungsunschärfe weniger geschärft werden
+- weniger Artefakte in bewegten Bereichen
+- LimitedSharpen kann schneller laufen, weil weniger SuperSampling benötigt wird
+- sollte nur helfen, nie schaden
+
+Nachteile:
+- Insgesamt eine Reduzierung des Schärfungs-Effektes, was aber durch ein Verstärken des Schärfers ausgeglichen werden kann
+
+=====
+
+Syntax:
+
+Soothe( [geschärft], [ungeschärft], keep )
+
+"keep" ist eine Ganzzahl, von 0 - 100, die einstellt wieviel von der ursprünglichen Schärfung mindestens behalten wird (in Prozent).
+Standard ist keep=24.
+
+=====
+
+Beispiel:
+
+Wenn wir LimitedSharpenFaster() als Schärfer benutzen und mindestens 20% von seinem Ergebnis behalten wollen:
+
+dull = last
+sharp = dull.LimitedSharpenFaster( ss_x=1.0, ss_y=1.0, strength=75, overshoot=1 )
+
+Soothe( sharp, dull, 20 )
+
+=====
+
+Anmerkung:
+
+Soothe() arbeitet ausschließlich auf der Luma-Ebene. Die Chroma-Ebenen werden unverändert vom ungeschärften Originalclip übernommen.

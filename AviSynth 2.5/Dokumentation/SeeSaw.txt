@@ -1,0 +1,54 @@
+============================
+ SeeSaw v0.3e (02 Jan 2006)
+============================
+===
+required plugins:
+
+Masktools.dll -> http://manao4.free.fr/MaskTools-v1.5.8.zip
+Repair.dll from RemoveGrain 0.9 (!) -> www.RemoveGrain.de.tf
+RemoveGrain.dll from RemoveGrain 1.0 pre -> http://home.arcor.de/kassandro/RemoveGrain/RemoveGrain.rar
+===
+default call:
+
+sourceCLP = last
+denoisedCLP = sourceCLP.Denoiser()	#Denoiser() = e.g. LTSLP(), LRemoveDust...
+
+SeeSaw( sourceCLP, denoised=denoisedCLP, NRlimit=2, NRlimit2=3, Sstr=1.5, Slimit=4, 
+ \	Spower=4, SdampLo=5, SdampHi= 24, Szp=18, bias=49, sootheT=49, sootheS=0, 
+ \	ssx=1.0, ssy=1.0)	#Smode=???
+===
+description:
+
+This function provides a (simple) implementation of the "crystality sharpen" principle.
+In conjunction with a user-specified denoised clip, the aim is to enhance
+weak detail, hopefully without oversharpening or creating jaggies on strong
+detail, and produce a result that is temporally stable without detail shimmering, 
+while keeping everything within reasonable bitrate requirements.
+This is done by intermixing source, denoised source and a modified sharpening process,
+in a seesaw-like manner.
+
+This version is considered alpha.  
+
+You're very much encouraged to feed your own custom denoised clip into SeeSaw.
+If the "denoised" clip parameter is omitted, a simple "spatial pressdown" filter is used.
+
+Fiddled together by Didée, for your pleasure.
+===
+parameters:
+
+# ssx      = default(1.0)	# supersampling factor x  /  SeeSaw doesn't require supersampling urgently. 
+# ssy      = default(1.0)	# supersampling factor y  /  if at all, small values ~1.25 seem to be enough.
+# NRlimit  = default(2)		# absolute limit for pixel change by denoising
+# NRlimit2 = default(NRlimit+1)	# limit for intermediate denoising
+# Sstr     = default(1.5)	# Sharpening strength (don't touch this too much)
+# Slimit   = default(NRlimit+2)	# positive: absolute limit for pixel change by sharpening
+				# negative: pixel's sharpening difference is reduced to diff=pow(diff,1/abs(limit))
+# Spower   = default(4)		# exponent for modified sharpener
+# Szp      = default(16+2)	# zero point - below: overdrive sharpening - above: reduced sharpening
+# SdampLo  = default(Spower+1)	# reduces overdrive sharpening for very small changes
+# SdampHi  = default(24)	# further reduces sharpening for big sharpening changes. Try 15~30. "0" disables.
+# bias     = default(49)	# bias towards detail ( >= 50 ) ,  or towards calm result ( < 50 )
+# Smode    = default(ssx<1.35 ? 11 : ssx<1.51 ? 20 : 19 )
+# sootheT  = default(49)	# 0=minimum, 100=maximum soothing of sharpener's temporal instableness.
+				# (-100 .. -1 : will chain 2 instances of temporal soothing.)
+# sootheS  = default(0)		# 0=minimum, 100=maximum smoothing of sharpener's spatial effect.

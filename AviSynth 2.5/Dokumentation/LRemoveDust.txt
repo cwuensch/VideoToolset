@@ -1,0 +1,26 @@
+=============
+ LRemoveDust
+=============
+===
+Benötigte Plugins:
+
+RemoveGrain.dll von RemoveGrain 1.0 pre -> http://home.arcor.de/kassandro/RemoveGrain/RemoveGrain.rar
+Repair.dll von RemoveGrain 0.9 (!) -> http://www.removegrain.de.tf/
+Masktools.dll -> http://manao4.free.fr/MaskTools-v1.5.8.zip
+SSETools.dll von RemoveGrain 0.9 -> http://www.removegrain.de.tf/
+===
+Standardaufruf:
+
+LRemoveDust_mt:
+LRemoveDust(4, limit=4, limitC=0)
+
+LRemoveDust_SSEt:
+LRemoveDust(4, 2, limit=4, limitU=255)
+===
+Beschreibung:
+
+Keine vorhanden
+===
+Parameter:
+
+Keine vorhanden

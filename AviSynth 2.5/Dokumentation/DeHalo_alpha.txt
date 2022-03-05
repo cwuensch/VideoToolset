@@ -1,0 +1,33 @@
+==============
+ DeHalo_alpha
+==============
+===
+Benötigte Plugins:
+
+DeHalo_alpha_mt2:
+mt_Masktools.dll -> http://manao4.free.fr
+Repair.dll von RemoveGrain 0.9 (!) -> www.RemoveGrain.de.tf
+===
+Standartaufruf:
+
+DeHalo_alpha(rx=2.0, ry=2.0, darkstr=1.0, brightstr=1.0, lowsens=50, highsens=50, ss=1.5)
+===
+Beschreibung:
+
+Die folgende 'Proof-of-Concept'-Funktion benutzt eine Methode die ich schon längere Zeit im Kopf hatte, aber nie ausprobierte ... denn als ich darüber grübelte dachte ich immer "Neee... Das kann so nicht funktionieren". Nun, ich hätte es früher ausprobieren sollen ... dies ist wahrscheinlich nicht der schlechteste Halo-Entferner den man je gesehen hat.
+
+Momentan gibt es die folgenden Parameter:
+
+- rx, ry [float, 1.0 ... 2.0 ... ~3.0]
+Wie üblich, der Radius der Halo-Entfernung
+Anmerkung: Diese Funktion ist eher sensibel bezüglich des Radiuses. Setze ihn so niedrig wie möglich!
+Wenn der Radius zu hoch gesetzt wird, werden kleine Punkte übersehen.
+
+- darkkstr, brightstr [float, 0.0 ... 1.0] [<0.0 und >1.0 möglich]
+Der Stärke Faktor mit dem helle und dunkle Halos bearbeitet werden. Standard ist 1.0 für eine symmetrische Bearbeitung. Bei Comic/Anime mag  darkstr=0.4~0.8 manchmal besser sein ... manchmal. Im Allgemeinen scheint die Funktion dunkle Linien recht gut zu bewahren.
+
+- lowsens, highsens [int, 0 ... 50 ... 100]
+Sensibilitäts Einstellung, nicht einfach das exakt zu beschreiben ... in einem Sinn definieren sie ein Fenster dazwischen wie schwach ein Effekt sein muss um völlig akzeptiert zu werden und wie stark ein Effekt sein muss um voll verworfen zu werden. Sandartwerte sind 50 und 50 ... probiers aus und schaus dir an.
+
+- ss [float, 1.0 ... 1.5 ...]
+Supersampling Faktor, um die Entstehung von Aliasing (Treppchen) zu verhindern.

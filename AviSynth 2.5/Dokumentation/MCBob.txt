@@ -1,0 +1,55 @@
+=============
+ MCBob v0.3c
+=============
+===
+required plugins:
+
+MVTools -> http://www.avisynth.org/fizick/mvtools/
+mt_Masktools.dll -> http://manao4.free.fr
+EEDI2 -> http://www.missouri.edu/~kes25c/
+Repair.dll from RemoveGrain 0.9 (!) -> www.RemoveGrain.de.tf
+RemoveGrain.dll from RemoveGrain 1.0 pre -> http://home.arcor.de/kassandro/RemoveGrain/RemoveGrain.rar
+ReduceFlicker.dll -> http://www.ReduceFlicker.de.tf/
+MedianBlur.dll -> http://www.avisynth.org/tsp/
+vinverse.dll -> http://bengal.missouri.edu/~kes25c/vinverse.zip
+
+===
+default call:
+MCBob(	EdiPre=1.0, EdiPost=1, blocksize=16, MEdepth=2, sharpness=1.0, mtnmode=0, \
+	mtnth1=0.20, mtnth2=0.40, errth1=0.40, errth2=0.60, MEspatNR=0.00, MEtempNR=0.00)
+
+===
+description:
+
+Another approach to motion compensated bobbing, build by Didée.
+  ( Between-all-chairs version with some quick hacks )
+  ( v0.3c: as stated above, but worse ;-) )
+
+Features:
+
+- No residual combing, due to STT (Shape Transposition Technology)
+- Works without thresholds (with adaptive thresholds instead of fixed ones)
+- Motion Search between fields of same parity, for maximum flicker/bob reduction in motion areas
+- Motion Masking adaptive to local complexity, for maximum flicker/bob reduction in static areas
+- spatial Interpolation overweights spatio-temporal interpolation
+  ( in areas where the information obtained from temporal neighbors in itself was only
+    spatially interpolated, use a mix of spatial and spatio-temporal interpolation )
+- error correction for temporal interpolation is fully self adaptive
+
+===
+parameters:
+
+# EdiPre    = ( 1.0 )	#  What bob to start with: 0.0 = dumbbob, 1.0 = EEdiBob, inbetween = mix of both
+# EdiPost   = ( 1 )	#  0 = no EEDI PP / 1 = Framesized EEdi PP / Average two Fieldbased EEdi PP's
+# blocksize = ( 16 )	#  Blocksize for motion search
+# MEdepth   = ( 2 )	#  Search effort of motion search
+# sharpness = ( 1.0 )	#  use slight sharpening before STT routine
+# mtnmode   = ( 0 )	#  0 = use only same-parity motion check, 1|2 use an additional 
+			#  inter-parity check: 1 = on vertical edges / 2 = not on horizontal edges
+# mtnth1    = ( 0.20 )	#  below this %age of local min/max is static
+# mtnth2    = ( 0.40 )	#  above this %age of local min/max is motion
+# errth1    = ( 0.40 )	#  similar for error detection
+# errth2    = ( 0.60 )	#  of motion interpolation errors
+# MEspatNR  = ( 0.00 )	#  amount of spatial NR (for motion search only)
+# MEtempNR  = ( 0.00 )	#  amount of temporal NR (for motion search only)
+

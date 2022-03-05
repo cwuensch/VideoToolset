@@ -1,0 +1,335 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0072)http://students.washington.edu/ldubb/computer/Read_Me_Peach_Smoother.htm -->
+<HTML><HEAD><TITLE>AVISynth — Peach Smoother Filter</TITLE><!-- #BeginTemplate "/Templates/dtvnormal.dwt" --><!-- #BeginEditable "doctitle" --><!-- #EndEditable -->
+<META http-equiv=Content-Type content="text/html; charset=iso-8859-1">
+<STYLE type=text/css>P {
+	FONT-SIZE: 10pt; FONT-FAMILY: Arial, Helvetica, sans-serif
+}
+.bottommenu {
+	FONT-SIZE: 8pt; FONT-STYLE: normal; FONT-FAMILY: Arial, Helvetica, sans-serif; TEXT-DECORATION: none
+}
+H3 {
+	FONT-WEIGHT: bold; FONT-SIZE: 10pt; FONT-STYLE: normal; FONT-FAMILY: Arial, Helvetica, sans-serif
+}
+H1 {
+	FONT-WEIGHT: bold; FONT-SIZE: 18pt; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif
+}
+LI {
+	FONT-SIZE: 10pt; FONT-FAMILY: Arial, Helvetica, sans-serif
+}
+H2 {
+	FONT-WEIGHT: bold; FONT-SIZE: 14pt; FONT-FAMILY: Arial, Helvetica, sans-serif
+}
+OL {
+	FONT-SIZE: 10pt; FONT-FAMILY: Arial, Helvetica, sans-serif
+}
+BLOCKQUOTE {
+	FONT-SIZE: 10pt; FONT-FAMILY: Arial, Helvetica, sans-serif
+}
+PRE {
+	FONT-SIZE: 9pt; FONT-FAMILY: "Courier New", Courier, mono
+}
+UL {
+	FONT-SIZE: 10pt; FONT-FAMILY: Arial, Helvetica, sans-serif
+}
+</STYLE>
+
+<META content="Microsoft FrontPage 5.0" name=GENERATOR></HEAD>
+<BODY bgColor=#ffffff>
+<TABLE cellSpacing=0 cellPadding=0 width="100%" border=0>
+  <TBODY>
+  <TR>
+    <TD width=160 height=1><IMG height=1 
+      src="spacer.gif" width=1></TD>
+    <TD width=342 height=1><IMG height=1 
+      src="spacer.gif" width=1></TD>
+    <TD width=501 height=1><IMG height=1 
+      src="spacer.gif" width=1></TD></TR>
+  <TR>
+    <TD width=160><A href="http://avisynth.org/">
+    <IMG alt="AVISynth Logo" 
+      src="avisynth-logo.gif" border=0 width="527" height="137"></A></TD>
+    <TD vAlign=bottom align=right colSpan=2><FONT 
+      face="Verdana, Arial, Helvetica, sans-serif" size=5><B><!-- #BeginEditable "Page%20Title" -->Peach Smoother <!-- #EndEditable --></B></FONT></TD></TR>
+  <TR align=right bgColor=#ffcc00>
+    <TD colSpan=3><IMG height=2 
+      src="yellowspacer.gif" 
+    width="100%"></TD></TR>
+  <TR>
+    <TD colSpan=3>
+      <P> </P></TD></TR>
+  <TR>
+    <TD colSpan=3><!-- #BeginEditable "Text" -->
+      <P>This is yet another filter which cleans up the picture, averaging out 
+      visual noise between and within frames. </P>
+      <P>The Peach is designed to cope with the oddities of broadcast TV. It 
+      automatically fine tunes itself for good or poor quality signal and 
+      reception, and can even deal reasonably with some kinds of interference. 
+      It’s spiffy! </P>
+      <P>The filter examines the image, infers the amount of noise in the 
+      picture, and uses that estimate to determine how to cancel the noise. To 
+      differentiate between noise and motion, the filter makes use of 
+      correlations within and between fields as well as local color differences. 
+      The degree of certainty about motion, noise, and detail is used to decide 
+      what mix of the previous, current, and nearby colors to show. </P>
+      <P>To use the Peach, your computer will have to be able to run SSE 
+      instructions. In English, that means you will need to have a Pentium 3, 
+      Athlon, later Celeron, or any more recent processor. </P>
+      <P>This filter works in the YUY2 colorspace. So if your clip is encoded as 
+      RGB colors, you’ll first need to process it with ConvertToYUY2(). </P>
+      <P>The Peach Smoother AVISynth filter was written by Lindsey Dubb, 
+      copyright 2002. If you have any questions, comments, problems, or 
+      suggestions, you are welcome to <A 
+      href="mailto:lindsey@alumni.caltech.edu">send me an email</A> or post to 
+      Doom9’s <A 
+      href="http://forum.doom9.org/forumdisplay.php?s=&amp;forumid=33">AVISynth 
+      Forum</A>. 
+      <HR>
+
+      <P><B><FONT face=Arial size=4>The Settings </FONT></B></P>
+      <P><B><FONT face=Arial color=#993300>NoiseReduction </FONT></B><BR><I>An 
+      integer from 1 to 200; 35 by default </I></P>
+      <P>Sometimes the filter doesn’t know whether change in the picture comes 
+      from noise or motion. When that happens, there’s a tradeoff&nbsp;— Guess 
+      motion, and the picture will be noisier if you’re wrong. Guess noise, and 
+      a mistake will blur the movement. </P>
+      <P>The <FONT color=#993300>NoiseReduction</FONT> setting lets you tell the 
+      filter how to make this tradeoff. Set it low, and the computer will play 
+      it safe, avoiding any parts of the image which might be in motion. Set it 
+      high, and noise will be greatly reduced&nbsp;— at the cost of blurring and 
+      loss of detail in slowly moving areas. This tradeoff is affected by the 
+      amount of noise&nbsp;— The more noise there is in the image, the more 
+      blurring will be necessary in order to reduce it. </P>
+      <P>There’s no perfect way to choose this&nbsp;— Just try different values 
+      until it looks as nice as possible. Comedies and dramas are probably the 
+      best material for picking settings, since facial close-ups make any 
+      blurring really easy to see. (That’s because we’re especially good at 
+      seeing distortion in faces.) </P>
+      <P>Remember that this filter automatically adjusts for the amount of noise 
+      in the picture. So once you have a setting you like, you can use it for 
+      both clean and noisy video. </P>
+      <P>However, there are two kinds of video which deserve some special 
+      consideration: cartoons and sports. With cartoons, you can use a much 
+      higher <FONT color=#993300>NoiseReduction</FONT>, since animation tends to 
+      have less fine detail. And with sports (or any other show with constant 
+      motion), there is very little to gain from a noise filter, so you can just 
+      skip it. </P>
+      <P>Before you fine tune this setting, make sure that the filter has been 
+      able to estimate the noise in your clip. To do so, make use of the <FONT 
+      color=#993300>Dot</FONT>, described below. </P>
+      <P><B><FONT face=Arial color=#993300>Stability </FONT></B><BR><I>An 
+      integer from -100 to 100; 20 by default </I></P>
+      <P>This setting tells the filter how much to mix colors when it is 
+      uncertain about whether there is motion. To preserve a small amount of 
+      noise throughout the picture, decrease this setting. To get a really solid 
+      looking picture, use a higher value. Don’t set it too high, though, or 
+      you’ll get posterization. </P>
+      <P>Regardless of your <FONT color=#993300>Stability</FONT> setting, the 
+      filter will always preserve a certain amount of variation in order to 
+      maintain the color depth of the original image. </P>
+      <P><B><FONT face=Arial color=#993300>DoSpatial </FONT></B><BR><I>A 
+      boolean; TRUE by default </I></P>
+      <P>This setting decides whether you want the filter to use spatial 
+      smoothing. It’s a very subtle smoother, and is used mostly in low 
+      contrast, moving parts of the picture. The filter is somewhat faster when 
+      spatial filtering is turned off. </P>
+      <P><B><FONT face=Arial color=#993300>Spatial </FONT></B><BR><I>An integer 
+      from 0 to 400; 100 by default </I></P>
+      <P>This determines how much spatial smoothing to use. It’s measured in 
+      percent, relative to the amount of temporal smoothing. But the Peach 
+      prefers to use temporal smoothing whenever possible, so the spatial 
+      smoothing only kicks in when temporal smoothing fails. </P>
+      <P><B><FONT face=Arial color=#993300>Dot </FONT></B><BR><I>A boolean; 
+      FALSE by default </I></P>
+      <P>It’s... a small green dot! </P>
+      <P>With this option, a tiny green dot will appear when the filter’s 
+      estimate of the noise is confirmed by the current picture. It will show up 
+      near the upper left of the screen&nbsp;— specifically 16 down and 16 
+      across from the upper left corner. The dot is an indication that the 
+      filter has settled on a noise value. In general, it will turn off when all 
+      of the picture is in rapid motion&nbsp;— When there’s too much motion, the 
+      filter tends not to believe the current estimate. In that case, the filter 
+      makes do by weighting previous good values. </P>
+      <P>If the picture is constantly in motion, it’ll take a while before the 
+      filter can figure out the noise level. Interference also tends to make 
+      noise estimation take longer&nbsp;— The estimation time depends on the 
+      kind and amount of the interference. </P>
+      <P><B><FONT face=Arial color=#993300>Readout </FONT></B><BR><I>A boolean; 
+      FALSE by default </I></P>
+      <P>To help decide how much to smooth, this filter measures the noise in 
+      the video. When you enable <FONT color=#993300>Readout</FONT>, these 
+      measurements will be shown in the output. </P>
+      <P>You will see two numbers. The first one is a measurement of the mean 
+      noise level. The second is a measure of the lowest amount of noise seen 
+      anywhere in the picture. That provides some idea about how much noise 
+      varies in the video. These estimates will adjust as the video progresses. 
+      </P>
+      <P>The numbers are measured as the expected absolute change in a single 
+      pixel (counting both chroma and luma) between two adjacent frames. </P>
+      <P>This provides an objective measurement of noise. It is also the way to 
+      figure out values for the <FONT color=#993300>NoiseLevel</FONT> and <FONT 
+      color=#993300>Baseline</FONT> options, described below. </P>
+      <P><B><FONT face=Arial color=#993300>NoiseLevel and Baseline 
+      </FONT></B><BR><I>Two settings&nbsp;— each is a floating point number from 
+      0.0 to 100.0; Unused by default </I></P>
+      <P>Rather than estimate the noise level, you can tell the Peach exactly 
+      how much noise there is in the picture. </P>
+      <P>To do so, choose values for both <FONT color=#993300>NoiseLevel</FONT> 
+      and <FONT color=#993300>Baseline</FONT>. To get these values, use the 
+      <FONT color=#993300>Readout</FONT> option, described above. Note that 
+      <FONT color=#993300>Baseline</FONT> should never be more than <FONT 
+      color=#993300>NoiseLevel</FONT>. </P>
+      <P>Why would you want to specify these numbers? Because the Peach can take 
+      a while to figure out the amount of noise. And on rare occasions it can be 
+      badly mislead. (This is usually caused by scenes with smoke and dust 
+      clouds, which the Peach can mistakenly identify as noise.) By specifying 
+      the noise values, the estimate will never waver. Skipping noise estimation 
+      also makes things run a little faster. </P>
+      <P>On the other hand, some video really does have changing amounts of 
+      noise. In that case, you’ll be much better off with the Peach’s usual 
+      noise detection. </P>
+      <P><B><FONT face=Arial color=#993300>ShowMotion </FONT></B><BR><I>A 
+      boolean; FALSE by default </I></P>
+      <P>This is another obscure diagnostic. When this is turned on, the filter 
+      will interleave its estimate of whether motion is occuring. White areas 
+      are definitely motion, black areas are definitely stationary. Gray areas 
+      are gray areas. </P>
+      <P><B><FONT face=Arial color=#993300>Debug </FONT></B><BR><I>A boolean; 
+      FALSE by default </I></P>
+      <P>This option is only meant for the stout of heart. For an explanation of 
+      its output, see the comments toward the bottom of <A 
+      href="http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/deinterlace/DScaler/Plugins/FLT_AdaptiveNoise/">FLT_AdaptiveNoise.c 
+      </A>. </P>
+      <HR>
+
+      <P><B><FONT face=Arial size=4>About the Peach </FONT></B></P>
+      <P><B><FONT face=Arial>How much noise reduction should I use? 
+      </FONT></B></P>
+      <P>Let your eyes be the judge. I like to keep the settings pretty 
+      low&nbsp;— Blurred faces look worse than a little static. </P>
+      <P>Surprisingly, small amounts of color variation can sometimes improve an 
+      image. By switching back and forth between colors, the picture is able to 
+      give the impression of a color somewhere in between them. Also, noise can 
+      break up artifactual patterns in the picture, making it easier for you to 
+      ignore the errors. </P>
+      <P>With that in mind, the Peach tries to preserve a small amount of color 
+      variation. As a result, it will never give you a completely stable 
+      picture. This is probably bad for compression, but it does improve picture 
+      quality. </P>
+      <P><B><FONT face=Arial>I’m seeing lots of blurring in early parts of my 
+      constant motion (or very dark) video. What should I do to improve the 
+      results? </FONT></B></P>
+      <P>If you’re seeing lots of blurring, try using the <FONT 
+      color=#993300>Dot</FONT> option. If the green dot doesn’t show up, then 
+      the problem is that the Peach wasn’t able to figure out how much noise 
+      there was. </P>
+      <P>There are a couple ways to solve this. The best is to turn on the <FONT 
+      color=#993300>Readout</FONT> option, and watch a later part of the video 
+      where the picture is still. Make a note of the <FONT 
+      color=#993300>NoiseLevel</FONT> and <FONT color=#993300>Baseline</FONT> 
+      from that stationary part. Then specify them in your command, and the 
+      whole sequence should look fine. </P>
+      <P>If your video doesn’t have any stationary parts, then you should just 
+      skip this filter. A temporal smoother isn’t going to do much good for pure 
+      high motion material. </P>
+      <P>Another way to solve this problem is to put some still video (from the 
+      same clip) at the beginning of the sequence. That will allow the Peach to 
+      estimate the noise before the fast stuff shows up. </P>
+      <P><B><FONT face=Arial>The picture looks a little soft. Is there anything 
+      I can do about that? </FONT></B></P>
+      <P>Try reducing the <FONT color=#993300>Stability</FONT> setting. </P>
+      <HR>
+
+      <P><B><A name="Fun With Noise"><FONT face=Arial size=4>Noise in General 
+      </FONT></A></B></P>
+      <P><B><FONT face=Arial>What’s the best way to get rid of noise? 
+      </FONT></B></P>
+      <P>Make sure you have a good signal. Noise can come from cable jumbles, 
+      poor connections, poor power and grounding, poorly designed video input 
+      cards, electrical gadgets (anything from a dimmer switch to various 
+      computer components) or from a bad video source. These issues are all 
+      beyond the scope of this help file. I’d suggest a look at the <A 
+      href="http://www.avsforum.com/">AV Science Forum </A>’s Home Theater 
+      Computers FAQ and board, where these topics are discussed at length. </P>
+      <P><B><FONT face=Arial>Should I use a noise filter? </FONT></B></P>
+      <P>It depends what you’re watching. Sports and nature shows in 
+      general&nbsp;— really anything with lots of moving low contrast 
+      texture&nbsp;— are not handled well by temporal smoothers. That’s because 
+      those textures look a lot like noise. </P>
+      <P>The Peach does well with difficult material, disabling itself where it 
+      detects motion. It causes surprisingly few problems with field sports so 
+      long as the background noise isn’t too bad. But it isn’t perfect&nbsp;— 
+      Road races are especially prone to blurring. When that happens, it’s best 
+      to skip any temporal smoothers. </P>
+      <P>Otherwise, it’s generally worth running a noise filter. </P>
+      <P><B><FONT face=Arial>How many noise filters should I use?</FONT></B> 
+</P>
+      <P>Be very careful about using more than one. Running multiple temporal 
+      noise filters can cause the later filters to have excess confidence in 
+      their noise/motion estimate. That usually leads to posterization, 
+      speckling, and banding. </P>
+      <P>Running a spatial filter after Peach Smoother can still work reasonably 
+      well, since its spatial smoothing is pretty subtle — Just be sure not to 
+      run the spatial filter first. </P>
+      <P><B><FONT face=Arial>Where in my script should I put the noise 
+      filter?</FONT></B> </P>
+      <P>In general, it is best to filter noise as early as possible. This is 
+      especially true for the Peach, since its noise estimation can be thrown 
+      off by some filters. For example, if you subtitle your video, the Peach 
+      may detect the lack of noise in the subtitles. </P>
+      <P>With interlaced material, it is a very good idea to run the filter 
+      before deinterlacing. That’s because good noise reduction can greatly 
+      improve the accuracy of the deinterlacer. 
+      <P>
+      <P>For inverse telecine the situation is harder to judge. But as a rule of 
+      thumb, it is still better to run the noise reduction first. </P>
+      <P>The exception to this rule is comb filtering. Any comb filters should 
+      be run before noise reduction, since the noise filter will otherwise 
+      interpret color crosstalk as motion. </P>
+      <P><B><FONT face=Arial>Can any other tricks help reduce noise? 
+      </FONT></B></P>
+      <P>If you’re using a Bt8x8 card, you can turn off Odd and Even Luma 
+      Peaking. Turning on the card’s Horizontal Filter will reduce noise but 
+      will also lose some detail. </P>
+      <HR>
+
+      <P><B><FONT face=Arial size=4>Filter Changes </FONT></B></P>
+      <P>Version 0.9a — Initial release </P>
+      <P>Version 0.9b — Allowed parameters to be set; Different defaults; 
+      Corrected to deal with Y = 16 black; Additional orange smoke </P>
+      <P>Version 0.9c — Added parameter checking </P>
+      <P>Version 0.9d — Corrected to allow spatial smoothing of more than 100% 
+      </P>
+      <P>Version 0.9e — Filter now turns off when jumping between frames </P>
+      <P>Version 0.9f — Filter now handles interlaced material correctly; The 
+      smoothing option has been rescaled to something closer to a real 
+      percentage; Different defaults; Yet more orange smoke </P>
+      <P>Version 0.9g — Enabled spatial (but not temporal) smoothing when 
+      jumping between frames; Turning off spatial smoothing now improves speed; 
+      enabled prefetching for a speedup; improved parameter handling </P>
+      <P>Version 0.9h — Provided a (legible) onscreen readout of the amount of 
+      noise. Allowed noise values to be supplied by the user. Allowed spatial 
+      smoothing in the first frame. </P>
+      <P>Version 1.0a — Improved determination of amount of spatial smoothing to 
+      use. Improved horizontal correlation code. Improved accuracy of noise 
+      estimate readout. Made temporal color combination closer to the 
+      theoretical goal. (Side effect: you might want to drop your NoiseReduction 
+      by about ten points.) Increased role of spatial correlation in motion 
+      estimates. Changed the name of the Estimates option to Readout. </P>
+      <P>Version 1.0b — Provided a display of the internal motion estimate with 
+      the ShowMotion option. Allowed negative Stability settings. </P>
+      <P>Version 1.0c — Moved the readout a little further from the edge of the 
+      screen. </P><!-- #EndEditable --></TD></TR>
+  <TR>
+    <TD colSpan=3>
+      <P> </P></TD></TR>
+  <TR>
+    <TD colSpan=3></TD></TR>
+  <TR>
+    <TD colSpan=3>
+      <P> </P></TD></TR>
+  <TR bgColor=#ffcc00>
+    <TD colSpan=3>
+      <DIV align=center><IMG height=2 
+      src="yellowspacer.gif" 
+      width="100%"></DIV></TD></TR></TBODY></TABLE><!-- #EndTemplate --></BODY></HTML>

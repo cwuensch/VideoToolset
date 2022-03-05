@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html dir="ltr" lang="en">
+
+<head>
+<link rel="StyleSheet" type="text/css" href="forum.css">
+</head>
+
+<body>
+<div id="post_message_1052870">
+<font size="5">&gt;&gt;&gt;GrainOptimizer 2.01&lt;&lt;&lt;</font><br />
+<br />
+<font size="3">The <b>only</b> temporal-only grain reducer!</font><br />
+<br />
+<b>Needs:</b> Microsoft Visual C++ 2005 Redistributable Package<br />
+<br />
+<b>Simple summary:<br />
+<br />
+This filter &quot;slows down&quot; the progression of grain over time to vastly decrease the bits required to encode that grain.  On a per-frame basis, the filtered clip will look almost exactly the same as the original.<br />
+<br />
+Pros: Huge bitrate drop over unfiltered clip (up to 40-50%+), and often higher image quality due to better bit distribution in encoding.  Keeps the grainy look of the original source.<br />
+<br />
+Cons: Temporal grain pattern isn't exactly the same as the original.  Not as effective at lowering bitrate as a real, strong denoiser, if used alone.  Less effective in very high-motion scenes; doesn't usually have negative effects but doesn't reduce the grain as effectively as in stationary scenes.  Requires a powerful denoiser to input the denoised clip, so while fast alone, it isn't as fast in practice.</b><br />
+<br />
+<b>Full information:</b><br />
+<br />
+One of the main problems with film grain is it is completely uncorrelated with the grain from the previous frame.  This means that in low-detail blocks, such as the background of a frame (usually most of the blocks), the encoder is forced to use intra blocks instead of inter blocks, since the current frame's block is almost completely unrelated to the previous frame's block.<br />
+<br />
+This filter resolves that by removing grain temporally but not spatially, in a manner in which the visual difference between the result and the original is minimal, and not even necessarily a negative difference.  Using a combination of heuristics, it decides which areas of the frame should be acted on, and then which blocks should be retained between frames.  As far as I have found in my testing, no visual artifacts are created by this technique as long as the proper heuristics are used.<br />
+<br />
+This filter is somewhat motion-adaptive but <i>not</i> motion-compensated, and as a result it is quite fast (real-time on SD footage easily, even though it has no assembly code and is completely unoptimized).  However, this also means it is not very effective in moving areas.  This isn't really what the filter was meant to do to begin with though: its goal is to deal with background grain eating up bits, and that's what it does.<br />
+<br />
+The end result is a <i>basically &quot;free&quot; bitrate reduction of up to 50% at the same CRF/QP for high-grain sources</i>, assuming that your bitrate is high enough that the encoder actually does attempt to preserve the grain--this is particularly important in x264, known for decimating grain at all but the lowest CRFs.  Note that theoretically this filter will work for all encoders, not just x264--the benefits aren't as large in non-H.264 codecs, but both VC-1 and Xvid have shown bitrate drops of nearly 25% in my tests.<br />
+<br />
+Note that you should have at least a few bframes and p4x4 blocks enabled to take full advantage of this filter.  If it isn't clear at this point, the GrainOptimizer is intended as a preprocessing algorithm for a video encoder.<br />
+<br />
+<i>Syntax: GrainOptimizer(clip,denoisedclip,blocksize,strength,tdist,minrep)</i><br />
+Colorspaces supported: YV12 only (YUY2 and YV24 are possible in the future, RGB24/32 are not possible without drastically changing the algorithm.)<br />
+<br />
+<i>denoisedclip</i> is the clip used for most of the internal heuristics and as such is very important.  The better the denoiser you use, the better results you will get.  A <b>strong</b> denoiser is recommended--losing details doesn't matter in this case, what matters is temporal stability.  Inspect your denoised output if the filter doesn't seem to be working as well as it should; the denoised clip should have <b>no noticable grain</b> at all for maximum effectiveness.  FFT3DGPU with a very high sigma (10+ for strong grain) + TTempSmooth works quite well, though I assume others like RemoveGrain(19) will work well also.  Note this clip must be YV12.<br />
+<br />
+<i>blocksize</i> is the size of the block (width/height) used for the block retention algorithm.  <i>4 and 8</i> are the values currently supported, and 4 is the recommended default.<br />
+<br />
+<i>strength</i> is by default <i>1</i> and is a decimal value.  Note that as of version 2.0 the strength is automatically determined on a frame-by-frame basis--this number is simply a multiplier for the value determined internally.  Don't change it unless the default has problems.<br />
+<br />
+<i>tdist</i> is the maximum temporal distance, in frames, over which a block can remain static for due to the retention algorithm.  It is by default <i>6</i>: higher values will make the grain seem to move &quot;slower&quot;, and lower values will make it seem to move &quot;faster&quot;.  A value as low as 2 will reduce the effectiveness of the filter somewhat but keep the grain's appearance almost exactly the same as the original.  Higher values result in slower and slower grain, making it appear more like a static dither.<br />
+<br />
+<i>minrep</i> sets the minimum number of grain replacements per macroblock.  This is by default <i>8</i>--higher values result in fewer blocks acted upon but more efficient action on those that are acted upon.  Values cannot be above (256 / Blocksize^2) or below 0.  The old behavior of the program, before this option existed, was equivalent to minrep=0.<br />
+<br />
+<i>Recommended: keep it at 8.  Perhaps different values might be better with other codecs?  Lowering the value will decrease efficiency but might make the result look more grainy.</i><br />
+<br />
+<b>This filter is experimental--report bugs and cases where it creates problems here, but don't complain about it doing so!</b><br />
+<br />
+<a href="http://www.mediafire.com/?5zgnzmp49gl" target="_blank">New version 2.01</a><br />
+<a href="http://www.mediafire.com/?armdydnrwd1" target="_blank">Old version 1.2</a><br />
+<br />
+Version History:<br />
+<br />
+2.01 -- Bugs fixed with 2.0.<br />
+2.0 -- Rewrote over half the code.  It now automatically determines the strength necessary on a frame-by-frame basis, to deal with changing grain patterns.  The biggest change is that it requires a denoised clip as a second input, for much more accurate motion detection.  Chroma option was removed for code simplicity.<br />
+1.2 -- Major improvements.  Randomized starting array, resulting in slightly nondeterministic behavior but no &quot;solid&quot; appearance for the first few frames of an encode.  A lot of improvements were made to considerably lower the bitrate by optimizing specifically for MPEG-4 ASP/AVC encoding styles and dealing with the residual costs of macroblocks.  Additionally quality should be slightly improved, and some quality bugs fixed.  New option added.  Blocksize can now be 8, but is not recommended (though it should work).<br />
+Functional changes: the new version now should decrease bitrate on almost all input sources, including some reduction on already-denoised sources.<br />
+1.11 - Minor algorithm updates<br />
+1.1 - Major bugfix: GrainOptimizer now works correctly on longer sequences.  Chroma heuristic added.<br />
+1.02 - Feature improvement: non-mod16 resolutions now supported.<br />
+1.01 - Minor bugfix: non-mod16 resolutions now correctly result in an error instead of a crash.<br />
+1.0 - Initial Release
+</div>
+</body>
+
+</html>

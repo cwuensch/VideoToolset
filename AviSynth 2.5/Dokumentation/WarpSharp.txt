@@ -1,0 +1,37 @@
+Processing contents
+===================
+Detecting unevenness from brightness 
+Unevenness is gradated 
+To calculate loom value from unevenness, brightness to ahead the loom tertiary interpolation
+
+
+Prescribed form
+===============
+ WarpSharp (clip, int “depth”, int “blur”, int “bump” and float “cubic”)
+ 
+
+Arguments
+=========
+clip: Video clip. 
+depth: Depth of loom. As for default 128. 
+blur: The frequency which gradates unevenness. When it increases, it becomes slow. As for the minimum of 1 times unless it gradates, useless. As for default 3. 
+bump: Threshold at time of unevenness detection. When it increases, efficacy becomes sharp. As for default 128. 
+cubic: Factor of tertiary interpolation. It is not necessary to fumble. As for default - 0.6.
+
+
+Usage example
+=============
+ WarpSharp (128, 3 and 128, -0.6)
+ 
+
+Reference
+=========
+
+The WarpSharp plug in for VirtualDub
+Plug in for VirtualDub which Avery Lee it is the writer of VirtualDub made.
+
+VirtualDub filters - virtualdub.org *1 
+http://www.virtualdub.org/virtualdub_filters
+
+Filters for VirtualDub -- Other Filters and Tools 
+http://neuron2.net/other.html

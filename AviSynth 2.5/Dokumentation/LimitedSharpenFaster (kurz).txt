@@ -1,0 +1,67 @@
+Requires Filters
+================
+MaskTools 1.5x 
+MaskTools2 2a21+ 
+Removegrain 1.0-pre 
+Warpsharp for UnsharpMask 
+
+Description 
+===========
+This should be used as the last filter in a chain if possible, like any sharpener.
+The different Smodes cause different defaults to be used in certain cases, or limit
+the ranges differently. See the source for specifics. 
+
+Smode int (1-4, default 3)
+Sharpen mode: 
+
+1 : UnsharpMask 
+2 : Sharpen 
+3 : Magic. 
+4 : Deep magic. 
+ss_x float = 1.5
+ss_y float = 1.5
+Supersampling when > 1, which reduces aliasing on edges. 
+
+dest_x float = width
+dest_y float = height
+Resize directly to final size, saves a resize step. 
+
+strength int = 160
+Sharpening strength. Limited to 100 in Smode=2. 
+
+radius int (1-10, default 1)
+Radius of UnsharpMask, only used in Smode=1. 
+
+overshoot int = 1
+Brighten light edges by this amount. High values cause excessive haloing. 
+
+undershoot int = 1
+Darken dark edges by this amount. Good for cartoons with strong lines. 
+
+Lmode int (0-3, default 0)
+Lmode: 
+
+0 : No effect 
+1 : Clamp to over/undershoot. 
+3 : Zero over/undershoot on edges. 
+soft int (0-100, default 0)
+Softens the effect of sharpening. -1 will autocalculate a good value. 
+
+edgemode int (-1 to 2, default 0)
+
+
+-1 : shows edges. 
+0 : does nothing. 
+1 : restricts sharpening to edges 
+2 : restricts sharpening to mostly non-edges (I think?) 
+special bool = false
+wide bool = false
+I have no idea, something to do with bright/dark saturation. wide is only used when special=true. 
+
+exborder int (0-16, default 0)
+
+
+Examples
+========
+avisource("Blah.avi")
+LimitedSharpenFaster()

@@ -1,0 +1,27 @@
+LimitedSupport_09Jan06B.dll	nötig für Schärfer LimitedSharpenFaster
+mt_MaskTools_v2.0a32.dll	nötig für Schärfer LimitedSharpenFaster
+RemoveGrain_v10.dll		nötig für Schärfer LimitedSharpenFaster
+
+MaskTools_v1.5.8.dll		nötig für Bildverbesserer iip
+MaskTools_v1.4.16.dll		nötig für Original-Version Bildverbesserer iip (falls nicht funktioniert, dann v1.4.15)
+Undot.dll			nötig für Original-Version Bildverbesserer iip
+RemoveGrain_v10.dll		nötig für modifizierten  Bildverbesserer iip
+WarpSharp.dll			nötig für Bildverbesserer iip
+aWarpSharp.dll			nötig für Bildverbesserer iip
+DustV5.dll			nötig für Bildverbesserer iip
+LoadPluginEx.dll		nötig für Bildverbesserer iip
+
+MaskTools_v1.5.8.dll		nötig für Schärfeanpassung Soothe (evtl. geht auch V2.0)
+
+FixVHSOversharp.dll		sehr guter Halo-Entferner (ohne Bluring)
+
+mt_MaskTools_v2.0a32.dll	nötig für BlindDeHalo3 (eigentlich V1.5.8)
+RemoveGrain_v10.dll		nötig für BlindDeHalo3
+
+mt_MaskTools_v2.0a32.dll	nötig für BlindDeHalo3_mt2
+RemoveGrain_v10.dll		nötig für BlindDeHalo3_mt2
+
+MaskTools_v1.5.8.dll		nötig für DeHalo_alpha
+Repair_v09.dll			nötig für DeHalo_alpha
+
+WarpSharp.dll			Schärfer WarpSharp

@@ -1,0 +1,60 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<link rel="stylesheet" type="text/css" href="../../avisynth.css">
+   <title>ImageWriter Filter</title>
+<!--
+Automatically generated, don't change:
+$Id: imagewriter.htm,v 1.5 2005/07/08 06:49:35 ianb1957 Exp $
+-->
+</head>
+<body>
+<h2><a NAME="ImageWriter"></a>  ImageWriter
+</h2>
+<p><code>ImageWriter</code>(<var>clip, string &quot;file&quot;,
+  int &quot;start&quot;, int &quot;end&quot;,
+  string &quot;type&quot;, bool &quot;info&quot;</var>)
+
+<p><code>ImageWriter</code> (present in limited form in v2.51, full
+  functionality in v2.52) writes frames from a clip as images to your harddisk.
+
+<p><var>file</var> default "c:\": is the path + filename prefix of the saved images.
+  The images have filenames such as:
+  <br>&nbsp;&nbsp;&nbsp;<tt>[path]000000.[type], [path]000001.[type], etc.</tt>
+
+<p><var>start</var> and <var>end</var> are the frame range that will be written.
+  They both default to 0 (where <var>end</var>=0 means last frame).
+
+<p><var>type</var> default "ebmp", is the filename extension and defines the
+  format of the image.<br>The supported values for <var>type</var>, are:
+<tt><br>&nbsp;&nbsp;bmp, dds, ebmp, jpg/jpe/jpeg, pal, pcx, png,
+    <br>&nbsp;&nbsp;pbm/pgm/ppm, raw, sgi/bw/rgb/rgba, tga, tif/tiff</tt>
+
+<p><var>info</var> default false: optionally overlay text progress information
+  on the output video clip, showing whether a file is being written, and if
+  so, the filename (added in <em>v2.55</em>).
+
+<p>Format "ebmp" supports all colorspaces (RGB24, RGB32, YUY2, YV12).&nbsp;
+  The "ebmp" files written from RGB colorspaces are standard BMP files;
+  those produced from YUV formats can probably only be read by AviSynth's
+  <tt><code><a href="imagesource.htm">ImageReader/ImageSource</a></code></tt>.
+  This pair of features allows you to save and reload raw video in any internal format.
+
+<p>For all other formats the input colorspace<u> must be RGB24.</u>
+<p><br>
+<pre># Export the entire clip in the current native AviSynth format
+ImageWriter(&quot;D:\backup-stills\myvideo&quot;)
+
+# Write frame 5 to &quot;C:\000005.PNG&quot;
+ImageWriter(&quot;&quot;, 5, 5, &quot;png&quot;)   
+
+# Write frames 100 to the end to &quot;C:\000100.JPEG&quot;, &quot;C:\000101.JPEG&quot;, etc.
+# Display progress info.
+ImageWriter(start = 100, type = &quot;jpeg&quot;, info = true)
+</pre>
+<p><kbd>$Date: 2005/07/08 06:49:35 $</kbd></p>
+<form><input TYPE="Button" VALUE="Back"
+onClick="history.go(-1)"></form>
+</body>
+</html>

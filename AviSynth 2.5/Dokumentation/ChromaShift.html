@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252">
+	<TITLE>ChromaShift</TITLE>
+	<META NAME="GENERATOR" CONTENT="StarOffice 7  (Win32)">
+	<META NAME="CREATED" CONTENT="20030130;22451626">
+	<META NAME="CHANGED" CONTENT="20031104;20154215">
+</HEAD>
+<BODY LANG="en-GB" DIR="LTR">
+<H2 ALIGN=CENTER STYLE="text-decoration: none; page-break-before: always">
+<FONT FACE="Comic Sans MS, cursive"><FONT SIZE=4><FONT COLOR="#ff0000">Chrom</FONT><FONT COLOR="#00ff00">a</FONT><FONT COLOR="#0000ff">Shift</FONT></FONT></FONT></H2>
+<P STYLE="font-weight: medium"><FONT FACE="Comic Sans MS, cursive"><FONT SIZE=2>This
+filter will shift the chrominance information (C == U and V together)
+or the U or the V separately, by an even number of pixels, in either
+horizontal direction. It can also apply an overall vertical shift of
+the total chrominance information, up or down. This applies to clips
+in YUY2 or YV12 colourspaces.</FONT></FONT></P>
+<P STYLE="font-weight: medium"><FONT FACE="Comic Sans MS, cursive"><FONT SIZE=2>Wilbert
+Dijkhof has kindly modified it so that it can also be used to shift
+Red, Green or Blue colours independantly if the input to the filter
+is in RGB32 colourspace.</FONT></FONT></P>
+<P STYLE="font-weight: medium"><FONT FACE="Comic Sans MS, cursive"><FONT SIZE=2>This
+filter is primarily intended to correct improper colour registration.</FONT></FONT></P>
+<P><A HREF="http://www.geocities.com/siwalters_uk/chromashift26a.zip"><FONT SIZE=2><FONT FACE="Comic Sans MS, cursive">Download
+Version 2.7 for Avisynth 2.5 (inc source)</FONT></FONT></A></P>
+<P><A HREF="http://www.geocities.com/siwalters_uk/chromashift12.zip"><FONT SIZE=2><FONT FACE="Comic Sans MS, cursive">Download
+OldVersion 1.2 for Avisynth 2.0.x</FONT></FONT></A> <FONT SIZE=2><FONT COLOR="#000000">(just
+operates in YUY2 colourspace)</FONT></FONT></P>
+<P><FONT FACE="Comic Sans MS, cursive"><FONT SIZE=2>Example Avisynth
+Syntax<BR><BR><FONT FACE="Courier New, monospace">LoadPlugin(&quot;ChromaShift.dll&quot;)<BR>AVISource(&quot;Test.avi&quot;)<BR>ConvertToYUY2
+# if needed.<BR>ChromaShift(C=-2,L=1)<BR># Shift both U and V info
+left by 2 pixels and down by one line<BR># <FONT COLOR="#000000">Note
+U and/or V cannot be shifted by 1 pixel as each UV pair of values are
+tied to 2 pixels in YUY2 colourspace</FONT></FONT></FONT></FONT></P>
+<P><FONT FACE="Courier New, monospace"><FONT SIZE=2>LoadPlugin(&quot;ChromaShift.dll&quot;)<BR>AVISource(&quot;Test.avi&quot;)<BR>ConvertToRGB32
+# if needed.<BR>ChromaShift(R=-2,G=1)<BR># Shift Red info to the left
+by 2 pixels and Green info to the right by 1 pixel. </FONT></FONT>
+</P>
+<P><FONT FACE="Courier New, monospace"><FONT SIZE=2>LoadPlugin(&quot;ChromaShift.dll&quot;)<BR>AVISource(&quot;Test.avi&quot;)<BR>ConvertToYV12
+# if needed.<BR>ChromaShift(C=-2,L=2)<BR># Shift both U and V info
+left by 2 pixels and down by 2 lines<BR><FONT COLOR="#000000"># Note
+U and/or V cannot be shifted by 1 pixel as each UV pair of values are
+tied to 4 pixels in YV12 colourspace<BR># L cannot be shifted by a
+non-even number of lines in YV12 colourspace for the same reason</FONT></FONT></FONT></P>
+<P><FONT FACE="Comic Sans MS, cursive"><FONT SIZE=2>The full
+parameter list is ChromaShift(clip [,int C] [,int U] [,int V] [,int
+L] [,int R] [,int G] [,int B])</FONT></FONT></P>
+<P><FONT FACE="Comic Sans MS, cursive"><FONT SIZE=2>Any non-even
+parameter value for C, U or V will throw an exception as chrominace
+information is only held once for every 2 pixels in a YUY2 bitmap
+frame. L can be any value in YUY2 colourspace but must be even in
+YV12 colourspace. </FONT></FONT>
+</P>
+<P><FONT FACE="Comic Sans MS, cursive"><FONT SIZE=2>Any value for C,
+U, V or L will give an error if using RGB32 colourspace.</FONT></FONT></P>
+<P><FONT FACE="Comic Sans MS, cursive"><FONT SIZE=2>Any value for R,
+G,orB will give an error if using YUY2 or YV12 colourspace.</FONT></FONT></P>
+<P><FONT SIZE=2><FONT FACE="Comic Sans MS, cursive"><STRONG><FONT SIZE=2><FONT FACE="Comic Sans MS, cursive">Version
+History</FONT></FONT></STRONG> </FONT></FONT>
+</P>
+<P><FONT FACE="Comic Sans MS, cursive"><FONT SIZE=2>4th November -
+V2.7: YV12 handling added.</FONT></FONT></P>
+<P><FONT FACE="Comic Sans MS, cursive"><FONT SIZE=2>4th November -
+V2.6a: RGB handling added in by Wilbert Dijkhof.</FONT></FONT></P>
+<P><FONT FACE="Comic Sans MS, cursive"><FONT SIZE=2>2nd November -
+included missing source code.</FONT></FONT></P>
+<P><FONT FACE="Comic Sans MS, cursive"><FONT SIZE=2>30<SUP>th</SUP>
+January, 2003 &ndash; V2.5 &ndash; re-compiled to work with Avisynth
+2.5.</FONT></FONT></P>
+<P><FONT FACE="Comic Sans MS, cursive"><FONT SIZE=2>14th Sep, 2002 -
+V1.2 - added abilty to shift left as well as right and removed the
+restriction on single use of the C, U or V parameters. Also, added
+the L (Line) parameter to shift vertically. Code speeded up by not
+using a buffered frame.</FONT></FONT></P>
+<P><FONT FACE="Comic Sans MS, cursive"><FONT SIZE=2>13th Sep, 2002 -
+V1.1 - added parameters and control over C,U and V.</FONT></FONT></P>
+<P><FONT FACE="Comic Sans MS, cursive"><FONT SIZE=2>10th Sep, 2002 -
+First release for Avisynth</FONT></FONT></P>
+<P><STRONG><FONT SIZE=2><FONT FACE="Comic Sans MS, cursive">Source
+Code</FONT></FONT></STRONG><FONT SIZE=2><FONT FACE="Comic Sans MS, cursive"><B><BR></B>All
+source code here is provided under the GPL license. This means you
+are free to use and distribute the software and program code for no
+fee.&nbsp; This also means you are free and encouraged to improve and
+expand upon the source code, but only as long as you make your
+modified version also under the GPL, and thus free software with
+access to the source code for anyone. The source code compiles under
+Visual C++ 6.0 with SP4. If there is a problem with the source code
+distribution, please do let me know. </FONT></FONT>
+</P>
+<P><FONT FACE="Comic Sans MS, cursive"><FONT SIZE=2>Please email me
+or post to rec.video.desktop if you have any
+queries/comments/ideas/bug reports</FONT></FONT></P>
+<P><FONT SIZE=2><FONT FACE="Comic Sans MS, cursive">Copyright Simon
+Walters </FONT></FONT><A HREF="mailto:siwalters@hotmail.com"><FONT SIZE=2><FONT FACE="Comic Sans MS, cursive">siwalters@hotmail.com</FONT></FONT></A></P>
+<P><A HREF="fnews.html"><FONT SIZE=2><FONT FACE="Comic Sans MS, cursive">Home</FONT></FONT></A></P>
+</BODY>
+</HTML>

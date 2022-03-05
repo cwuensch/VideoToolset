@@ -1,0 +1,7 @@
+DeBlock.dll			H.264 Deblocking-Algorithmus aus alten MVTools
+				(=Deblock aus DGDecode)
+
+MDeblock.dll			DeBlocker MDeblock
+				(bearbeitet nur Blockgrenzen -> schlecht laut Didée)
+
+DctFilter.dll			nötig für Deblocker Deblock_QED
