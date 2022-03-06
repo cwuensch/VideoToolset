@@ -37,7 +37,7 @@ RUN echo Downloading... \
 
 # Install UTVideo 18.2.1 Codec
 RUN echo Downloading... \
- && powershell -command " (New-Object Net.WebClient).DownloadFile('https://github.com/cwuensch/VideoToolset/raw/master/Codecs/UTVideo/utvideo-18.2.1-win.exe', 'C:\utvideo.exe') " \
+ && powershell -command " (New-Object Net.WebClient).DownloadFile('https://github.com/cwuensch/VideoToolset/raw/master/Codecs/UTVideo/utvideo-13.3.1-win.exe', 'C:\utvideo.exe') " \
  && echo Installing... \
  && 'C:\utvideo.exe' /S" \
  && echo Deleting... \
@@ -46,7 +46,7 @@ RUN echo Downloading... \
 
 # Install AviSynth 2.58
 RUN echo Downloading... \
- && powershell -command " (New-Object Net.WebClient).DownloadFile('https://github.com/cwuensch/VideoToolset/raw/master/Install/AviSynth/AviSynth 2.58 alpha2 (070919).exe', 'C:\AviSynth.exe') " \
+ && powershell -command " (New-Object Net.WebClient).DownloadFile('https://github.com/cwuensch/VideoToolset/raw/master/Install/AviSynth/AviSynth 2.60 (Single Thread).exe', 'C:\AviSynth.exe') " \
  && echo Installing... \
  && 'C:\AviSynth.exe' /S /D='C:\Program Files\AviSynth 2.5'" \
  && echo Deleting... \
@@ -61,9 +61,11 @@ ADD "Windows\SysWOW64\fftw3.dll" "C:\Windows\SysWOW64\"
 
 # Copy VirtualDub2
 RUN echo Downloading... \
- && powershell -command " (New-Object Net.WebClient).DownloadFile('https://github.com/cwuensch/VideoToolset/raw/master/Install/VirtualDub/VirtualDub2_44282.zip', 'C:\VirtualDub.zip') " \
+ && powershell -command " (New-Object Net.WebClient).DownloadFile('https://github.com/cwuensch/VideoToolset/raw/master/Install/VirtualDub/VirtualDub 1.10.4.zip', 'C:\VirtualDub.zip') " \
+ && powershell -command " (New-Object Net.WebClient).DownloadFile('https://github.com/cwuensch/VideoToolset/raw/master/Install/VirtualDub/plugins32.zip', 'C:\plugins32.zip') " \
  && echo Extracting... \
  && powershell -command " Expand-Archive -Path 'C:\VirtualDub.zip' -DestinationPath 'C:\Program Files (x86)\VirtualDub\' " \
+ && powershell -command " Expand-Archive -Path 'C:\plugins32.zip' -DestinationPath 'C:\Program Files (x86)\VirtualDub\plugins32\' " \
  && echo Deleting... \
  && del "C:\VirtualDub.zip"
 
