@@ -1,0 +1,29 @@
+// Fast Recompress source with UTVideo Codec YUY2
+VirtualDub.audio.SetSource(1);
+VirtualDub.audio.SetMode(0);
+VirtualDub.audio.SetInterleave(1,500,1,0,0);
+VirtualDub.audio.SetClipMode(1,1);
+VirtualDub.audio.SetEditMode(1);
+VirtualDub.audio.SetConversion(0,0,0,0,0);
+VirtualDub.audio.SetVolume();
+VirtualDub.audio.SetCompression();
+VirtualDub.audio.EnableFilterGraph(0);
+VirtualDub.video.SetInputFormat(11);
+VirtualDub.video.SetOutputFormat(0);
+VirtualDub.video.SetMode(1);
+VirtualDub.video.SetSmartRendering(0);
+VirtualDub.video.SetPreserveEmptyFrames(0);
+VirtualDub.video.SetFrameRate2(0,0,1);
+VirtualDub.video.SetIVTC(0, 0, 0, 0);
+VirtualDub.video.SetCompression(0x32796c75,0,10000,0);
+VirtualDub.video.SetCompData(4,"BwMAAA==");
+VirtualDub.video.filters.Clear();
+VirtualDub.audio.filters.Clear();
+VirtualDub.subset.Clear();
+//VirtualDub.subset.AddRange(0,130310);
+//VirtualDub.video.SetRange();
+VirtualDub.project.ClearTextInfo();
+// -- $reloadstop --
+VirtualDub.SaveAVI("Video_out.avi");
+VirtualDub.audio.SetSource(1);
+VirtualDub.Close();

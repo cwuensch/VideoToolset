@@ -1,0 +1,154 @@
+;
+; Huffyuv AVI lossless video codec
+;
+; Copyright (c) 2000 Ben Rudiak-Gould
+;
+; inf file for 32bit and 64bit by Christian Wünsch
+;
+[version]
+signature="$CHICAGO$"
+
+
+
+[SourceDisksNames]
+1="Huffyuv AVI lossless video codec", "", 1
+
+[SourceDisksFiles]
+HUFFYUV64.INF=1
+HUFFYUV.DLL=1
+
+[CodecFilesDLL]
+HUFFYUV.DLL
+
+[CodecFilesDLL_Wow64]
+HUFFYUV.DLL
+
+[CodecFilesDLL_x64]
+HUFFYUV.DLL, HuffYUV64\HUFFYUV.DLL
+
+[CodecFilesInf]
+HUFFYUV64.INF
+
+[DestinationDirs]
+CodecFilesDLL = 11
+CodecFilesDLL_x64 = 11
+CodecFilesDLL_Wow64 = 16425
+CodecFilesInf = 17
+
+
+
+[Manufacturer] 
+%CompanyStr% = DVCodec
+
+[DVCodec]
+%CodecNameDescStr% = DefaultInstall, 1
+
+[DVCodec.ntx86]
+%CodecNameDescStr% = DefaultInstall.ntx86, 1
+
+[DVCodec.ntia64]
+%CodecNameDescStr% = DefaultInstall.ntia64, 1
+
+[DVCodec.ntamd64]
+%CodecNameDescStr% = DefaultInstall.ntamd64, 1
+
+
+
+[DefaultInstall]
+CopyFiles = CodecFilesDLL, CodecFilesInf
+AddReg = AddReg_all, AddReg_NT
+UpdateInis=HUF.INIs
+
+[DefaultInstall.ntia64]
+CopyFiles = CodecFilesDLL_Wow64, CodecFilesInf
+AddReg = AddReg_all, AddReg_Wow64
+
+[DefaultInstall.ntamd64]
+CopyFiles = CodecFilesDLL_Wow64, CodecFilesDLL_x64, CodecFilesInf
+AddReg = AddReg_all, AddReg_x64
+
+
+[UnInstall_NT]
+DelFiles = CodecFilesDLL, CodecFilesIni, CodecFilesInf
+DelReg = DelReg_all, DelReg_NT
+
+[UnInstall_Wow64]
+DelFiles = CodecFilesDLL_Wow64, CodecFilesIni, CodecFilesInf
+DelReg = DelReg_all, DelReg_Wow64
+
+[UnInstall_x64]
+DelFiles = CodecFilesDLL_Wow64, CodecFilesDLL_x64, CodecFilesIni, CodecFilesInf
+DelReg = DelReg_all, DelReg_x64
+
+
+[HUF.INIs]
+system.ini, drivers32,, "VIDC.HFYU=huffyuv.dll"
+
+[HUF.INIs.Del]
+system.ini, drivers32, "VIDC.HFYU=hufyuv.dll"
+
+
+[AddReg_all]
+HKLM, SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.HFYU, Driver,, %DLLFileStr%
+HKLM, SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.HFYU, Description,, %CodecNameDescStr%
+HKLM, SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.HFYU, FriendlyName,, %CodecNameDescStr%
+
+
+[AddReg_NT]
+HKLM, Software\Microsoft\Windows NT\CurrentVersion\drivers.desc, %DLLFileStr%,, %CodecNameDescStr%
+HKLM, Software\Microsoft\Windows NT\CurrentVersion\Drivers32, VIDC.HFYU,, %DLLFileStr%
+HKLM, Software\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%, DisplayName,, %CodecUninstallDescStr%
+HKLM, Software\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%, UninstallString,, "rundll32.exe setupapi.dll,InstallHinfSection UnInstall_NT 132 %17%\%InfFileStr%"
+HKLM, Software\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%, NoModify, 0x00010001, 1
+
+[AddReg_Wow64]
+HKLM, Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\drivers.desc, %DLLFileStr%,, %CodecNameDescStr%
+HKLM, Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32, VIDC.HFYU,, %DLLFileStr%
+HKLM, Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%, DisplayName,, %CodecUninstallDescStr_Wow64%
+HKLM, Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%, UninstallString,, "%16425%\rundll32.exe setupapi.dll,InstallHinfSection UnInstall_Wow64 132 %17%\%InfFileStr%"
+HKLM, Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%, NoModify, 0x00010001, 1
+
+[AddReg_x64]
+HKLM, Software\Microsoft\Windows NT\CurrentVersion\drivers.desc, %DLLFileStr%,, %CodecNameDescStr%
+HKLM, Software\Microsoft\Windows NT\CurrentVersion\Drivers32, VIDC.HFYU,, %DLLFileStr%
+HKLM, Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\drivers.desc, %DLLFileStr%,, %CodecNameDescStr%
+HKLM, Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32, VIDC.HFYU,, %DLLFileStr%
+HKLM, Software\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%, DisplayName,, %CodecUninstallDescStr_x64%
+HKLM, Software\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%, UninstallString,, "rundll32.exe setupapi.dll,InstallHinfSection UnInstall_x64 132 %17%\%InfFileStr%"
+HKLM, Software\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%, NoModify, 0x00010001, 1
+
+[DelReg_all]
+HKLM, SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.HFYU, Driver 
+HKLM, SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.HFYU, Description 
+HKLM, SYSTEM\CurrentControlSet\Control\MediaResources\icm\VIDC.HFYU, FriendlyName 
+HKCU, Software\Cedocida
+
+[DelReg_NT]
+HKLM, Software\Microsoft\Windows NT\CurrentVersion\drivers.desc, %DLLFileStr%
+HKLM, Software\Microsoft\Windows NT\CurrentVersion\Drivers32, VIDC.HFYU
+HKLM, Software\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%
+
+[DelReg_Wow64]
+HKLM, Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\drivers.desc, %DLLFileStr%
+HKLM, Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32, VIDC.HFYU
+HKLM, Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%
+
+[DelReg_x64]
+HKLM, Software\Microsoft\Windows NT\CurrentVersion\drivers.desc, %DLLFileStr_x64%
+HKLM, Software\Microsoft\Windows NT\CurrentVersion\Drivers32, VIDC.HFYU
+HKLM, Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\drivers.desc, %DLLFileStr%
+HKLM, Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32, VIDC.HFYU
+HKLM, Software\Microsoft\Windows\CurrentVersion\Uninstall\%UninstallRegKeyStr%
+
+
+[Strings] 
+CompanyStr = "private"
+CodecNameStr = "HUFFYUV" 
+UninstallRegKeyStr = "huffyuv"
+CodecNameDescStr = "Huffyuv lossless codec [HFYU]"
+CodecUninstallDescStr = "Huffyuv lossless codec [HFYU]"
+CodecUninstallDescStr_Wow64 = "Huffyuv AVI lossless video codec (Remove Only)"
+CodecUninstallDescStr_x64 = "Huffyuv AVI lossless video codec (Remove Only)"
+DLLFileStr = "huffyuv.dll"
+DLLFileStr_x64 = "huffyuv.dll"
+InfFileStr = "huffyuv64.inf"

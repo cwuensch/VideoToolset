@@ -1,7 +1,5 @@
 # Ignore a file or directory in the context root named "modules"
-*.exe
-*.zip
-*.cab
-*.msi
+.git*/*
+Codecs/*
+Install/*
 *.avi
-*/*
