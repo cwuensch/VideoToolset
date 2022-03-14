@@ -17,6 +17,7 @@ VirtualDub.video.SetFrameRate2(0,0,1);
 VirtualDub.video.SetIVTC(0, 0, 0, 0);
 VirtualDub.video.SetCompression(0x32796c75,0,10000,0);
 VirtualDub.video.SetCompData(4,"BwMAAA==");
+//VirtualDub.video.SetCompData(4,"BxsAAA==");
 VirtualDub.video.filters.Clear();
 VirtualDub.audio.filters.Clear();
 VirtualDub.subset.Clear();

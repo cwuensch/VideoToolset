@@ -19,17 +19,136 @@ jobs:
     runs-on: windows-2019
 
     steps:
+     - name: kaputt
+       run: rem echo "Kaputt"
+
+#    - name: Checkout repository
+#      uses: actions/checkout@v2
+#
+#    - name: Build Docker container
+#      run: |
+#        docker build -f Dockerfile -t cwuensch/avisynth:2.60 .
+#      
+#    - name: Push Docker container 
+#      run: |
+#        docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+#        docker push cwuensch/avisynth:2.60
+
+  install:
+    name: Install on GitHub runner
+    runs-on: windows-2019
+
+    steps:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Build Docker container
+    - name: Install VC-Runtime
       run: |
-        docker build -f Dockerfile -t cwuensch/avisynth:2.60 .
-      
-    - name: Push Docker container 
+        Start-Process "${{ github.workspace }}\Install\VCRuntime\Visual C++ 2005 Redistribution Pack" -Wait -ArgumentList /q
+        Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2008_x86.exe" -Wait -ArgumentList /q
+        Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2010_x86.exe" -Wait -ArgumentList /q
+        Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2012_x86.exe" -Wait -ArgumentList "/install /quiet"
+        Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2013_x86.exe" -Wait -ArgumentList "/install /quiet"
+        Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2015-2019_x86.exe" -Wait -ArgumentList "/install /quiet"
+        #Start-Process "${{ github.workspace }}\Install\VCRuntime\VC_redist2022_x86.exe" -Wait -ArgumentList "/install /quiet"
+        #Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2012_x64.exe" -Wait -ArgumentList "/install /quiet"
+        #Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2013_x64.exe" -Wait -ArgumentList "/install /quiet"
+        #Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2015-2019_x64.exe" -Wait -ArgumentList "/install /quiet"
+        #Start-Process "${{ github.workspace }}\Install\VCRuntime\VC_redist2022_x64.exe" -Wait -ArgumentList "/install /quiet"
+
+    - name: Install Cedocida DV-Codec (?)
       run: |
-        docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
-        docker push cwuensch/avisynth:2.60
+        echo "Downloading..."
+        (New-Object Net.WebClient).DownloadFile('https://github.com/cwuensch/VideoToolset/raw/master/Codecs/Cedocida 0.2.3 (x64)/cedocida.dll', 'C:\Windows\SysWOW64\cedocida.dll')
+        (New-Object Net.WebClient).DownloadFile('https://github.com/cwuensch/VideoToolset/raw/master/Codecs/Cedocida 0.2.3 (x64)/x64/cedocida.dll', 'C:\Windows\system32\cedocida.dll')
+        echo "Register..."
+        reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\drivers.desc" /v cedocida.dll /d "Cedocida DV Codec" /f
+        reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Drivers32" /v vidc.dvsd /d "cedocida.dll" /f
+        reg add "HKLM\Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\drivers.desc" /v cedocida.dll /d "Cedocida DV Codec" /f
+        reg add "HKLM\Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32" /v vidc.dvsd /d "cedocida.dll" /f
+        reg add "HKLM\SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dvsd" /v Driver /d "cedocida.dll" /f
+        reg add "HKLM\SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dvsd" /v Description /d "Cedocida DV Codec" /f
+        reg add "HKLM\SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dvsd" /v FriendlyName /d "Cedocida DV Codec" /f
+
+    - name: Install UTVideo 13.3.1 Codec
+      run: |
+        echo "Downloading..."
+        (New-Object Net.WebClient).DownloadFile('https://github.com/cwuensch/VideoToolset/raw/master/Codecs/UTVideo/utvideo-13.3.1.zip', 'C:\UTVideo.zip')
+        echo "Extracting..."
+        Expand-Archive -Path 'C:\UTVideo.zip' -DestinationPath 'C:\UTVideo\'
+        echo "Installing..."
+        copy -Force "C:\UTVideo\x64\utv_*.dll" "C:\Windows\system32\"
+        copy -Force "C:\UTVideo\utv_*.dll" "C:\Windows\SysWOW64\"
+        Start-Process 'C:\Windows\SysWOW64\regsvr32.exe' -Wait -ArgumentList '/s C:\Windows\system32\utv_dmo.dll'
+        Start-Process 'C:\Windows\SysWOW64\regsvr32.exe' -Wait -ArgumentList '/s C:\Windows\system32\utv_mft.dll'
+        Start-Process 'C:\Windows\system32\regsvr32.exe' -Wait -ArgumentList '/s C:\Windows\system32\utv_dmo.dll'
+        Start-Process 'C:\Windows\system32\regsvr32.exe' -Wait -ArgumentList '/s C:\Windows\system32\utv_mft.dll'
+        echo "Register..."
+        reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\drivers.desc" /v utv_vcm.dll /d "UTVideo VfW Codec" /f
+        reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Drivers32" /v VIDC.ULRA /d "C:\Windows\system32\utv_vcm.dll" /f
+        reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Drivers32" /v VIDC.ULRG /d "C:\Windows\system32\utv_vcm.dll" /f
+        reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Drivers32" /v VIDC.ULY4 /d "C:\Windows\system32\utv_vcm.dll" /f
+        reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Drivers32" /v VIDC.ULY2 /d "C:\Windows\system32\utv_vcm.dll" /f
+        reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Drivers32" /v VIDC.ULY0 /d "C:\Windows\system32\utv_vcm.dll" /f
+        reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Drivers32" /v VIDC.ULH4 /d "C:\Windows\system32\utv_vcm.dll" /f
+        reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Drivers32" /v VIDC.ULH2 /d "C:\Windows\system32\utv_vcm.dll" /f
+        reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Drivers32" /v VIDC.ULH0 /d "C:\Windows\system32\utv_vcm.dll" /f
+        reg add "HKLM\Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32" /v VIDC.ULRA /d "C:\Windows\system32\utv_vcm.dll" /f
+        reg add "HKLM\Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32" /v VIDC.ULRG /d "C:\Windows\system32\utv_vcm.dll" /f
+        reg add "HKLM\Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32" /v VIDC.ULY4 /d "C:\Windows\system32\utv_vcm.dll" /f
+        reg add "HKLM\Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32" /v VIDC.ULY2 /d "C:\Windows\system32\utv_vcm.dll" /f
+        reg add "HKLM\Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32" /v VIDC.ULY0 /d "C:\Windows\system32\utv_vcm.dll" /f
+        reg add "HKLM\Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32" /v VIDC.ULH4 /d "C:\Windows\system32\utv_vcm.dll" /f
+        reg add "HKLM\Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32" /v VIDC.ULH2 /d "C:\Windows\system32\utv_vcm.dll" /f
+        reg add "HKLM\Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32" /v VIDC.ULH0 /d "C:\Windows\system32\utv_vcm.dll" /f
+        echo "Deleting..."
+        rmdir -Recurse -Force "C:\UTVideo"
+
+    - name: Install AviSynth 2.60
+      run: |
+        echo "Downloading..."
+        (New-Object Net.WebClient).DownloadFile('https://github.com/cwuensch/VideoToolset/raw/master/Install/AviSynth/AviSynth 2.60 (Single Thread).exe', 'C:\AviSynth.exe')
+        echo "Installing..."
+        Start-Process 'C:\AviSynth.exe' -Wait -ArgumentList '/S /D="C:\Program Files\AviSynth 2.5"'
+        echo "Deleting..."
+        del "C:\AviSynth.exe"
+
+    - name: Copy AviSynth folder from GitHub
+      run: |
+        copy -Recurse -Force 'AviSynth 2.5' 'C:\Program Files\'
+        New-Item -Path 'C:\Programme' -ItemType SymbolicLink -Value 'C:\Program Files'
+
+    - name: Copy FFT3 Dlls
+      run: |
+        copy -Force 'Windows\System32 (64bit)\fftw3.dll' 'C:\Windows\System32\'
+        copy -Force 'Windows\SysWOW64\fftw3.dll' 'C:\Windows\SysWOW64\'
+        copy -Force 'Windows\SysWOW64\libfftw3*.dll' 'C:\Windows\SysWOW64\'
+
+    - name: Copy VirtualDub 1.10.4
+      run: |
+        echo "Downloading..."
+        (New-Object Net.WebClient).DownloadFile('https://github.com/cwuensch/VideoToolset/raw/master/Install/VirtualDub/VirtualDub 1.10.4.zip', 'C:\VirtualDub.zip')
+        (New-Object Net.WebClient).DownloadFile('https://github.com/cwuensch/VideoToolset/raw/master/Install/VirtualDub/plugins32.zip', 'C:\plugins32.zip')
+        (New-Object Net.WebClient).DownloadFile('https://github.com/cwuensch/VideoToolset/raw/master/Install/VirtualDub/VirtualDub.reg', 'C:\VirtualDub.reg')
+        echo "Extracting..."
+        Expand-Archive -Path 'C:\VirtualDub.zip' -DestinationPath 'C:\Program Files (x86)\VirtualDub\'
+        Expand-Archive -Path 'C:\plugins32.zip' -DestinationPath 'C:\Program Files (x86)\VirtualDub\plugins32\'
+        New-Item -Path 'C:\Programme\VirtualDub' -ItemType SymbolicLink -Value 'C:\Program Files (x86)\VirtualDub'
+        echo "Registry import..."
+        reg import "C:\VirtualDub.reg"
+        echo "Deleting..."
+        rm -Force "C:\VirtualDub.*"
+        rm -Force "C:\plugins32.zip"
+
+    - name: Set path (unnötig)
+      run: |
+        setx PATH "C:\Program Files (x86)\VirtualDub;%PATH%"
+
+    - name: Start VirtualDub reencoding
+      shell: cmd
+      run: |
+        "C:\Program Files (x86)\VirtualDub\vdub.exe" "${{ github.workspace }}\Demo.avs" /s "${{ github.workspace }}\Recompress_UTVideo.vcf" /x
+        dir
 
   test:
     name: Test Docker container
@@ -39,7 +158,7 @@ jobs:
     steps:
     - name: Start Docker container
       run: |
-        docker run --rm -v ${{ github.workspace }}:C:/source/ --workdir "C:/source" cwuensch/avisynth:2.60 "Demo.avs" /s Recompress_UTVideo.vcf /x
+        docker run --rm -v ${{ github.workspace }}:C:/source/ --workdir "C:/source" cwuensch/avisynth:2.60 " ${{ github.workspace }}\Demo.avs" /s Recompress_UTVideo.vcf /x
 
     - name: Copy build artefact
       uses: actions/upload-artifact@v2
