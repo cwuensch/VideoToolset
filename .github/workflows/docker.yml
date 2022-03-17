@@ -15,24 +15,21 @@ on:
 
 jobs:
   build:
-    name: Build minimal container
+    name: Build Docker container
     runs-on: windows-2019
 
     steps:
-     - name: kaputt
-       run: rem echo "Kaputt"
+     - name: Checkout repository
+       uses: actions/checkout@v2
 
-#    - name: Checkout repository
-#      uses: actions/checkout@v2
-#
-#    - name: Build Docker container
-#      run: |
-#        docker build -f Dockerfile -t cwuensch/avisynth:2.60 .
-#      
-#    - name: Push Docker container 
-#      run: |
-#        docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
-#        docker push cwuensch/avisynth:2.60
+     - name: Build Docker container
+       run: |
+         docker build -f Dockerfile -t cwuensch/avisynth:2.60 .
+
+     - name: Push Docker container 
+       run: |
+         docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+         docker push cwuensch/avisynth:2.60
 
   install:
     name: Install on GitHub runner
@@ -42,25 +39,70 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Install VC-Runtime
+#    - name: Install VC Runtime 2005 (x86)
+#      run: |
+#        Start-Process "${{ github.workspace }}\Install\VCRuntime\Visual C++ 2005 Redistribution Pack" -Wait -ArgumentList /q
+#
+#    - name: Install VC Runtime 2008 (x86)
+#      run: |
+#        Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2008_x86.exe" -Wait -ArgumentList /q
+
+    - name: Install VC Runtime 2010 (x86)
       run: |
-        Start-Process "${{ github.workspace }}\Install\VCRuntime\Visual C++ 2005 Redistribution Pack" -Wait -ArgumentList /q
-        Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2008_x86.exe" -Wait -ArgumentList /q
         Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2010_x86.exe" -Wait -ArgumentList /q
+
+    - name: Install VC Runtime 2012 (x86)
+      run: |
         Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2012_x86.exe" -Wait -ArgumentList "/install /quiet"
+
+    - name: Install VC Runtime 2013 (x86)
+      run: |
         Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2013_x86.exe" -Wait -ArgumentList "/install /quiet"
+
+    - name: Install VC Runtime 2015-2019 (x86)
+      run: |
         Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2015-2019_x86.exe" -Wait -ArgumentList "/install /quiet"
-        #Start-Process "${{ github.workspace }}\Install\VCRuntime\VC_redist2022_x86.exe" -Wait -ArgumentList "/install /quiet"
-        #Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2012_x64.exe" -Wait -ArgumentList "/install /quiet"
-        #Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2013_x64.exe" -Wait -ArgumentList "/install /quiet"
-        #Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2015-2019_x64.exe" -Wait -ArgumentList "/install /quiet"
-        #Start-Process "${{ github.workspace }}\Install\VCRuntime\VC_redist2022_x64.exe" -Wait -ArgumentList "/install /quiet"
+
+#    - name: Install VC Runtime 2022 (x86)
+#      run: |
+#        Start-Process "${{ github.workspace }}\Install\VCRuntime\VC_redist2022_x86.exe" -Wait -ArgumentList "/install /quiet"
+#
+#    - name: Install VC Runtime 2012 (x64)
+#      run: |
+#        Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2012_x64.exe" -Wait -ArgumentList "/install /quiet"
+#
+##    - name: Install VC Runtime 2013 (x64)
+##      run: |
+##        Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2013_x64.exe" -Wait -ArgumentList "/install /quiet"
+#
+#    - name: Install VC Runtime 2015-2019 (x64)
+#      run: |
+#        Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2015-2019_x64.exe" -Wait -ArgumentList "/install /quiet"
+#
+#    - name: Install VC Runtime 2022 (x64)
+#      run: |
+#        Start-Process "${{ github.workspace }}\Install\VCRuntime\VC_redist2022_x64.exe" -Wait -ArgumentList "/install /quiet"
+
+#    - name: Install VC-Runtime (all)
+#      run: |
+#        Start-Process "${{ github.workspace }}\Install\VCRuntime\Visual C++ 2005 Redistribution Pack" -Wait -ArgumentList /q
+#        Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2008_x86.exe" -Wait -ArgumentList /q
+#        Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2010_x86.exe" -Wait -ArgumentList /q
+#        Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2012_x86.exe" -Wait -ArgumentList "/install /quiet"
+#        Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2013_x86.exe" -Wait -ArgumentList "/install /quiet"
+#        Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2015-2019_x86.exe" -Wait -ArgumentList "/install /quiet"
+#        Start-Process "${{ github.workspace }}\Install\VCRuntime\VC_redist2022_x86.exe" -Wait -ArgumentList "/install /quiet"
+#        Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2012_x64.exe" -Wait -ArgumentList "/install /quiet"
+#        #Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2013_x64.exe" -Wait -ArgumentList "/install /quiet"
+#        Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2015-2019_x64.exe" -Wait -ArgumentList "/install /quiet"
+#        Start-Process "${{ github.workspace }}\Install\VCRuntime\VC_redist2022_x64.exe" -Wait -ArgumentList "/install /quiet"
+
 
     - name: Install Cedocida DV-Codec (?)
       run: |
-        echo "Downloading..."
-        (New-Object Net.WebClient).DownloadFile('https://github.com/cwuensch/VideoToolset/raw/master/Codecs/Cedocida 0.2.3 (x64)/cedocida.dll', 'C:\Windows\SysWOW64\cedocida.dll')
-        (New-Object Net.WebClient).DownloadFile('https://github.com/cwuensch/VideoToolset/raw/master/Codecs/Cedocida 0.2.3 (x64)/x64/cedocida.dll', 'C:\Windows\system32\cedocida.dll')
+        echo "Copying..."
+        copy -Force "${{ github.workspace }}\Codecs\Cedocida 0.2.3 (x64)\cedocida.dll" "C:\Windows\SysWOW64\"
+        copy -Force "${{ github.workspace }}\Codecs\Cedocida 0.2.3 (x64)\x64\cedocida.dll" "C:\Windows\system32\"
         echo "Register..."
         reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\drivers.desc" /v cedocida.dll /d "Cedocida DV Codec" /f
         reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Drivers32" /v vidc.dvsd /d "cedocida.dll" /f
@@ -70,12 +112,46 @@ jobs:
         reg add "HKLM\SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dvsd" /v Description /d "Cedocida DV Codec" /f
         reg add "HKLM\SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dvsd" /v FriendlyName /d "Cedocida DV Codec" /f
 
+    - name: Install HuffYUV 2.1.1 CCE-Patch
+      run: |
+        echo "Extracting..."
+        Expand-Archive -Path "${{ github.workspace }}\Codecs\HuffYUV\HuffYUV64.zip" -DestinationPath "C:\HuffYUV\"
+        echo "Copying..."
+        copy -Force "${{ github.workspace }}\Codecs\HuffYUV\HuffYUV 2.1.1\huffyuv (CCEsp-Patch).dll" "C:\Windows\SysWOW64\huffyuv.dll"
+        copy -Force "C:\HuffYUV\huffyuv.dll" "C:\Windows\system32\"
+        echo "Register..."
+        reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\drivers.desc" /v huffyuv.dll /d "Huffyuv lossless codec [HFYU]" /f
+        reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Drivers32" /v VIDC.HFYU /d "huffyuv.dll" /f
+        reg add "HKLM\Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\drivers.desc" /v huffyuv.dll /d "Huffyuv lossless codec [HFYU]" /f
+        reg add "HKLM\Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32" /v VIDC.HFYU /d "huffyuv.dll" /f
+        reg add "HKLM\SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dvsd" /v Driver /d "huffyuv.dll" /f
+        reg add "HKLM\SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dvsd" /v Description /d "Huffyuv lossless codec [HFYU]" /f
+        reg add "HKLM\SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dvsd" /v FriendlyName /d "Huffyuv lossless codec [HFYU]" /f
+        echo "Deleting..."
+        rmdir -Recurse -Force "C:\HuffYUV"
+
+    - name: Install Lagarith 1.3.14 (64bit)
+      run: |
+        echo "Extracting..."
+        Expand-Archive -Path "${{ github.workspace }}\Codecs\Lagarith\Lagarith 1.3.14 (64-bit).zip" -DestinationPath "C:\Lagarith\"
+        echo "Copying..."
+        copy -Force "C:\Lagarith\lagarith\lagarith32\lagarith.dll" "C:\Windows\SysWOW64\"
+        copy -Force "C:\Lagarith\lagarith\lagarith64\lagarith.dll" "C:\Windows\system32\"
+        echo "Register..."
+        reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\drivers.desc" /v lagarith.dll /d "Lagarith lossless codec [LAGS]" /f
+        reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Drivers32" /v VIDC.LAGS /d "lagarith.dll" /f
+        reg add "HKLM\Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\drivers.desc" /v lagarith.dll /d "Lagarith lossless codec [LAGS]" /f
+        reg add "HKLM\Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32" /v VIDC.LAGS /d "lagarith.dll" /f
+        reg add "HKLM\SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dvsd" /v Driver /d "lagarith.dll" /f
+        reg add "HKLM\SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dvsd" /v Description /d "Lagarith lossless codec [LAGS]" /f
+        reg add "HKLM\SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dvsd" /v FriendlyName /d "Lagarith lossless codec [LAGS]" /f
+        echo "Deleting..."
+        rmdir -Recurse -Force "C:\Lagarith"
+
     - name: Install UTVideo 13.3.1 Codec
       run: |
-        echo "Downloading..."
-        (New-Object Net.WebClient).DownloadFile('https://github.com/cwuensch/VideoToolset/raw/master/Codecs/UTVideo/utvideo-13.3.1.zip', 'C:\UTVideo.zip')
         echo "Extracting..."
-        Expand-Archive -Path 'C:\UTVideo.zip' -DestinationPath 'C:\UTVideo\'
+        Expand-Archive -Path "${{ github.workspace }}\Codecs\UTVideo\utvideo-13.3.1.zip" -DestinationPath "C:\UTVideo\"
         echo "Installing..."
         copy -Force "C:\UTVideo\x64\utv_*.dll" "C:\Windows\system32\"
         copy -Force "C:\UTVideo\utv_*.dll" "C:\Windows\SysWOW64\"
@@ -104,51 +180,50 @@ jobs:
         echo "Deleting..."
         rmdir -Recurse -Force "C:\UTVideo"
 
+
     - name: Install AviSynth 2.60
       run: |
-        echo "Downloading..."
-        (New-Object Net.WebClient).DownloadFile('https://github.com/cwuensch/VideoToolset/raw/master/Install/AviSynth/AviSynth 2.60 (Single Thread).exe', 'C:\AviSynth.exe')
         echo "Installing..."
-        Start-Process 'C:\AviSynth.exe' -Wait -ArgumentList '/S /D="C:\Program Files\AviSynth 2.5"'
-        echo "Deleting..."
-        del "C:\AviSynth.exe"
+        Start-Process '${{ github.workspace }}\Install\AviSynth\AviSynth 2.60 (Single Thread).exe' -Wait -ArgumentList '/S /D="C:\Program Files\AviSynth 2.5"'
 
     - name: Copy AviSynth folder from GitHub
       run: |
-        copy -Recurse -Force 'AviSynth 2.5' 'C:\Program Files\'
+        copy -Recurse -Force '${{ github.workspace }}\AviSynth 2.5' 'C:\Program Files\'
         New-Item -Path 'C:\Programme' -ItemType SymbolicLink -Value 'C:\Program Files'
 
     - name: Copy FFT3 Dlls
       run: |
-        copy -Force 'Windows\System32 (64bit)\fftw3.dll' 'C:\Windows\System32\'
-        copy -Force 'Windows\SysWOW64\fftw3.dll' 'C:\Windows\SysWOW64\'
-        copy -Force 'Windows\SysWOW64\libfftw3*.dll' 'C:\Windows\SysWOW64\'
+        copy -Force "${{ github.workspace }}\Windows\System32 (64bit)\fftw3.dll" "C:\Windows\System32\"
+        copy -Force "${{ github.workspace }}\Windows\SysWOW64\fftw3.dll" "C:\Windows\SysWOW64\"
+        copy -Force "${{ github.workspace }}\Windows\SysWOW64\libfftw3*.dll" "C:\Windows\SysWOW64\"
 
     - name: Copy VirtualDub 1.10.4
       run: |
-        echo "Downloading..."
-        (New-Object Net.WebClient).DownloadFile('https://github.com/cwuensch/VideoToolset/raw/master/Install/VirtualDub/VirtualDub 1.10.4.zip', 'C:\VirtualDub.zip')
-        (New-Object Net.WebClient).DownloadFile('https://github.com/cwuensch/VideoToolset/raw/master/Install/VirtualDub/plugins32.zip', 'C:\plugins32.zip')
-        (New-Object Net.WebClient).DownloadFile('https://github.com/cwuensch/VideoToolset/raw/master/Install/VirtualDub/VirtualDub.reg', 'C:\VirtualDub.reg')
         echo "Extracting..."
-        Expand-Archive -Path 'C:\VirtualDub.zip' -DestinationPath 'C:\Program Files (x86)\VirtualDub\'
-        Expand-Archive -Path 'C:\plugins32.zip' -DestinationPath 'C:\Program Files (x86)\VirtualDub\plugins32\'
+        Expand-Archive -Path '${{ github.workspace }}\Install\VirtualDub\VirtualDub 1.10.4.zip' -DestinationPath 'C:\Program Files (x86)\VirtualDub\'
+        Expand-Archive -Path '${{ github.workspace }}\Install\VirtualDub\plugins32.zip' -DestinationPath 'C:\Program Files (x86)\VirtualDub\plugins32\'
         New-Item -Path 'C:\Programme\VirtualDub' -ItemType SymbolicLink -Value 'C:\Program Files (x86)\VirtualDub'
         echo "Registry import..."
-        reg import "C:\VirtualDub.reg"
-        echo "Deleting..."
-        rm -Force "C:\VirtualDub.*"
-        rm -Force "C:\plugins32.zip"
+        reg import "${{ github.workspace }}\Install\VirtualDub\VirtualDub.reg"
 
     - name: Set path (unnötig)
       run: |
         setx PATH "C:\Program Files (x86)\VirtualDub;%PATH%"
+
+
+    - name: Connect network storage
+      run: |
+        #net use S: \\${{ secrets.STORAGE_USER }}.your-storagebox.de\backup /user:${{ secrets.STORAGE_USER }} ${{ secrets.STORAGE_PASSWORD }}
+        net use I: \\${{ secrets.STORAGE_IN_USER }}.your-storagebox.de\${{ secrets.STORAGE_IN_USER }} /user:${{ secrets.STORAGE_IN_USER }} ${{ secrets.STORAGE_IN_PASSWORD }}
+        net use O: \\${{ secrets.STORAGE_OUT_USER }}.your-storagebox.de\${{ secrets.STORAGE_OUT_USER }} /user:${{ secrets.STORAGE_OUT_USER }} ${{ secrets.STORAGE_OUT_PASSWORD }}
 
     - name: Start VirtualDub reencoding
       shell: cmd
       run: |
         "C:\Program Files (x86)\VirtualDub\vdub.exe" "${{ github.workspace }}\Demo.avs" /s "${{ github.workspace }}\Recompress_UTVideo.vcf" /x
         dir
+        "C:\Program Files (x86)\VirtualDub\vdub.exe" /i "${{ github.workspace }}\Recompress_UTVideo2.vcf" 'U"I:\Schildkröten-6\Kleine Geschichten von wilden Tieren - Die Meeresschildkröte.avs"' 'U"O:\Kleine Geschichten von wilden Tieren - Die Meeresschildkröte [out].avi"' /x
+        dir O:\
 
   test:
     name: Test Docker container
@@ -156,9 +231,16 @@ jobs:
     needs: build
 
     steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
     - name: Start Docker container
       run: |
-        docker run --rm -v ${{ github.workspace }}:C:/source/ --workdir "C:/source" cwuensch/avisynth:2.60 " ${{ github.workspace }}\Demo.avs" /s Recompress_UTVideo.vcf /x
+        $sourcedir = "${{ github.workspace }}" -replace '\\', '/'
+        echo "${sourcedir}"
+        docker run --rm -v ${sourcedir}:C:/source --workdir "C:/source" cwuensch/avisynth:2.60 "C:\source\Demo.avs" /s "C:\Recompress_UTVideo.vcf" /x
+        dir
+        docker run --rm --env STORAGE_IN_PATH="${{secrets.STORAGE_IN_PATH}}" --env STORAGE_IN_USER=${{secrets.STORAGE_IN_USER}} --env STORAGE_IN_PASSWORD=${{secrets.STORAGE_IN_PASSWORD}} --env STORAGE_OUT_PATH="${{secrets.STORAGE_OUT_PATH}}" --env STORAGE_OUT_USER="${{secrets.STORAGE_OUT_USER}}" --env STORAGE_OUT_PASSWORD="${{secrets.STORAGE_OUT_PASSWORD}}" cwuensch/avisynth:2.60 /i "C:\Recompress_UTVideo2.vcf" 'U"I:\Schildkröten-6\Kleine Geschichten von wilden Tieren - Die Meeresschildkröte.avs"' 'U"O:\Kleine Geschichten von wilden Tieren - Die Meeresschildkröte [out].avi"' /x
 
     - name: Copy build artefact
       uses: actions/upload-artifact@v2

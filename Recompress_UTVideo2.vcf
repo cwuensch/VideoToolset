@@ -1,4 +1,5 @@
 // Fast Recompress source with UTVideo Codec YUY2
+VirtualDub.Open(VirtualDub.params[0],"",0);
 VirtualDub.audio.SetSource(1);
 VirtualDub.audio.SetMode(0);
 VirtualDub.audio.SetInterleave(1,500,1,0,0);
@@ -26,6 +27,6 @@ VirtualDub.subset.AddRange(0,VirtualDub.video.length);
 VirtualDub.video.SetRange();
 VirtualDub.project.ClearTextInfo();
 // -- $reloadstop --
-VirtualDub.SaveAVI("Video_out.avi");
+VirtualDub.SaveAVI(VirtualDub.params[1]);
 VirtualDub.audio.SetSource(1);
 VirtualDub.Close();
