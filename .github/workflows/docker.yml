@@ -222,7 +222,7 @@ jobs:
       run: |
         "C:\Program Files (x86)\VirtualDub\vdub.exe" "${{ github.workspace }}\Demo.avs" /s "${{ github.workspace }}\Recompress_UTVideo.vcf" /x
         dir
-        "C:\Program Files (x86)\VirtualDub\vdub.exe" /i "${{ github.workspace }}\Recompress_UTVideo2.vcf" 'U"I:\Schildkröten-6\Kleine Geschichten von wilden Tieren - Die Meeresschildkröte.avs"' 'U"O:\Kleine Geschichten von wilden Tieren - Die Meeresschildkröte [out].avi"' /x
+        "C:\Program Files (x86)\VirtualDub\vdub.exe" "I:\Schildkröten-6\Kleine Geschichten von wilden Tieren - Die Meeresschildkröte.avs" /i "${{ github.workspace }}\Recompress_UTVideo2.vcf" "O:\\Video_out1.avi" /x
         dir O:\
 
   test:
@@ -237,10 +237,9 @@ jobs:
     - name: Start Docker container
       run: |
         $sourcedir = "${{ github.workspace }}" -replace '\\', '/'
-        echo "${sourcedir}"
         docker run --rm -v ${sourcedir}:C:/source --workdir "C:/source" cwuensch/avisynth:2.60 "C:\source\Demo.avs" /s "C:\Recompress_UTVideo.vcf" /x
         dir
-        docker run --rm --env STORAGE_IN_PATH="${{secrets.STORAGE_IN_PATH}}" --env STORAGE_IN_USER=${{secrets.STORAGE_IN_USER}} --env STORAGE_IN_PASSWORD=${{secrets.STORAGE_IN_PASSWORD}} --env STORAGE_OUT_PATH="${{secrets.STORAGE_OUT_PATH}}" --env STORAGE_OUT_USER="${{secrets.STORAGE_OUT_USER}}" --env STORAGE_OUT_PASSWORD="${{secrets.STORAGE_OUT_PASSWORD}}" cwuensch/avisynth:2.60 /i "C:\Recompress_UTVideo2.vcf" 'U"I:\Schildkröten-6\Kleine Geschichten von wilden Tieren - Die Meeresschildkröte.avs"' 'U"O:\Kleine Geschichten von wilden Tieren - Die Meeresschildkröte [out].avi"' /x
+        docker run --rm --env STORAGE_IN_PATH="\\${{secrets.STORAGE_IN_USER}}.your-storagebox.de\${{secrets.STORAGE_IN_USER}}" --env STORAGE_IN_USER=${{secrets.STORAGE_IN_USER}} --env STORAGE_IN_PASSWORD=${{secrets.STORAGE_IN_PASSWORD}} --env STORAGE_OUT_PATH="\\${{secrets.STORAGE_OUT_USER}}.your-storagebox.de\${{secrets.STORAGE_OUT_USER}}" --env STORAGE_OUT_USER="${{secrets.STORAGE_OUT_USER}}" --env STORAGE_OUT_PASSWORD="${{secrets.STORAGE_OUT_PASSWORD}}" cwuensch/avisynth:2.60 "I:\Schildkröten-6\Kleine Geschichten von wilden Tieren - Die Meeresschildkröte.avs" /i "C:\Recompress_UTVideo2.vcf" "O:\\Video_out2.avi" /x
 
     - name: Copy build artefact
       uses: actions/upload-artifact@v2
