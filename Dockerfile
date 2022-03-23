@@ -26,7 +26,7 @@ RUN echo Downloading... \
  && start /w C:\vcredist2015-2019_x64.exe /install /quiet \
  && start /w C:\VC_redist2022_x64.exe /install /quiet \
  && echo Deleting... \
- && del /q "Visual C++ 2005 Redistribution Pack.exe" \
+ && del /q "C:\Visual C++ 2005 Redistribution Pack.exe" \
  && del /q "C:\vcredist*.exe" \
  && del /q "C:\VC_redist2022*.exe"
 
@@ -73,7 +73,7 @@ RUN echo Downloading... \
 # && echo Copying... \
 # && move /y "C:\Lagarith\lagarith\lagarith32\lagarith.dll" "C:\Windows\SysWOW64\" \
 # && move /y "C:\Lagarith\lagarith\lagarith64\lagarith.dll" "C:\Windows\system32\" \
-# && echo Registering... \
+# && echo Register... \
 # && reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\drivers.desc" /v lagarith.dll /d "Lagarith lossless codec [LAGS]" /f \
 # && reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Drivers32" /v VIDC.LAGS /d "lagarith.dll" /f \
 # && reg add "HKLM\Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\drivers.desc" /v lagarith.dll /d "Lagarith lossless codec [LAGS]" /f \
@@ -82,7 +82,8 @@ RUN echo Downloading... \
 # && reg add "HKLM\SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dvsd" /v Description /d "Lagarith lossless codec [LAGS]" /f \
 # && reg add "HKLM\SYSTEM\CurrentControlSet\Control\MediaResources\icm\vidc.dvsd" /v FriendlyName /d "Lagarith lossless codec [LAGS]" /f \
 # && echo Deleting... \
-# && del /s /q "C:\Lagarith"
+# && del /s /q "C:\Lagarith" \
+# && del "C:\Lagarith.zip"
 
 # Install UTVideo 13.3.1 Codec
 RUN echo Downloading... \
@@ -92,7 +93,7 @@ RUN echo Downloading... \
  && echo Copying... \
  && move /y "C:\UTVideo\x64\utv_*.dll" "C:\Windows\system32\" \
  && move /y "C:\UTVideo\utv_*.dll" "C:\Windows\SysWOW64\" \
- && echo Registering... \
+ && echo Register... \
  && start /w C:\Windows\system32\regsvr32.exe /s C:\Windows\system32\utv_dmo.dll \
  && start /w C:\Windows\system32\regsvr32.exe /s C:\Windows\system32\utv_mft.dll \
  && start /w C:\Windows\SysWOW64\regsvr32.exe /s C:\Windows\SysWOW64\utv_dmo.dll \
@@ -115,7 +116,8 @@ RUN echo Downloading... \
  && reg add "HKLM\Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32" /v VIDC.ULH2 /d "utv_vcm.dll" /f \
  && reg add "HKLM\Software\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Drivers32" /v VIDC.ULH0 /d "utv_vcm.dll" /f \
  && echo Deleting... \
- && del /s /q "C:\UTVideo"
+ && del /s /q "C:\UTVideo" \
+ && del "C:\UTVideo.zip"
 
 
 # Install AviSynth 2.60

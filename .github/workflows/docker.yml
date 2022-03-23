@@ -217,13 +217,17 @@ jobs:
         net use I: \\${{ secrets.STORAGE_IN_USER }}.your-storagebox.de\${{ secrets.STORAGE_IN_USER }} /user:${{ secrets.STORAGE_IN_USER }} ${{ secrets.STORAGE_IN_PASSWORD }}
         net use O: \\${{ secrets.STORAGE_OUT_USER }}.your-storagebox.de\${{ secrets.STORAGE_OUT_USER }} /user:${{ secrets.STORAGE_OUT_USER }} ${{ secrets.STORAGE_OUT_PASSWORD }}
 
-    - name: Start VirtualDub reencoding
+    - name: Start VirtualDub reencoding (Demo)
       shell: cmd
       run: |
         "C:\Program Files (x86)\VirtualDub\vdub.exe" "${{ github.workspace }}\Demo.avs" /s "${{ github.workspace }}\Recompress_UTVideo.vcf" /x
         dir
-        "C:\Program Files (x86)\VirtualDub\vdub.exe" "I:\Schildkröten-6\Kleine Geschichten von wilden Tieren - Die Meeresschildkröte.avs" /i "${{ github.workspace }}\Recompress_UTVideo2.vcf" "O:\\Video_out1.avi" /x
-        dir O:\
+
+#    - name: Start VirtualDub reencoding (real)
+#      shell: cmd
+#      run: |
+#        "C:\Program Files (x86)\VirtualDub\vdub.exe" "I:\Schildkröten-6\Kleine Geschichten von wilden Tieren - Die Meeresschildkröte.avs" /i "${{ github.workspace }}\Recompress_UTVideo2.vcf" "O:\\Video_out1.avi" /x
+#        dir O:\
 
   test:
     name: Test Docker container
@@ -234,12 +238,15 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Start Docker container
+    - name: Start Docker container (Demo)
       run: |
         $sourcedir = "${{ github.workspace }}" -replace '\\', '/'
         docker run --rm -v ${sourcedir}:C:/source --workdir "C:/source" cwuensch/avisynth:2.60 "C:\source\Demo.avs" /s "C:\Recompress_UTVideo.vcf" /x
         dir
-        docker run --rm --env STORAGE_IN_PATH="\\${{secrets.STORAGE_IN_USER}}.your-storagebox.de\${{secrets.STORAGE_IN_USER}}" --env STORAGE_IN_USER=${{secrets.STORAGE_IN_USER}} --env STORAGE_IN_PASSWORD=${{secrets.STORAGE_IN_PASSWORD}} --env STORAGE_OUT_PATH="\\${{secrets.STORAGE_OUT_USER}}.your-storagebox.de\${{secrets.STORAGE_OUT_USER}}" --env STORAGE_OUT_USER="${{secrets.STORAGE_OUT_USER}}" --env STORAGE_OUT_PASSWORD="${{secrets.STORAGE_OUT_PASSWORD}}" cwuensch/avisynth:2.60 "I:\Schildkröten-6\Kleine Geschichten von wilden Tieren - Die Meeresschildkröte.avs" /i "C:\Recompress_UTVideo2.vcf" "O:\\Video_out2.avi" /x
+
+#    - name: Start Docker container (real)
+#      run: |
+#        docker run --rm --env STORAGE_IN_PATH="\\${{secrets.STORAGE_IN_USER}}.your-storagebox.de\${{secrets.STORAGE_IN_USER}}" --env STORAGE_IN_USER="${{secrets.STORAGE_IN_USER}}" --env STORAGE_IN_PASSWORD="${{secrets.STORAGE_IN_PASSWORD}}" --env STORAGE_OUT_PATH="\\${{secrets.STORAGE_OUT_USER}}.your-storagebox.de\${{secrets.STORAGE_OUT_USER}}" --env STORAGE_OUT_USER="${{secrets.STORAGE_OUT_USER}}" --env STORAGE_OUT_PASSWORD="${{secrets.STORAGE_OUT_PASSWORD}}" cwuensch/avisynth:2.60 "I:\Schildkröten-6\Kleine Geschichten von wilden Tieren - Die Meeresschildkröte.avs" /i "C:\Recompress_UTVideo2.vcf" "O:\\Video_out2.avi" /x
 
     - name: Copy build artefact
       uses: actions/upload-artifact@v2
