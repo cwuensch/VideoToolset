@@ -15,21 +15,47 @@ on:
 
 jobs:
   build:
-    name: Build Docker container
+    name: Build Docker containers
     runs-on: windows-2019
 
     steps:
      - name: Checkout repository
        uses: actions/checkout@v2
 
+#     - name: Build Docker base container (Windows)
+#       run: |
+#         docker build -f Dockerfile_base1 -t cwuensch/avisynth:base .
+
+#     - name: Push Docker base container
+#       run: |
+#         docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+#         docker push cwuensch/avisynth:base
+
      - name: Build Docker container
        run: |
-         docker build -f Dockerfile -t cwuensch/avisynth:2.60 .
+         docker build -f Dockerfile -t cwuensch/avisynth:2.60neu .
 
      - name: Push Docker container 
        run: |
          docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
-         docker push cwuensch/avisynth:2.60
+         docker push cwuensch/avisynth:2.60neu
+
+#  buildbase:
+#    name: Build Docker base container (2)
+#    runs-on: windows-2019
+#
+#    steps:
+#     - name: Checkout repository
+#       uses: actions/checkout@v2
+#
+#     - name: Build Docker base container (Windows Server Core)
+#       run: |
+#         docker build -f Dockerfile_base2 -t cwuensch/avisynth:basecore .
+#
+#     - name: Push Docker base container
+#       run: |
+#         docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+#         docker push cwuensch/avisynth:basecore
 
   install:
     name: Install on GitHub runner
@@ -39,7 +65,39 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-#    - name: Install VC Runtime 2005 (x86)
+    - name: Install UltraVNC 1.3.8.1 (optional)
+      run: |
+        echo "Installing..."
+        #Start-Process "${{ github.workspace }}\Install\UltraVNC\UltraVNC_1_3_81_X64_Setup.exe" -Wait -ArgumentList "/very silent /no restart /loadinf=${{ github.workspace }}\Install\UltraVNC\setup.inf"
+        Expand-Archive -Path "${{ github.workspace }}\Install\UltraVNC\UltraVnc_1381.zip" -DestinationPath "C:\Program Files\UltraVNC\"
+        mv "C:\Program Files\UltraVNC\x64\*" "C:\Program Files\UltraVNC\"
+        cp "${{ github.workspace }}\Install\UltraVNC\UltraVNC.ini" "C:\Program Files\UltraVNC\"
+        echo "Installing Mirror driver..."
+        Start-Process certutil -ArgumentList '-addstore "TrustedPublisher" "C:\Program Files\UltraVNC\ultravnc.cer"'
+        Start-Process 'C:\Program Files\UltraVNC\winvnc.exe' -ArgumentList -installdriver
+        Start-Process certutil -ArgumentList '-delstore trustedpublisher 01302f6c9f56b5a7b00d148510a5a59e'
+        Start-Process 'C:\Windows\SysWOW64\netsh' -ArgumentList 'firewall add allowedprogram "C:\Program Files\UltraVNC\winvnc.exe" "winvnc.exe" ENABLE ALL'
+        echo "Starting..."
+        if ("${{ secrets.VNC_ID }}" -And "${{ secrets.VNC_ID }}" -ne "-") {
+          Start-Process "C:\Program Files\UltraVNC\winvnc.exe" -ArgumentList "-id:${{ secrets.VNC_ID }} -autoreconnect -connect ${{ secrets.VNC_CONNECT }} -run"
+        } else {
+          Start-Process "C:\Program Files\UltraVNC\winvnc.exe" -ArgumentList "-autoreconnect -connect ${{ secrets.VNC_CONNECT }} -run"
+        }
+
+
+#    - name: Install VC Runtime 6.0
+#      run: |
+#        Start-Process "${{ github.workspace }}\Install\VCRuntime\Visual C++ 6.0 Redistribution Pack" -Wait -ArgumentList /q
+#
+#    - name: Extract VC Runtime .NET 2002
+#      run: |
+#        Expand-Archive -Path "${{ github.workspace }}\Install\VCRuntime\vcruntime_2002.zip" -DestinationPath "C:\Windows\SysWOW64\"
+
+    - name: Extract VC Runtime .NET 2003
+      run: |
+        Expand-Archive -Path "${{ github.workspace }}\Install\VCRuntime\vcruntime_2003.zip" -DestinationPath "C:\Windows\SysWOW64\"
+
+#    - name: Install VC Runtime 2005
 #      run: |
 #        Start-Process "${{ github.workspace }}\Install\VCRuntime\Visual C++ 2005 Redistribution Pack" -Wait -ArgumentList /q
 #
@@ -85,6 +143,9 @@ jobs:
 
 #    - name: Install VC-Runtime (all)
 #      run: |
+#        Start-Process "${{ github.workspace }}\Install\VCRuntime\Visual C++ 6.0 Redistribution Pack" -Wait -ArgumentList /q
+#        Expand-Archive -Path "${{ github.workspace }}\Install\VCRuntime\vcruntime_2002.zip" -DestinationPath "C:\Windows\SysWOW64\"
+#        Expand-Archive -Path "${{ github.workspace }}\Install\VCRuntime\vcruntime_2003.zip" -DestinationPath "C:\Windows\SysWOW64\"
 #        Start-Process "${{ github.workspace }}\Install\VCRuntime\Visual C++ 2005 Redistribution Pack" -Wait -ArgumentList /q
 #        Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2008_x86.exe" -Wait -ArgumentList /q
 #        Start-Process "${{ github.workspace }}\Install\VCRuntime\vcredist2010_x86.exe" -Wait -ArgumentList /q
@@ -241,12 +302,12 @@ jobs:
     - name: Start Docker container (Demo)
       run: |
         $sourcedir = "${{ github.workspace }}" -replace '\\', '/'
-        docker run --rm -v ${sourcedir}:C:/source --workdir "C:/source" cwuensch/avisynth:2.60 "C:\source\Demo.avs" /s "C:\Recompress_UTVideo.vcf" /x
+        docker run --rm --env VNC_CONNECT="${{secrets.VNC_CONNECT}}" --env VNC_ID="${{secrets.VNC_ID}}" -v ${sourcedir}:C:/source --workdir "C:/source" cwuensch/avisynth:2.60neu "C:\source\Demo.avs" /s "C:\Recompress_UTVideo.vcf" /x
         dir
 
 #    - name: Start Docker container (real)
 #      run: |
-#        docker run --rm --env STORAGE_IN_PATH="\\${{secrets.STORAGE_IN_USER}}.your-storagebox.de\${{secrets.STORAGE_IN_USER}}" --env STORAGE_IN_USER="${{secrets.STORAGE_IN_USER}}" --env STORAGE_IN_PASSWORD="${{secrets.STORAGE_IN_PASSWORD}}" --env STORAGE_OUT_PATH="\\${{secrets.STORAGE_OUT_USER}}.your-storagebox.de\${{secrets.STORAGE_OUT_USER}}" --env STORAGE_OUT_USER="${{secrets.STORAGE_OUT_USER}}" --env STORAGE_OUT_PASSWORD="${{secrets.STORAGE_OUT_PASSWORD}}" cwuensch/avisynth:2.60 "I:\Schildkröten-6\Kleine Geschichten von wilden Tieren - Die Meeresschildkröte.avs" /i "C:\Recompress_UTVideo2.vcf" "O:\\Video_out2.avi" /x
+#        docker run --rm --env STORAGE_IN_PATH="\\${{secrets.STORAGE_IN_USER}}.your-storagebox.de\${{secrets.STORAGE_IN_USER}}" --env STORAGE_IN_USER="${{secrets.STORAGE_IN_USER}}" --env STORAGE_IN_PASSWORD="${{secrets.STORAGE_IN_PASSWORD}}" --env STORAGE_OUT_PATH="\\${{secrets.STORAGE_OUT_USER}}.your-storagebox.de\${{secrets.STORAGE_OUT_USER}}" --env STORAGE_OUT_USER="${{secrets.STORAGE_OUT_USER}}" --env STORAGE_OUT_PASSWORD="${{secrets.STORAGE_OUT_PASSWORD}}" cwuensch/avisynth:2.60neu "I:\Schildkröten-6\Kleine Geschichten von wilden Tieren - Die Meeresschildkröte.avs" /i "C:\Recompress_UTVideo2.vcf" "O:\\Video_out2.avi" /x
 
     - name: Copy build artefact
       uses: actions/upload-artifact@v2

@@ -11,17 +11,20 @@ echo del VideoToolset.zip
 
 
 echo Install VC Runtime
-rem start /w "" "VideoToolset\Install\VCRuntime\Visual C++ 2005 Redistribution Pack" /q
-rem start /w VideoToolset\Install\VCRuntime\vcredist2008_x86.exe /q
-start /w VideoToolset\Install\VCRuntime\vcredist2010_x86.exe /q
-start /w VideoToolset\Install\VCRuntime\vcredist2012_x86.exe /install /quiet
-start /w VideoToolset\Install\VCRuntime\vcredist2013_x86.exe /install /quiet
-start /w VideoToolset\Install\VCRuntime\vcredist2015-2019_x86.exe /install /quiet
-rem start /w VideoToolset\Install\VCRuntime\VC_redist2022_x86.exe /install /quiet
-rem start /w VideoToolset\Install\VCRuntime\vcredist2012_x64.exe /install /quiet
-rem #start /w VideoToolset\Install\VCRuntime\vcredist2013_x64.exe /install /quiet
-rem start /w VideoToolset\Install\VCRuntime\vcredist2015-2019_x64.exe /install /quiet
-rem start /w VideoToolset\Install\VCRuntime\VC_redist2022_x64.exe /install /quiet
+rem (start /w "" "VideoToolset\Install\VCRuntime\Visual C++ 6.0 Redistribution Pack.exe" /q || echo Error! Visual C++ 6.0 Redistribution Pack.exe)
+rem (powershell -command " Expand-Archive -Path 'VideoToolset\Install\VCRuntime\vcruntime_2002.zip' -DestinationPath '%windir%\SysWOW64\' " || echo Error! vcruntime_2002.zip)
+(powershell -command " Expand-Archive -Path 'VideoToolset\Install\VCRuntime\vcruntime_2003.zip' -DestinationPath '%windir%\SysWOW64\' " || echo Error! vcruntime_2003.zip)
+rem (start /w "" "VideoToolset\Install\VCRuntime\Visual C++ 2005 Redistribution Pack.exe" /q || echo Error! Visual C++ 2005 Redistribution Pack.exe)
+rem (start /w VideoToolset\Install\VCRuntime\vcredist2008_x86.exe /q || echo Error! vcredist2008_x86.exe)
+(start /w VideoToolset\Install\VCRuntime\vcredist2010_x86.exe /q || echo Error! vcredist2010_x86.exe)
+(start /w VideoToolset\Install\VCRuntime\vcredist2012_x86.exe /install /quiet || echo Error! vcredist2012_x86.exe)
+(start /w VideoToolset\Install\VCRuntime\vcredist2013_x86.exe /install /quiet || echo Error! vcredist2013_x86.exe)
+(start /w VideoToolset\Install\VCRuntime\vcredist2015-2019_x86.exe /install /quiet || echo Error! vcredist2015-2019_x86.exe)
+rem (start /w VideoToolset\Install\VCRuntime\VC_redist2022_x86.exe /install /quiet || echo Error! VC_redist2022_x86.exe)
+rem (start /w VideoToolset\Install\VCRuntime\vcredist2012_x64.exe /install /quiet || echo Error! vcredist2012_x64.exe)
+rem (#start /w VideoToolset\Install\VCRuntime\vcredist2013_x64.exe /install /quiet || echo Error! vcredist2013_x64.exe)
+rem (start /w VideoToolset\Install\VCRuntime\vcredist2015-2019_x64.exe /install /quiet || echo Error! vcredist2015-2019_x64.exe)
+rem (start /w VideoToolset\Install\VCRuntime\VC_redist2022_x64.exe /install /quiet || echo Error! VC_redist2022_x64.exe)
 
 
 echo Install Cedocida DV-Codec (?)
@@ -127,6 +130,21 @@ reg import "VideoToolset\Install\VirtualDub\VirtualDub.reg"
 echo Set path (unnötig)
 setx PATH "C:\Program Files (x86)\VirtualDub;%PATH%"
 set PATH="C:\Program Files (x86)\VirtualDub;%PATH%"
+
+
+echo Install UltraVNC (optional)
+echo - Installing...
+rem start /w VideoToolset\Install\UltraVNC\UltraVNC_1_3_81_X64_Setup.exe /very silent /no restart /loadinf="VideoToolset\Install\UltraVNC\setup.inf"
+powershell -command " Expand-Archive -Path 'VideoToolset\Install\UltraVNC\UltraVnc_1381.zip' -DestinationPath 'C:\Program Files\UltraVNC\' "
+move "C:\Program Files\UltraVNC\x64\*" "C:\Program Files\UltraVNC\"
+copy "VideoToolset\Install\UltraVNC\UltraVNC.ini" "C:\Program Files\UltraVNC\"
+echo Installing Mirror driver...
+start /w certutil -addstore "TrustedPublisher" "C:\Program Files\UltraVNC\ultravnc.cer"
+start /w "" "C:\Program Files\UltraVNC\winvnc.exe" -installdriver
+start /w certutil -delstore trustedpublisher 01302f6c9f56b5a7b00d148510a5a59e
+start /w C:\Windows\SysWOW64\netsh firewall add allowedprogram "C:\Program Files\UltraVNC\winvnc.exe" "winvnc.exe" ENABLE ALL
+echo - Starting...
+"C:\Program Files\UltraVNC\winvnc.exe" -id:1025 -autoreconnect -connect wuen....privatedns.org:5500 -run
 
 
 echo Connect network storage
